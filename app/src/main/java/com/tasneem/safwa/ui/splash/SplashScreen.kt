@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.sp
 import com.tasneem.safwa.core.theme.Primary
 import com.tasneem.safwa.core.shared_component.SafwaLogo
 import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
 fun SplashScreen(
