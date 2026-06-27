@@ -24,4 +24,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "Safwa"
 include(":app")
- 
+include(":network")
