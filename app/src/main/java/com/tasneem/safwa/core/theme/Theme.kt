@@ -1,4 +1,4 @@
-package com.tasneem.safwa.core
+package com.tasneem.safwa.core.theme
 
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme

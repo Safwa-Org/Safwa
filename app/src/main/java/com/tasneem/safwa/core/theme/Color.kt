@@ -1,4 +1,4 @@
-package com.tasneem.safwa.core
+package com.tasneem.safwa.core.theme
 import androidx.compose.ui.graphics.Color
 
 val Primary = Color(0xFF064E3B)
