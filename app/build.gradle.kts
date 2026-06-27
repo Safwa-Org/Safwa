@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.google.services)
 }
 
 android {
@@ -57,6 +58,19 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
+
+    // Firebase Bill of Materials (BOM)
+    implementation(platform(libs.firebase.bom))
+
+    // Firebase Auth & Firestore
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.firestore)
+
+    // Google Sign-In (Play Services)
+    implementation(libs.play.services.auth)
+
+    // Coroutines play services for await()
+    implementation(libs.kotlinx.coroutines.play.services)
     implementation(libs.retrofit.core)
     implementation(libs.retrofit.converter.gson)
     implementation(libs.androidx.navigation.compose)

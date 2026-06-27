@@ -11,6 +11,11 @@ composeBom = "2026.02.01"
 navigation = "2.8.9"
 navigationCompose = "2.9.7"
 
+googleServices = "4.5.0"
+firebaseBom = "33.1.0"
+playServicesAuth = "21.1.1"
+coroutines = "1.7.3"
+
 retrofit = "3.0.0"
 [libraries]
 retrofit-core = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
@@ -33,7 +38,19 @@ androidx-navigation-compose = { group = "androidx.navigation", name = "navigatio
 androidx-compose-ui-google-fonts = { group = "androidx.compose.ui", name = "ui-text-google-fonts" }
 
 
+
+# Firebase Bill of Materials
+firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
+# Firebase Auth & Firestore (Version is omitted because BOM manages it)
+firebase-auth = { group = "com.google.firebase", name = "firebase-auth" }
+firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore" }
+# Google Sign-In
+play-services-auth = { group = "com.google.android.gms", name = "play-services-auth", version.ref = "playServicesAuth" }
+# Coroutines Play Services
+kotlinx-coroutines-play-services = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-play-services", version.ref = "coroutines" }
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+
+google-services = { id = "com.google.gms.google-services", version.ref = "googleServices" }
 
