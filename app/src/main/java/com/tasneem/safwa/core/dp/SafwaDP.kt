@@ -21,7 +21,7 @@ abstract class SafwaDP : RoomDatabase() {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     SafwaDP::class.java,
-                    "weather_app_database"
+                    "safwa_database"
                 )
                     .fallbackToDestructiveMigration(false)
                     .build()
