@@ -1,4 +1,4 @@
-package com.tasneem.safwa.core
+package com.tasneem.safwa.core.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
