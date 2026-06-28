@@ -1,9 +1,18 @@
 package com.tasneem.safwa
 
-import android.app.Application
-import dagger.hilt.android.HiltAndroidApp
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import com.tasneem.safwa.core.navigation.SafwaNavHost
 
-@HiltAndroidApp
-class SafwaApp : Application() {
-
+@Composable
+fun SafwaApp() {
+    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+        Box(modifier = Modifier.padding(innerPadding)) {
+            SafwaNavHost()
+        }
+    }
 }

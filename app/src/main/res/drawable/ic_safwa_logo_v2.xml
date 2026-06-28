@@ -1,16 +1,18 @@
-<?xml version="1.0" encoding="utf-8"?>
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="108dp"
-    android:height="108dp"
-    android:viewportWidth="108"
-    android:viewportHeight="108">
+    android:width="288dp"
+    android:height="288dp"
+    android:viewportWidth="288"
+    android:viewportHeight="288">
     
     <group
-        android:scaleX="1.2"
-        android:scaleY="1.2"
-        android:translateX="-6"
-        android:translateY="-6">
+        android:translateX="94"
+        android:translateY="94">
         
+        <!-- Background rounded rect -->
+        <path
+            android:fillColor="@color/primary_logo"
+            android:pathData="M 35,0 h 30 c 19.33,0 35,15.67 35,35 v 30 c 0,19.33 -15.67,35 -35,35 h -30 c -19.33,0 -35,-15.67 -35,-35 v -30 c 0,-19.33 15.67,-35 35,-35 z" />
+
         <!-- Hexagon stroke -->
         <path
             android:strokeColor="#FFFFFF"
