@@ -11,7 +11,13 @@ val localProperties = Properties().apply {
     val file = rootProject.file("local.properties")
     if (file.exists()) file.inputStream().use { load(it) }
 }
-val storefrontToken: String = localProperties.getProperty("STOREFRONT_TOKEN") ?: ""
+
+val storefrontToken = localProperties.getProperty("STOREFRONT_TOKEN")
+    ?: throw Exception(
+        "Missing STOREFRONT_TOKEN in local.properties.\n" +
+                "Please add:\n" +
+                "STOREFRONT_TOKEN=your_storefront_access_token"
+    )
 
 android {
     namespace = "com.tasneem.safwa.network"
@@ -20,8 +26,10 @@ android {
     defaultConfig {
         minSdk = 24
         buildConfigField("String", "STOREFRONT_TOKEN", "\"$storefrontToken\"")
-        buildConfigField("String", "SHOPIFY_ENDPOINT",
-            "\"https://mad46-and10.myshopify.com/api/2025-04/graphql.json\"")
+        buildConfigField(
+            "String", "SHOPIFY_ENDPOINT",
+            "\"https://mad46-and10.myshopify.com/api/2025-04/graphql.json\""
+        )
     }
     buildFeatures {
         buildConfig = true

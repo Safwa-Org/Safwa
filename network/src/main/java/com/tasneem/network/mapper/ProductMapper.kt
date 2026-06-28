@@ -2,8 +2,9 @@ package com.tasneem.network.mapper
 
 import com.tasneem.network.dto.ProductDto
 import com.tasneem.safwa.network.ProductsQuery
+import javax.inject.Inject
 
-class ProductMapper : Mapper<ProductsQuery.Node, ProductDto> {
+class ProductMapper @Inject constructor() : Mapper<ProductsQuery.Node, ProductDto> {
     override fun map(input: ProductsQuery.Node) = ProductDto(
         id = input.id,
         title = input.title,
@@ -14,6 +15,6 @@ class ProductMapper : Mapper<ProductsQuery.Node, ProductDto> {
         price = input.priceRange.minVariantPrice.amount.toString(),
         currency = input.priceRange.minVariantPrice.currencyCode.name,
         imageUrls = input.images.edges.map { it.node.url.toString() },
-        imageAlts = input.images.edges.map { it.node.altText.toString() }
+        imageAlts = input.images.edges.map { it.node.altText }
     )
 }

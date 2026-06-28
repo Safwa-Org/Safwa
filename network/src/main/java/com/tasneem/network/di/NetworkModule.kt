@@ -3,7 +3,6 @@ package com.tasneem.network.di
 import com.apollographql.apollo.ApolloClient
 import com.tasneem.network.datasource.product.ProductRemoteDataSource
 import com.tasneem.network.datasource.product.ProductRemoteDataSourceImpl
-import com.tasneem.network.mapper.ProductMapper
 import com.tasneem.safwa.network.BuildConfig
 import dagger.Binds
 import dagger.Module
@@ -23,11 +22,6 @@ object NetworkModule {
             .serverUrl(BuildConfig.SHOPIFY_ENDPOINT)
             .addHttpHeader("X-Shopify-Storefront-Access-Token", BuildConfig.STOREFRONT_TOKEN)
             .build()
-
-    @Provides
-    fun provideProductMapper(): ProductMapper {
-        return ProductMapper()
-    }
 }
 
 @Module

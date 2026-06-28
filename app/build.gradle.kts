@@ -1,5 +1,3 @@
-import java.util.Properties
-
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -8,12 +6,6 @@ plugins {
     alias(libs.plugins.google.services)
     alias(libs.plugins.kotlin.serialization)
 }
-
-val localProperties = Properties().apply {
-    val file = rootProject.file("local.properties")
-    if (file.exists()) file.inputStream().use { load(it) }
-}
-val storefrontToken: String = localProperties.getProperty("STOREFRONT_TOKEN") ?: ""
 
 android {
     namespace = "com.tasneem.safwa"
@@ -31,12 +23,6 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        buildConfigField("String", "STOREFRONT_TOKEN", "\"$storefrontToken\"")
-        buildConfigField(
-            "String",
-            "SHOPIFY_ENDPOINT",
-            "\"https://mad46-and10.myshopify.com/api/2025-04/graphql.json\""
-        )
     }
 
     buildTypes {

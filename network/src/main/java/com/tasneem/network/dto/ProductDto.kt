@@ -9,6 +9,6 @@ data class ProductDto(
     val productType: String,
     val price: String,
     val currency: String,
-    val imageUrls: List<String>?,
-    val imageAlts: List<String>?
+    val imageUrls: List<String?>,
+    val imageAlts: List<String?>
 )
