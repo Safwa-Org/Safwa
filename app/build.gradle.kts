@@ -17,7 +17,11 @@ val storefrontToken: String = localProperties.getProperty("STOREFRONT_TOKEN") ?:
 
 android {
     namespace = "com.tasneem.safwa"
-    compileSdk = 36
+    compileSdk {
+        version = release(36) {
+            minorApiLevel = 1
+        }
+    }
 
     defaultConfig {
         applicationId = "com.tasneem.safwa"
