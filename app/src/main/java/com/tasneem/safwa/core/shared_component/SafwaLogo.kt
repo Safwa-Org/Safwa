@@ -11,13 +11,13 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.tasneem.safwa.core.theme.Primary
+import androidx.compose.material3.MaterialTheme
 
 @Composable
 fun SafwaLogo(
     modifier: Modifier = Modifier,
     size: Dp = 100.dp,
-    containerColor: Color = Primary,
+    containerColor: Color = MaterialTheme.colorScheme.primary,
     iconColor: Color = Color.White
 ) {
     Canvas(modifier = modifier.size(size)) {

@@ -2,4 +2,13 @@
 <resources>
 
     <style name="Theme.Safwa" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <style name="Theme.App.Starting" parent="Theme.SplashScreen">
+        <!-- Set the splash screen background, animated icon, and animation duration. -->
+        <item name="windowSplashScreenBackground">@color/splash_background</item>
+        <!-- Use an animated icon or a simple drawable -->
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_safwa_logo_v2</item>
+        <!-- Set the theme of the Activity that directly follows your splash screen. -->
+        <item name="postSplashScreenTheme">@style/Theme.Safwa</item>
+    </style>
 </resources>

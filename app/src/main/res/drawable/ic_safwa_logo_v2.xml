@@ -1,0 +1,28 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="288dp"
+    android:height="288dp"
+    android:viewportWidth="288"
+    android:viewportHeight="288">
+    
+    <group
+        android:translateX="94"
+        android:translateY="94">
+        
+        <!-- Background rounded rect -->
+        <path
+            android:fillColor="@color/primary_logo"
+            android:pathData="M 35,0 h 30 c 19.33,0 35,15.67 35,35 v 30 c 0,19.33 -15.67,35 -35,35 h -30 c -19.33,0 -35,-15.67 -35,-35 v -30 c 0,-19.33 15.67,-35 35,-35 z" />
+
+        <!-- Hexagon stroke -->
+        <path
+            android:strokeColor="#FFFFFF"
+            android:strokeWidth="3"
+            android:strokeLineJoin="miter"
+            android:pathData="M 50,30 L 67.32,40 L 67.32,60 L 50,70 L 32.68,60 L 32.68,40 Z" />
+
+        <!-- Inner diamond fill -->
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M 50,42 L 58,50 L 50,58 L 42,50 Z" />
+    </group>
+</vector>
