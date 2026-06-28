@@ -14,7 +14,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -22,7 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.tasneem.safwa.core.theme.Primary
+import androidx.compose.material3.MaterialTheme
 
 @Composable
 fun OnboardingBottomBar(
@@ -47,7 +46,7 @@ fun OnboardingBottomBar(
                         .width(if (isSelected) 24.dp else 8.dp)
                         .clip(CircleShape)
                         .background(
-                            if (isSelected) Primary else Primary.copy(alpha = 0.2f)
+                            if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
                         )
                 )
             }
@@ -61,7 +60,7 @@ fun OnboardingBottomBar(
                 .fillMaxWidth()
                 .height(56.dp),
             shape = RoundedCornerShape(28.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Primary)
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
         ) {
             Text(
                 text = "Continue",

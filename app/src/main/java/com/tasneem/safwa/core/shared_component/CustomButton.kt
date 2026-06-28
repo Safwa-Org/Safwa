@@ -11,18 +11,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.tasneem.safwa.core.theme.Primary
 
 @Composable
-fun CustomButon(  onContinue: () -> Unit,
-                  modifier : Modifier,title: String){
+fun CustomButon(
+    onContinue: () -> Unit,
+    modifier : Modifier,title: String){
     Button(
         onClick = onContinue,
         modifier = modifier
             .fillMaxWidth()
             .height(56.dp),
         shape = RoundedCornerShape(28.dp),
-        colors = ButtonDefaults.buttonColors(containerColor = Primary)
+        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
     ) {
         Text(
             text = title,
