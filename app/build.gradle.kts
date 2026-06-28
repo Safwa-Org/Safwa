@@ -3,6 +3,8 @@ import java.util.Properties
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.hilt)
 }
 
 val localProperties = Properties().apply {
@@ -13,11 +15,7 @@ val storefrontToken: String = localProperties.getProperty("STOREFRONT_TOKEN") ?:
 
 android {
     namespace = "com.tasneem.safwa"
-    compileSdk {
-        version = release(36) {
-            minorApiLevel = 1
-        }
-    }
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.tasneem.safwa"
@@ -54,6 +52,8 @@ android {
 
 dependencies {
     implementation(project(":network"))
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.android.compiler)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.material3)

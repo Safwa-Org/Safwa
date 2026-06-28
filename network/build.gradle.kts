@@ -3,6 +3,8 @@ import java.util.Properties
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.apollo)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.hilt)
 }
 
 val localProperties = Properties().apply {
@@ -17,6 +19,12 @@ android {
 
     defaultConfig {
         minSdk = 24
+        buildConfigField("String", "STOREFRONT_TOKEN", "\"$storefrontToken\"")
+        buildConfigField("String", "SHOPIFY_ENDPOINT",
+            "\"https://mad46-and10.myshopify.com/api/2025-04/graphql.json\"")
+    }
+    buildFeatures {
+        buildConfig = true
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -39,4 +47,6 @@ dependencies {
     implementation(libs.apollo.runtime)
     implementation(libs.apollo.normalized.cache.sqlite)
     implementation(libs.androidx.core.ktx)
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.android.compiler)
 }
