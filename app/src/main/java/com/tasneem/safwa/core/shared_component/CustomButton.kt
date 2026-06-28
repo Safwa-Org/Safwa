@@ -13,8 +13,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun CustomButon(  onContinue: () -> Unit,
-                  modifier : Modifier,title: String){
+fun CustomButon(
+    onContinue: () -> Unit,
+    modifier : Modifier,title: String){
     Button(
         onClick = onContinue,
         modifier = modifier
