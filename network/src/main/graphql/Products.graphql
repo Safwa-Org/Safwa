@@ -1,0 +1,21 @@
+query Products($first: Int!) {
+    products(first: $first) {
+        pageInfo { hasNextPage endCursor }
+        edges {
+            node {
+                id
+                handle
+                title
+                description
+                vendor
+                productType
+                priceRange {
+                    minVariantPrice { amount currencyCode }
+                }
+                images(first: 5) {
+                    edges { node { url altText } }
+                }
+            }
+        }
+    }
+}
