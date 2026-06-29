@@ -22,7 +22,7 @@ fun SafwaNavHost(
 ) {
     NavHost(
         navController = navController,
-        startDestination = ScreenRoute.ProductDetails
+        startDestination = ScreenRoute.Onboarding
     ) {
 
         composable<ScreenRoute.Splash> {
