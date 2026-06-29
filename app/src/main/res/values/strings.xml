@@ -26,6 +26,7 @@
     <string name="continue_with_google">Continue with Google</string>
     <string name="hide">Hide</string>
     <string name="show">Show</string>
+    <string name="default_web_client_id" translatable="false">348459336829-ntc7efkmbjq201edafusr8ntqf6f6ibr.apps.googleusercontent.com</string>
 
     <string name="create_account_title">Create Account</string>
     <string name="sign_up_desc">Start your journey with Safwa</string>
@@ -54,5 +55,7 @@
     <string name="error_password_no_symbol">Password must contain at least one special character</string>
     <string name="error_phone_egypt_invalid">Please enter a valid Egyptian phone number</string>
     <string name="error_space">"      "</string>
+    <string name="error_invalid_or_password">Invalid Email Or Password</string>
+    <string name="failed_guest">Guest Login Failed</string>
 
 </resources>

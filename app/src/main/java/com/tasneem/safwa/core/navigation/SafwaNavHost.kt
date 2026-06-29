@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -41,7 +42,7 @@ fun SafwaNavHost(
         }
 
         composable<ScreenRoute.Login> {
-            val viewModel: LoginViewModel = viewModel()
+            val viewModel: LoginViewModel = hiltViewModel()
             val state by viewModel.state.collectAsState()
             LaunchedEffect(Unit) {
                 viewModel.sideEffect.collect { effect ->
@@ -51,10 +52,8 @@ fun SafwaNavHost(
                         LoginSideEffect.NavigateToHome -> navController.navigate(ScreenRoute.Home) {
                             popUpTo(ScreenRoute.Login) { inclusive = true }
                         }
-                        LoginSideEffect.NavigateAsGuest -> navController.navigate(ScreenRoute.Home) {
-                            popUpTo(ScreenRoute.Login) { inclusive = true }
-                        }
                         is LoginSideEffect.ShowToast -> {
+
                         }
                     }
                 }
@@ -64,6 +63,9 @@ fun SafwaNavHost(
                 state = state,
                 onEvent = { event ->
                     viewModel.onEvent(event)
+                },
+                onGoogleSignInResult = { idToken ->
+                    viewModel.handleGoogleLogin(idToken)
                 }
             )
         }

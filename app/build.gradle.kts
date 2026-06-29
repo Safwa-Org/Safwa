@@ -45,6 +45,7 @@ android {
 dependencies {
     implementation(project(":network"))
     implementation(libs.hilt.android)
+    implementation(libs.hilt.navigation.compose)
     ksp(libs.hilt.android.compiler)
     implementation(libs.androidx.compose.foundation.layout)
     val room_version = "2.8.4"
