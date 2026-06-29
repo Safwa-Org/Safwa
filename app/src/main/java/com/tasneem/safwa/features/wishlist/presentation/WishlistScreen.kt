@@ -21,6 +21,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.tasneem.safwa.R
 import com.tasneem.safwa.features.wishlist.domain.model.Product
+import com.tasneem.safwa.features.wishlist.presentation.components.CategoriesRow
+import com.tasneem.safwa.features.wishlist.presentation.components.EmptyWishlistState
 import com.tasneem.safwa.features.wishlist.presentation.components.ProductCard
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -49,13 +51,14 @@ fun WishlistScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            if (state.products.isEmpty()) {
-                Text(
-                    text = stringResource(id = R.string.wishlist_empty),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.secondary,
-                    modifier = Modifier.padding(16.dp)
-                )
+            CategoriesRow(
+                categories = state.categories,
+                selectedCategory = state.selectedCategory,
+                onEvent = onEvent
+            )
+
+            if (state.filteredProducts.isEmpty()) {
+                EmptyWishlistState()
             } else {
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(2),
@@ -64,7 +67,7 @@ fun WishlistScreen(
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    items(state.products, key = { it.id }) { product ->
+                    items(state.filteredProducts, key = { it.id }) { product ->
                         ProductCard(
                             product = product,
                             isFavorite = true,

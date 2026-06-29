@@ -60,16 +60,49 @@ class WishlistViewModel @Inject constructor() : ViewModel() {
                         isFavorite = true
                     )
                 )
-                _state.update { it.copy(products = mockProducts, isLoading = false) }
+                
+                val categories = listOf("All", "Fragrances", "Skincare") + mockProducts.map { it.productType }.distinct().sorted()
+                
+                _state.update { it.copy(
+                    products = mockProducts,
+                    filteredProducts = mockProducts,
+                    categories = categories,
+                    isLoading = false
+                ) }
             }
             is WishlistEvent.ToggleFavorite -> {
                 _state.update { currentState ->
+                    val newProducts = currentState.products.filter { it.id != event.product.id }
+                    val newFiltered = if (currentState.selectedCategory == "All") {
+                        newProducts
+                    } else {
+                        newProducts.filter { it.productType == currentState.selectedCategory }
+                    }
+                    val newCategories = listOf("All", "Fragrances", "Skincare") + newProducts.map { it.productType }.distinct().sorted()
+                    
                     currentState.copy(
-                        products = currentState.products.filter { it.id != event.product.id }
+                        products = newProducts,
+                        filteredProducts = newFiltered,
+                        categories = newCategories,
+                        selectedCategory = if (newCategories.contains(currentState.selectedCategory)) currentState.selectedCategory else "All"
+                    )
+                }
+            }
+            is WishlistEvent.FilterSelected -> {
+                _state.update { currentState ->
+                    val newFiltered = if (event.category == "All") {
+                        currentState.products
+                    } else {
+                        currentState.products.filter { it.productType == event.category }
+                    }
+                    currentState.copy(
+                        selectedCategory = event.category,
+                        filteredProducts = newFiltered
                     )
                 }
             }
             is WishlistEvent.ProductClicked -> {
+                // Usually handled by side effects or UI directly
             }
         }
     }
