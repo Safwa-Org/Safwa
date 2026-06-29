@@ -14,8 +14,10 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun CustomButon(
+    title: String,
     onContinue: () -> Unit,
-    modifier : Modifier,title: String){
+    modifier: Modifier = Modifier
+) {
     Button(
         onClick = onContinue,
         modifier = modifier

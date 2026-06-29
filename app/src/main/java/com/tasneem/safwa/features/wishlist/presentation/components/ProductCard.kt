@@ -30,10 +30,10 @@ import com.tasneem.safwa.features.wishlist.domain.model.Product
 @Composable
 fun ProductCard(
     product: Product,
+    modifier: Modifier = Modifier,
     isFavorite: Boolean = false,
     onToggleFavorite: () -> Unit = {},
-    onClick: () -> Unit = {},
-    modifier: Modifier = Modifier
+    onClick: () -> Unit = {}
 ) {
     Card(
         modifier = modifier
@@ -58,7 +58,7 @@ fun ProductCard(
                 HeartIcon(
                     isFavorite = isFavorite,
                     onToggleFavorite = onToggleFavorite,
-                    modifier = Modifier
+                    modifier = Modifier.padding(8.dp)
                         .align(Alignment.TopEnd)
                         .padding(8.dp)
                 )

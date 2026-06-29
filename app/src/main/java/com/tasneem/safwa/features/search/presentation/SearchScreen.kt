@@ -1,4 +1,4 @@
-package com.tasneem.safwa.features.wishlist.presentation
+package com.tasneem.safwa.features.search.presentation
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -13,28 +13,27 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.tasneem.safwa.R
-import com.tasneem.safwa.features.wishlist.domain.model.Product
-import com.tasneem.safwa.features.wishlist.presentation.components.CategoriesRow
-import com.tasneem.safwa.features.wishlist.presentation.components.EmptyWishlistState
-import com.tasneem.safwa.features.wishlist.presentation.components.ProductCard
 import com.tasneem.safwa.core.shared_component.SafwaTopAppBar
+import com.tasneem.safwa.features.search.presentation.components.EmptySearchState
+import com.tasneem.safwa.features.search.presentation.components.SearchInput
+import com.tasneem.safwa.features.wishlist.presentation.components.CategoriesRow
+import com.tasneem.safwa.features.wishlist.presentation.components.ProductCard
 
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
 
 @Composable
-fun WishlistScreen(
+fun SearchScreen(
     modifier: Modifier = Modifier,
-    viewModel: WishlistViewModel = hiltViewModel()
+    viewModel: SearchViewModel = hiltViewModel()
 
 ) {
     val state by viewModel.state.collectAsState()
     
-    WishlistContent(
+    SearchContent(
         state = state,
         onIntent = viewModel::onIntent,
         modifier = modifier
@@ -43,18 +42,18 @@ fun WishlistScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun WishlistContent(
-    state: WishlistState,
-    onIntent: (WishlistIntent) -> Unit,
+fun SearchContent(
+    state: SearchState,
+    onIntent: (SearchIntent) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
             SafwaTopAppBar(
-                title = stringResource(id = R.string.wishlist),
-                onBackClick = {},
-                onCartClick = {}
+                title = stringResource(id = R.string.search),
+                onBackClick = { /* Handle back navigation */ },
+                onCartClick = { /* Handle cart navigation */ }
             )
         }
     ) { paddingValues ->
@@ -63,14 +62,21 @@ fun WishlistContent(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
+            SearchInput(
+                query = state.searchQuery,
+                onQueryChanged = { onIntent(SearchIntent.QueryChanged(it)) },
+                onExecuteSearch = { onIntent(SearchIntent.ExecuteSearch) },
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+            )
+
             CategoriesRow(
                 categories = state.categories,
                 selectedCategory = state.selectedCategory,
-                onCategorySelected = { onIntent(WishlistIntent.FilterSelected(it)) }
+                onCategorySelected = { onIntent(SearchIntent.FilterSelected(it)) }
             )
 
             if (state.filteredProducts.isEmpty()) {
-                EmptyWishlistState()
+                EmptySearchState()
             } else {
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(2),
@@ -82,60 +88,13 @@ fun WishlistContent(
                     items(state.filteredProducts, key = { it.id }) { product ->
                         ProductCard(
                             product = product,
-                            isFavorite = true,
-                            onToggleFavorite = { onIntent(WishlistIntent.ToggleFavorite(product)) },
-                            onClick = { onIntent(WishlistIntent.ProductClicked(product)) }
+                            isFavorite = false,
+                            onToggleFavorite = { onIntent(SearchIntent.ToggleFavorite(product)) },
+                            onClick = { onIntent(SearchIntent.ProductClicked(product)) }
                         )
                     }
                 }
             }
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun WishlistScreenPreview() {
-    val sampleProducts = listOf(
-        Product(
-            "1",
-            "Hydrogen Snowboard",
-            "hydrogen",
-            "Desc 1",
-            "Snowboard Co",
-            "Snowboard",
-            "199.99",
-            "USD",
-            listOf(""),
-            listOf("")
-        ),
-        Product(
-            "2",
-            "Helium Snowboard",
-            "helium",
-            "Desc 2",
-            "Snowboard Co",
-            "Snowboard",
-            "249.99",
-            "USD",
-            listOf(""),
-            listOf("")
-        ),
-        Product(
-            "3",
-            "Lithium Snowboard",
-            "lithium",
-            "Desc 3",
-            "Snowboard Co",
-            "Snowboard",
-            "299.99",
-            "USD",
-            listOf(""),
-            listOf("")
-        )
-    )
-    WishlistContent(
-        state = WishlistState(products = sampleProducts),
-        onIntent = {}
-    )
 }
