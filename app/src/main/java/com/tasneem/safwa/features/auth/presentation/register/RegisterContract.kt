@@ -15,7 +15,9 @@ data class RegisterState(
     val passwordErrorResId: Int? = null,
     val confirmPasswordErrorResId: Int? = null,
     val generalErrorMessage: String? = null,
-    val generalErrorResId: Int? = null
+    val generalErrorResId: Int? = null,
+    val showVerificationDialog: Boolean = false
+
 )
 
 sealed interface RegisterEvent {
@@ -27,6 +29,8 @@ sealed interface RegisterEvent {
     data class ConfirmPasswordChanged(val confirmPassword: String) : RegisterEvent
     object RegisterClicked : RegisterEvent
     object LoginClicked : RegisterEvent
+    object ResendVerification : RegisterEvent
+
 }
 
 sealed interface RegisterSideEffect {

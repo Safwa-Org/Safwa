@@ -22,4 +22,7 @@ interface AuthRepository {
     suspend fun logout(): Resource<Unit>
 
     suspend fun getCurrentUser(): Resource<User?>
+
+    suspend fun sendVerificationEmail(): Resource<Unit>
+    suspend fun isEmailVerified(): Boolean
 }

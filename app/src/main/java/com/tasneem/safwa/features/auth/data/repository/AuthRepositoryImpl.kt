@@ -11,7 +11,7 @@ import javax.inject.Inject
 
 class AuthRepositoryImpl @Inject constructor(
     private val authDataSource: FirebaseAuthDataSource,
-    private val firestoreDataSource: FirestoreDataSource
+    private val firestoreDataSource: FirestoreDataSource,
 ) : AuthRepository {
 
     override suspend fun register(
@@ -24,6 +24,7 @@ class AuthRepositoryImpl @Inject constructor(
         return try {
             val authResult = authDataSource.signUpWithEmail(email, password)
             val uid = authResult.user?.uid ?: return Resource.Error("Registration failed: no user")
+
             val userEntity = UserEntity(
                 id = uid,
                 email = email,
@@ -32,8 +33,17 @@ class AuthRepositoryImpl @Inject constructor(
                 phone = phone,
                 isGuest = false
             )
-            firestoreDataSource.saveUser(userEntity)
-            Log.d("MustDelete", userEntity.toDomain().toString())
+
+            try {
+                firestoreDataSource.saveUser(userEntity)
+                authDataSource.sendEmailVerification()
+            } catch (innerException: Exception) {
+
+                authDataSource.signOut()
+                throw innerException
+            }
+
+            authDataSource.signOut()
             Resource.Success(userEntity.toDomain())
         } catch (e: Exception) {
             handleAuthException(e)
@@ -43,10 +53,16 @@ class AuthRepositoryImpl @Inject constructor(
     override suspend fun login(email: String, password: String): Resource<User> {
         return try {
             val authResult = authDataSource.signInWithEmail(email, password)
-            val uid = authResult.user?.uid ?: return Resource.Error("Login failed")
+            val user = authResult.user ?: return Resource.Error("Login failed")
+            val uid = user.uid
+
+            if (!user.isEmailVerified) {
+                authDataSource.signOut()
+                return Resource.Error("Please verify your email before logging in. A verification link was sent to your email.")
+            }
+
             var userEntity = firestoreDataSource.getUser(uid)
             if (userEntity == null) {
-                // If no Firestore document, create one with minimal data
                 userEntity = UserEntity(
                     id = uid,
                     email = email,
@@ -54,12 +70,23 @@ class AuthRepositoryImpl @Inject constructor(
                 )
                 firestoreDataSource.saveUser(userEntity)
             }
-            Log.d("MustDelete", userEntity.toDomain().toString())
-
             Resource.Success(userEntity.toDomain())
         } catch (e: Exception) {
             handleAuthException(e)
         }
+    }
+
+    override suspend fun sendVerificationEmail(): Resource<Unit> {
+        return try {
+            authDataSource.sendEmailVerification()
+            Resource.Success(Unit)
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Failed to send verification email")
+        }
+    }
+
+    override suspend fun isEmailVerified(): Boolean {
+        return authDataSource.isEmailVerified()
     }
 
     override suspend fun loginWithGoogle(idToken: String): Resource<User> {
@@ -82,8 +109,6 @@ class AuthRepositoryImpl @Inject constructor(
                 )
                 firestoreDataSource.saveUser(userEntity)
             }
-            Log.d("MustDelete", userEntity.toDomain().toString())
-
             Resource.Success(userEntity.toDomain())
         } catch (e: Exception) {
             handleAuthException(e)
@@ -94,7 +119,6 @@ class AuthRepositoryImpl @Inject constructor(
         return try {
             val authResult = authDataSource.signInAnonymously()
             val uid = authResult.user?.uid ?: return Resource.Error("Guest login failed")
-            // Guest user is not saved to Firestore, just return domain object
             val guestUser = User(
                 id = uid,
                 isGuest = true,
@@ -102,8 +126,6 @@ class AuthRepositoryImpl @Inject constructor(
                 lastName = "",
                 email = null
             )
-            Log.d("MustDelete",guestUser.toString())
-
             Resource.Success(guestUser)
         } catch (e: Exception) {
             handleAuthException(e)
@@ -122,8 +144,36 @@ class AuthRepositoryImpl @Inject constructor(
     override suspend fun getCurrentUser(): Resource<User?> {
         return try {
             val uid = authDataSource.getCurrentUserId() ?: return Resource.Success(null)
+            val email = authDataSource.getCurrentUserEmail()
+
             val userEntity = firestoreDataSource.getUser(uid)
-            Resource.Success(userEntity?.toDomain())
+
+            if (userEntity != null) {
+                // User exists in Firestore. Ensure email is verified if they have one.
+                if (email != null && !authDataSource.isEmailVerified()) {
+                    authDataSource.signOut()
+                    return Resource.Success(null)
+                }
+                return Resource.Success(userEntity.toDomain())
+            } else {
+                // User is in Firebase Auth but NOT in Firestore
+                if (email == null) {
+                    // It's a Guest User (they don't have emails and aren't saved to Firestore)
+                    val guestUser = User(
+                        id = uid,
+                        isGuest = true,
+                        firstName = "Guest",
+                        lastName = "",
+                        email = null
+                    )
+                    return Resource.Success(guestUser)
+                } else {
+                    // CRITICAL FIX: It's an Email user who encountered an error during registration
+                    // and their Firestore data never saved. Clean up the corrupted local state.
+                    authDataSource.signOut()
+                    return Resource.Success(null)
+                }
+            }
         } catch (e: Exception) {
             Resource.Error(e.localizedMessage ?: "Failed to get user")
         }

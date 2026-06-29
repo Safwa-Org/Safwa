@@ -54,7 +54,7 @@ interface GoogleSignInClientEntryPoint {
 fun LoginScreen(
     state: LoginState,
     onEvent: (LoginEvent) -> Unit,
-    onGoogleSignInResult: (String) -> Unit  // callback to pass ID token to ViewModel
+    onGoogleSignInResult: (String) -> Unit
 ) {
 
     val context = LocalContext.current
@@ -69,19 +69,22 @@ fun LoginScreen(
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
-        val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
-        try {
-            val account = task.getResult(ApiException::class.java)
-            val idToken = account?.idToken
-            if (idToken != null) {
-                onGoogleSignInResult(idToken)
-            } else {
-                // Could not get ID token – show error via event
-                onEvent(LoginEvent.ShowError("Google ID token missing"))
+        if (result.resultCode == android.app.Activity.RESULT_OK) {
+            val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+            try {
+                val account = task.getResult(ApiException::class.java)
+                val idToken = account?.idToken
+                if (idToken != null) {
+                    onGoogleSignInResult(idToken)
+                } else {
+                    onEvent(LoginEvent.ShowError("Google ID token missing"))
+                }
+            } catch (e: ApiException) {
+                Log.e("GoogleSignIn", "Sign-in failed", e)
+                onEvent(LoginEvent.ShowError("Google sign-in failed: ${e.message}"))
             }
-        } catch (e: ApiException) {
-            Log.e("GoogleSignIn", "Sign-in failed", e)
-            onEvent(LoginEvent.ShowError("Google sign-in failed: ${e.message}"))
+        } else {
+            Log.d("GoogleSignIn", "Sign-in cancelled by user")
         }
     }
 
@@ -92,7 +95,21 @@ fun LoginScreen(
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.Start
     ) {
-        // ... same header code (unchanged)
+        Spacer(modifier = Modifier.height(16.dp))
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            SafwaLogo(
+                size = 40.dp,
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                iconColor = MaterialTheme.colorScheme.primary
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = stringResource(id = R.string.app_name),
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                fontFamily = FontFamily.Serif
+            )
+        }
 
         Spacer(modifier = Modifier.height(64.dp))
         Text(

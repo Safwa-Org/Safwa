@@ -11,11 +11,11 @@ import com.tasneem.safwa.features.auth.domain.usecase.GoogleLoginUseCase
 import com.tasneem.safwa.features.auth.domain.usecase.GuestLoginUseCase
 import com.tasneem.safwa.features.auth.domain.usecase.LoginUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -31,8 +31,8 @@ class LoginViewModel @Inject constructor(
     private val _state = MutableStateFlow(LoginState())
     val state: StateFlow<LoginState> = _state.asStateFlow()
 
-    private val _sideEffect = MutableSharedFlow<LoginSideEffect>()
-    val sideEffect = _sideEffect.asSharedFlow()
+    private val _sideEffect = Channel<LoginSideEffect>()
+    val sideEffect = _sideEffect.receiveAsFlow()
 
     init {
         viewModelScope.launch {
@@ -40,8 +40,7 @@ class LoginViewModel @Inject constructor(
             if (result is Resource.Success && result.data != null) {
                 val user = result.data
                 _state.update { it.copy(isGuest = user.isGuest) }
-                // Navigate to home (both guest and normal users go to the same home)
-                _sideEffect.emit(LoginSideEffect.NavigateToHome)
+                _sideEffect.send(LoginSideEffect.NavigateToHome)
             }
         }
     }
@@ -68,23 +67,18 @@ class LoginViewModel @Inject constructor(
                     )
                 }
             }
-            LoginEvent.LoginClicked -> {
-                executeLogin()
-            }
-            LoginEvent.GoogleLoginClicked -> {
-                // The UI will handle Google Sign-In and then call handleGoogleLogin(idToken)
-                // We just show a toast to indicate it's starting
-            }
+            LoginEvent.LoginClicked -> executeLogin()
+            LoginEvent.GoogleLoginClicked -> {  }
             LoginEvent.SignUpClicked -> {
-                viewModelScope.launch { _sideEffect.emit(LoginSideEffect.NavigateToSignUp) }
+                viewModelScope.launch { _sideEffect.send(LoginSideEffect.NavigateToSignUp) }
             }
             LoginEvent.ForgotPasswordClicked -> {
-                viewModelScope.launch { _sideEffect.emit(LoginSideEffect.NavigateToForgotPassword) }
+                viewModelScope.launch { _sideEffect.send(LoginSideEffect.NavigateToForgotPassword) }
             }
-            LoginEvent.GuestClicked -> {
-                executeGuestLogin()
+            LoginEvent.GuestClicked -> executeGuestLogin()
+            is LoginEvent.ShowError -> {
+                _state.update { it.copy(generalErrorMessage = event.message) }
             }
-            else -> {}
         }
     }
 
@@ -106,19 +100,18 @@ class LoginViewModel @Inject constructor(
             _state.update { it.copy(emailErrorResId = R.string.error_email_empty) }
             return
         }
-        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+/*        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             _state.update { it.copy(emailErrorResId = R.string.error_invalid_email) }
             return
-        }
-
+        }*/
         if (password.isBlank()) {
             _state.update { it.copy(passwordErrorResId = R.string.error_password_empty) }
             return
         }
-        if (password.length < 6) {
+      /*  if (password.length < 6) {
             _state.update { it.copy(passwordErrorResId = R.string.error_password_too_short) }
             return
-        }
+        }*/
 
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
@@ -127,10 +120,6 @@ class LoginViewModel @Inject constructor(
         }
     }
 
-    /**
-     * Called from the UI after a successful Google Sign-In.
-     * @param idToken The ID token from Google.
-     */
     fun handleGoogleLogin(idToken: String) {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
@@ -145,7 +134,7 @@ class LoginViewModel @Inject constructor(
             val result = guestLoginUseCase()
             if (result is Resource.Success) {
                 _state.update { it.copy(isGuest = true, isLoading = false) }
-                _sideEffect.emit(LoginSideEffect.NavigateToHome)
+                _sideEffect.send(LoginSideEffect.NavigateToHome)
             } else {
                 _state.update {
                     it.copy(
@@ -163,26 +152,34 @@ class LoginViewModel @Inject constructor(
             is Resource.Success -> {
                 val user = result.data
                 _state.update { it.copy(isGuest = user.isGuest) }
-                _sideEffect.emit(LoginSideEffect.NavigateToHome)
+                _sideEffect.send(LoginSideEffect.NavigateToHome)
             }
             is Resource.Error -> {
-                val message = result.message
+                val message = result.message ?: ""
                 when {
-                    message?.contains("email", ignoreCase = true) == true ||
-                            message?.contains("password", ignoreCase = true) == true -> {
+                    message.contains("email", ignoreCase = true) ||
+                            message.contains("password", ignoreCase = true) -> {
                         _state.update { it.copy(emailErrorResId = R.string.error_invalid_or_password) }
+                    }
+                    message.contains("verify", ignoreCase = true) -> {
+                        _state.update {
+                            it.copy(
+                                generalErrorMessage = message,
+                                generalErrorResId = null
+                            )
+                        }
                     }
                     else -> {
                         _state.update {
                             it.copy(
-                                generalErrorMessage = result.message,
+                                generalErrorMessage = message,
                                 generalErrorResId = null
                             )
                         }
                     }
                 }
             }
-            is Resource.Loading -> {  }
+            is Resource.Loading -> { }
         }
     }
 }

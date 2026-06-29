@@ -11,6 +11,7 @@ import com.tasneem.safwa.features.auth.data.datasource.auth.FirebaseAuthDataSour
 import com.tasneem.safwa.features.auth.data.datasource.auth.FirebaseAuthDataSourceImpl
 import com.tasneem.safwa.features.auth.data.datasource.firestore.FirestoreDataSource
 import com.tasneem.safwa.features.auth.data.datasource.firestore.FirestoreDataSourceImpl
+import com.tasneem.safwa.features.auth.data.local.RegistrationPrefs
 import com.tasneem.safwa.features.auth.data.repository.AuthRepositoryImpl
 import com.tasneem.safwa.features.auth.domain.repository.AuthRepository
 import com.tasneem.safwa.features.auth.domain.usecase.GetCurrentUserUseCase
@@ -19,6 +20,7 @@ import com.tasneem.safwa.features.auth.domain.usecase.GuestLoginUseCase
 import com.tasneem.safwa.features.auth.domain.usecase.LoginUseCase
 import com.tasneem.safwa.features.auth.domain.usecase.LogoutUseCase
 import com.tasneem.safwa.features.auth.domain.usecase.RegisterUseCase
+import com.tasneem.safwa.features.auth.domain.usecase.SendVerificationEmailUseCase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -118,4 +120,10 @@ object AuthUseCaseModule {
     @Singleton
     fun provideLogoutUseCase(repository: AuthRepository): LogoutUseCase =
         LogoutUseCase(repository)
+
+    @Provides
+    @Singleton
+    fun provideSendVerificationEmailUseCase(
+        repository: AuthRepository
+    ): SendVerificationEmailUseCase = SendVerificationEmailUseCase(repository)
 }

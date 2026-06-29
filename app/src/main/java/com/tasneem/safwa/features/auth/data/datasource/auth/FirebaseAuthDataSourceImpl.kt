@@ -27,4 +27,13 @@ class FirebaseAuthDataSourceImpl @Inject constructor(
     override fun getCurrentUserId(): String? = firebaseAuth.currentUser?.uid
 
     override fun getCurrentUserEmail(): String? = firebaseAuth.currentUser?.email
+
+    override suspend fun sendEmailVerification() {
+        val user = firebaseAuth.currentUser ?: throw Exception("No user signed in")
+        user.sendEmailVerification().await()
+    }
+
+    override fun isEmailVerified(): Boolean {
+        return firebaseAuth.currentUser?.isEmailVerified ?: false
+    }
 }

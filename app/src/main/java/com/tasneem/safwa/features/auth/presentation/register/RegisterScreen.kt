@@ -12,9 +12,14 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -23,6 +28,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.tasneem.safwa.R
@@ -37,6 +43,70 @@ fun RegisterScreen(
     state: RegisterState,
     onEvent: (RegisterEvent) -> Unit
 ) {
+    if (state.showVerificationDialog) {
+        AlertDialog(
+            onDismissRequest = { /* Prevent dismiss by tapping outside */ },
+            shape = RoundedCornerShape(24.dp),
+            containerColor = MaterialTheme.colorScheme.surface,
+            icon = {
+                SafwaLogo(
+                    size = 48.dp, // Slightly larger for dialog prominence
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    iconColor = MaterialTheme.colorScheme.primary
+                )
+            },
+            title = {
+                Text(
+                    text = stringResource(R.string.verify_email_title),
+                    style = MaterialTheme.typography.headlineSmall, // Fraunces bold
+                    color = MaterialTheme.colorScheme.onSurface,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            },
+            text = {
+                Text(
+                    text = stringResource(R.string.verify_email_message),
+                    style = MaterialTheme.typography.bodyMedium, // Plus Jakarta Sans
+                    color = MaterialTheme.colorScheme.secondary,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            },
+            confirmButton = {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Button(
+                        onClick = { onEvent(RegisterEvent.LoginClicked) },
+                        modifier = Modifier.fillMaxWidth(), // Makes the button stretch across the dialog
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary
+                        ),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.go_to_login),
+                            style = MaterialTheme.typography.labelLarge
+                        )
+                    }
+
+                    TextButton(
+                        onClick = { onEvent(RegisterEvent.ResendVerification) },
+                        colors = ButtonDefaults.textButtonColors(
+                            contentColor = MaterialTheme.colorScheme.primary
+                        )
+                    ) {
+                        Text(
+                            text = stringResource(R.string.resend_email),
+                            style = MaterialTheme.typography.labelLarge
+                        )
+                    }
+                }
+            }
+        )  }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -48,9 +118,9 @@ fun RegisterScreen(
         Spacer(modifier = Modifier.height(16.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
             SafwaLogo(
-                size = 28.dp,
-                containerColor = Color.Transparent,
-                iconColor = MaterialTheme.colorScheme.onBackground
+                size = 40.dp,
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                iconColor = MaterialTheme.colorScheme.primary
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
