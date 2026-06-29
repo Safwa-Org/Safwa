@@ -1,4 +1,4 @@
-package com.tasneem.safwa.features.authorization.presentation.login
+package com.tasneem.safwa.features.auth.presentation.login
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

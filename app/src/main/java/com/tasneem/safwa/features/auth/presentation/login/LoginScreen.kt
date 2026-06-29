@@ -1,4 +1,4 @@
-package com.tasneem.safwa.features.authorization.presentation.login
+package com.tasneem.safwa.features.auth.presentation.login
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -28,10 +28,10 @@ import com.tasneem.safwa.R
 import com.tasneem.safwa.core.shared_component.CustomButon
 import com.tasneem.safwa.core.shared_component.SafwaLogo
 import com.tasneem.safwa.core.theme.SafwaTheme
-import com.tasneem.safwa.features.authorization.presentation.components.CustomTextField
-import com.tasneem.safwa.features.authorization.presentation.components.ErrorText
-import com.tasneem.safwa.features.authorization.presentation.components.GoogleButton
-import com.tasneem.safwa.features.authorization.presentation.components.OrDivider
+import com.tasneem.safwa.features.auth.presentation.components.CustomTextField
+import com.tasneem.safwa.features.auth.presentation.components.ErrorText
+import com.tasneem.safwa.features.auth.presentation.components.GoogleButton
+import com.tasneem.safwa.features.auth.presentation.components.OrDivider
 
 @Composable
 fun LoginScreen(

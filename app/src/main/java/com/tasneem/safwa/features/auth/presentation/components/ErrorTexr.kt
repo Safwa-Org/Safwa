@@ -1,4 +1,4 @@
-package com.tasneem.safwa.features.authorization.presentation.components
+package com.tasneem.safwa.features.auth.presentation.components
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding

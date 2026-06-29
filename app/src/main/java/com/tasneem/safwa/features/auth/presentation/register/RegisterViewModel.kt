@@ -1,4 +1,4 @@
-package com.tasneem.safwa.features.authorization.presentation.register
+package com.tasneem.safwa.features.auth.presentation.register
 
 import android.util.Patterns
 import androidx.lifecycle.ViewModel

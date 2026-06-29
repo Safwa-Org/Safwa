@@ -9,13 +9,12 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.tasneem.safwa.features.authorization.presentation.login.LoginEvent
-import com.tasneem.safwa.features.authorization.presentation.login.LoginScreen
-import com.tasneem.safwa.features.authorization.presentation.login.LoginSideEffect
-import com.tasneem.safwa.features.authorization.presentation.login.LoginViewModel
-import com.tasneem.safwa.features.authorization.presentation.register.RegisterScreen
-import com.tasneem.safwa.features.authorization.presentation.register.RegisterSideEffect
-import com.tasneem.safwa.features.authorization.presentation.register.RegisterViewModel
+import com.tasneem.safwa.features.auth.presentation.login.LoginScreen
+import com.tasneem.safwa.features.auth.presentation.login.LoginSideEffect
+import com.tasneem.safwa.features.auth.presentation.login.LoginViewModel
+import com.tasneem.safwa.features.auth.presentation.register.RegisterScreen
+import com.tasneem.safwa.features.auth.presentation.register.RegisterSideEffect
+import com.tasneem.safwa.features.auth.presentation.register.RegisterViewModel
 import com.tasneem.safwa.features.onboarding.OnboardingScreen
 
 @Composable

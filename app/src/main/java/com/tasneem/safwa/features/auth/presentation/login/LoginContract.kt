@@ -1,4 +1,4 @@
-package com.tasneem.safwa.features.authorization.presentation.login
+package com.tasneem.safwa.features.auth.presentation.login
 
 data class LoginState(
     val email: String = "",
