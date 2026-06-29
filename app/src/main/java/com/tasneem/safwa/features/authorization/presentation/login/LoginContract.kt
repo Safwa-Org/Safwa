@@ -4,8 +4,10 @@ data class LoginState(
     val email: String = "",
     val password: String = "",
     val isLoading: Boolean = false,
-    val errorMessage: String? = null,
-    val errorResId: Int? = null
+    val emailErrorResId: Int? = null,
+    val passwordErrorResId: Int? = null,
+    val generalErrorMessage: String? = null,
+    val generalErrorResId: Int? = null
 )
 
 sealed interface LoginSideEffect {

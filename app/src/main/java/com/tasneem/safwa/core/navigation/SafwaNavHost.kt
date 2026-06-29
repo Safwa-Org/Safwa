@@ -1,6 +1,7 @@
 package com.tasneem.safwa.core.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -10,7 +11,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.tasneem.safwa.features.authorization.presentation.login.LoginEvent
 import com.tasneem.safwa.features.authorization.presentation.login.LoginScreen
+import com.tasneem.safwa.features.authorization.presentation.login.LoginSideEffect
 import com.tasneem.safwa.features.authorization.presentation.login.LoginViewModel
+import com.tasneem.safwa.features.authorization.presentation.register.RegisterScreen
+import com.tasneem.safwa.features.authorization.presentation.register.RegisterSideEffect
+import com.tasneem.safwa.features.authorization.presentation.register.RegisterViewModel
 import com.tasneem.safwa.features.onboarding.OnboardingScreen
 
 @Composable
@@ -39,22 +44,57 @@ fun SafwaNavHost(
         composable<ScreenRoute.Login> {
             val viewModel: LoginViewModel = viewModel()
             val state by viewModel.state.collectAsState()
+            LaunchedEffect(Unit) {
+                viewModel.sideEffect.collect { effect ->
+                    when (effect) {
+                        LoginSideEffect.NavigateToSignUp -> navController.navigate(ScreenRoute.Register)
+                        LoginSideEffect.NavigateToForgotPassword -> navController.navigate(ScreenRoute.ForgotPassword)
+                        LoginSideEffect.NavigateToHome -> navController.navigate(ScreenRoute.Home) {
+                            popUpTo(ScreenRoute.Login) { inclusive = true }
+                        }
+                        LoginSideEffect.NavigateAsGuest -> navController.navigate(ScreenRoute.Home) {
+                            popUpTo(ScreenRoute.Login) { inclusive = true }
+                        }
+                        is LoginSideEffect.ShowToast -> {
+                        }
+                    }
+                }
+            }
 
             LoginScreen(
                 state = state,
                 onEvent = { event ->
                     viewModel.onEvent(event)
-                    when (event) {
-                        is LoginEvent.SignUpClicked -> navController.navigate(ScreenRoute.Register)
-                        is LoginEvent.ForgotPasswordClicked -> navController.navigate(ScreenRoute.ForgotPassword)
-                        is LoginEvent.GuestClicked -> navController.navigate(ScreenRoute.Home)
-                        else -> { /* Other events handled by ViewModel */ }
-                    }
                 }
             )
         }
 
         composable<ScreenRoute.Register> {
+            val viewModel: RegisterViewModel = viewModel()
+            val state by viewModel.state.collectAsState()
+
+            LaunchedEffect(Unit) {
+                viewModel.sideEffect.collect { effect ->
+                    when (effect) {
+                        RegisterSideEffect.NavigateToLogin -> navController.navigate(ScreenRoute.Login) {
+                            popUpTo(ScreenRoute.Register) { inclusive = true }
+                        }
+                        RegisterSideEffect.NavigateToHome -> navController.navigate(ScreenRoute.Home) {
+                            popUpTo(ScreenRoute.Register) { inclusive = true }
+                        }
+                        is RegisterSideEffect.ShowToast -> {
+                            // Show toast
+                        }
+                    }
+                }
+            }
+
+            RegisterScreen(
+                state = state,
+                onEvent = { event ->
+                    viewModel.onEvent(event)
+                }
+            )
         }
 
         composable<ScreenRoute.ForgotPassword> {

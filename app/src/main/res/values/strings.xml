@@ -26,4 +26,33 @@
     <string name="continue_with_google">Continue with Google</string>
     <string name="hide">Hide</string>
     <string name="show">Show</string>
+
+    <string name="create_account_title">Create Account</string>
+    <string name="sign_up_desc">Start your journey with Safwa</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="sign_up">Sign Up</string>
+    <string name="already_have_account">Already have an account?</string>
+    <string name="first_name">First Name</string>
+    <string name="last_name">Last Name</string>
+    <string name="phone">Phone Number</string>
+    <string name="error_phone_empty">Please enter your phone number</string>
+    <string name="error_phone_invalid">Phone number must contain only digits</string>
+    <string name="error_first_name_empty">Please enter your first name</string>
+    <string name="error_last_name_empty">Please enter your last name</string>
+    <string name="error_email_empty">Please enter your email</string>
+    <string name="error_password_empty">Please enter a password</string>
+    <string name="error_confirm_password_empty">Please confirm your password</string>
+    <string name="error_passwords_do_not_match">Passwords do not match</string>
+    <string name="error_password_too_short">Password must be at least 6 characters</string>
+    <string name="error_name_need_two_parts">Please enter your full first and last name</string>
+    <string name="error_name_letters_only">Name can only contain letters</string>
+    <string name="error_invalid_email">Please enter a valid email address</string>
+    <string name="error_password_no_uppercase">Password must contain at least one uppercase letter</string>
+    <string name="error_password_no_lowercase">Password must contain at least one lowercase letter</string>
+    <string name="error_password_no_digit">Password must contain at least one digit</string>
+
+    <string name="error_password_no_symbol">Password must contain at least one special character</string>
+    <string name="error_phone_egypt_invalid">Please enter a valid Egyptian phone number</string>
+    <string name="error_space">"      "</string>
+
 </resources>

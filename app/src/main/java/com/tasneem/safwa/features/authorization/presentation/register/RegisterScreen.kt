@@ -1,8 +1,7 @@
-package com.tasneem.safwa.features.authorization.presentation.login
+package com.tasneem.safwa.features.authorization.presentation.register
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -22,6 +21,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.tasneem.safwa.R
@@ -34,11 +34,10 @@ import com.tasneem.safwa.features.authorization.presentation.components.GoogleBu
 import com.tasneem.safwa.features.authorization.presentation.components.OrDivider
 
 @Composable
-fun LoginScreen(
-    state: LoginState,
-    onEvent: (LoginEvent) -> Unit
+fun RegisterScreen(
+    state: RegisterState,
+    onEvent: (RegisterEvent) -> Unit
 ) {
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -47,7 +46,6 @@ fun LoginScreen(
         horizontalAlignment = Alignment.Start
     ) {
         Spacer(modifier = Modifier.height(16.dp))
-
         Row(verticalAlignment = Alignment.CenterVertically) {
             SafwaLogo(
                 size = 28.dp,
@@ -66,17 +64,15 @@ fun LoginScreen(
         Spacer(modifier = Modifier.height(64.dp))
 
         Text(
-            text = stringResource(id = R.string.welcome_back),
+            text = stringResource(id = R.string.create_account_title),
             style = MaterialTheme.typography.displaySmall,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onBackground,
             fontFamily = FontFamily.Serif
         )
-
         Spacer(modifier = Modifier.height(8.dp))
-
         Text(
-            text = stringResource(id = R.string.sign_in_desc),
+            text = stringResource(id = R.string.sign_up_desc),
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.secondary
         )
@@ -84,71 +80,91 @@ fun LoginScreen(
         Spacer(modifier = Modifier.height(48.dp))
 
         CustomTextField(
+            label = stringResource(id = R.string.first_name),
+            value = state.firstName,
+            onValueChange = { onEvent(RegisterEvent.FirstNameChanged(it)) }
+        )
+        if (state.firstNameErrorResId != null) {
+            ErrorText(stringResource(state.firstNameErrorResId))
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+
+        CustomTextField(
+            label = stringResource(id = R.string.last_name),
+            value = state.lastName,
+            onValueChange = { onEvent(RegisterEvent.LastNameChanged(it)) }
+        )
+        if (state.lastNameErrorResId != null) {
+            ErrorText(stringResource(state.lastNameErrorResId))
+        }
+        Spacer(modifier = Modifier.height(24.dp))
+
+        CustomTextField(
             label = stringResource(id = R.string.email),
             value = state.email,
-            onValueChange = { onEvent(LoginEvent.EmailChanged(it)) },
-            keyboardType = androidx.compose.ui.text.input.KeyboardType.Email
+            onValueChange = { onEvent(RegisterEvent.EmailChanged(it)) },
+            keyboardType = KeyboardType.Email
         )
         if (state.emailErrorResId != null) {
             ErrorText(stringResource(state.emailErrorResId))
         }
+        Spacer(modifier = Modifier.height(24.dp))
 
+        CustomTextField(
+            label = stringResource(id = R.string.phone),
+            value = state.phone,
+            onValueChange = { onEvent(RegisterEvent.PhoneChanged(it)) },
+            keyboardType = KeyboardType.Phone
+        )
+        if (state.phoneErrorResId != null) {
+            ErrorText(stringResource(state.phoneErrorResId))
+        }
         Spacer(modifier = Modifier.height(24.dp))
 
         CustomTextField(
             label = stringResource(id = R.string.password),
             value = state.password,
-            onValueChange = { onEvent(LoginEvent.PasswordChanged(it)) },
+            onValueChange = { onEvent(RegisterEvent.PasswordChanged(it)) },
             isPassword = true
         )
         if (state.passwordErrorResId != null) {
             ErrorText(stringResource(state.passwordErrorResId))
         }
+        Spacer(modifier = Modifier.height(24.dp))
 
- /*       Box(
-            modifier = Modifier.fillMaxWidth(),
-            contentAlignment = Alignment.CenterEnd
-        ) {
-            Text(
-                text = stringResource(id = R.string.forgot_password),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.primary,
-                fontWeight = FontWeight.Medium,
-                modifier = Modifier
-                    .padding(vertical = 16.dp)
-                    .clickable { onEvent(LoginEvent.ForgotPasswordClicked) }
-            )
-        }*/
-
+        CustomTextField(
+            label = stringResource(id = R.string.confirm_password),
+            value = state.confirmPassword,
+            onValueChange = { onEvent(RegisterEvent.ConfirmPasswordChanged(it)) },
+            isPassword = true
+        )
+        if (state.confirmPasswordErrorResId != null) {
+            ErrorText(stringResource(state.confirmPasswordErrorResId))
+        }
         Spacer(modifier = Modifier.height(32.dp))
 
         CustomButon(
-            title = stringResource(id = R.string.sign_in),
-            onContinue = { onEvent(LoginEvent.LoginClicked) },
-            modifier = Modifier.fillMaxWidth()
+            title = stringResource(id = R.string.sign_up),
+            onContinue = { onEvent(RegisterEvent.RegisterClicked) },
+            modifier = Modifier.fillMaxWidth(),
         )
 
+        if (state.generalErrorResId != null) {
+            ErrorText(stringResource(state.generalErrorResId))
+
+        } else if (state.generalErrorMessage != null) {
+            ErrorText(state.generalErrorMessage)
+        }
 
         Spacer(modifier = Modifier.height(32.dp))
-        OrDivider()
 
+        OrDivider()
         Spacer(modifier = Modifier.height(32.dp))
 
         GoogleButton(
-            onContinue = { onEvent(LoginEvent.GoogleLoginClicked) },
+            onContinue = { onEvent(RegisterEvent.GoogleSignUpClicked) },
             modifier = Modifier.fillMaxWidth()
         )
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-            Text(
-                text = stringResource(id = R.string.continue_as_guest),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.secondary,
-                modifier = Modifier.clickable { onEvent(LoginEvent.GuestClicked) }
-            )
-        }
 
         Spacer(modifier = Modifier.weight(1f))
         Spacer(modifier = Modifier.height(48.dp))
@@ -159,29 +175,28 @@ fun LoginScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = stringResource(id = R.string.new_to_safwa) + " ",
+                text = stringResource(id = R.string.already_have_account) + " ",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.secondary
             )
             Text(
-                text = stringResource(id = R.string.create_account),
+                text = stringResource(id = R.string.sign_in),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.primary,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.clickable { onEvent(LoginEvent.SignUpClicked) }
+                modifier = Modifier.clickable { onEvent(RegisterEvent.LoginClicked) }
             )
         }
-
         Spacer(modifier = Modifier.height(16.dp))
     }
 }
 
 @Preview(showBackground = true)
 @Composable
-fun LoginScreenPreview() {
+fun RegisterScreenPreview() {
     SafwaTheme {
-        LoginScreen(
-            state = LoginState(),
+        RegisterScreen(
+            state = RegisterState(),
             onEvent = {}
         )
     }
