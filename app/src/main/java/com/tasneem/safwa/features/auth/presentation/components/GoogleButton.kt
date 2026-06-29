@@ -1,4 +1,4 @@
-package com.tasneem.safwa.ui.auth.presentation.components
+package com.tasneem.safwa.features.auth.presentation.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
@@ -17,8 +17,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.tasneem.safwa.R
 
 @Composable
 fun GoogleButton(
@@ -43,13 +45,13 @@ fun GoogleButton(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
-                painter = androidx.compose.ui.res.painterResource(id = com.tasneem.safwa.R.drawable.ic_google),
-                contentDescription = "Google Icon",
+                painter = androidx.compose.ui.res.painterResource(id = R.drawable.ic_google),
+                contentDescription = stringResource(id = R.string.google_icon_desc),
                 tint = Color.Unspecified
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = "Continue with Google",
+                text = stringResource(id = R.string.continue_with_google),
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurface
             )

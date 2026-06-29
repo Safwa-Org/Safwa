@@ -1,4 +1,4 @@
-package com.tasneem.safwa.ui.auth.presentation.login
+package com.tasneem.safwa.features.auth.presentation.login
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -9,12 +9,14 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import com.tasneem.safwa.R
 
 data class LoginState(
     val email: String = "",
     val password: String = "",
     val isLoading: Boolean = false,
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val errorResId: Int? = null
 )
 
 sealed interface LoginSideEffect {
@@ -22,7 +24,7 @@ sealed interface LoginSideEffect {
     object NavigateToForgotPassword : LoginSideEffect
     object NavigateToHome : LoginSideEffect
     object NavigateAsGuest : LoginSideEffect
-    data class ShowToast(val message: String) : LoginSideEffect
+    data class ShowToast(val message: String? = null, val messageResId: Int? = null) : LoginSideEffect
 }
 
 sealed interface LoginEvent {
@@ -44,10 +46,10 @@ class LoginViewModel : ViewModel() {
     fun onEvent(event: LoginEvent) {
         when (event) {
             is LoginEvent.EmailChanged -> {
-                _state.update { it.copy(email = event.email, errorMessage = null) }
+                _state.update { it.copy(email = event.email, errorMessage = null, errorResId = null) }
             }
             is LoginEvent.PasswordChanged -> {
-                _state.update { it.copy(password = event.password, errorMessage = null) }
+                _state.update { it.copy(password = event.password, errorMessage = null, errorResId = null) }
             }
             LoginEvent.LoginClicked -> {
                 executeLogin()
@@ -72,12 +74,12 @@ class LoginViewModel : ViewModel() {
         val currentPassword = _state.value.password
 
         if (currentEmail.isBlank() || currentPassword.isBlank()) {
-            _state.update { it.copy(errorMessage = "Fields cannot be empty") }
+            _state.update { it.copy(errorResId = R.string.error_fields_empty) }
             return
         }
 
         viewModelScope.launch {
-            _state.update { it.copy(isLoading = true, errorMessage = null) }
+            _state.update { it.copy(isLoading = true, errorMessage = null, errorResId = null) }
 
             try {
                 _sideEffect.send(LoginSideEffect.NavigateToHome)

@@ -1,3 +1,29 @@
 <resources>
     <string name="app_name">Safwa</string>
+    <string name="onboarding_welcome_title">WELCOME TO SAFWA</string>
+    <string name="onboarding_welcome_heading">Curated luxury,\nquietly delivered.</string>
+    <string name="onboarding_welcome_desc">A hand-picked selection of fragrances, leather, and timepieces from ateliers we trust.</string>
+    <string name="onboarding_collection_title">EXCLUSIVE COLLECTION</string>
+    <string name="onboarding_collection_heading">Discover the\nfinest craft.</string>
+    <string name="onboarding_collection_desc">Explore our exclusive collections crafted with precision and passion.</string>
+    <string name="onboarding_delivery_title">FAST DELIVERY</string>
+    <string name="onboarding_delivery_heading">Swift and secure\nto your door.</string>
+    <string name="onboarding_delivery_desc">Enjoy peace of mind with our secure and fast delivery services.</string>
+    <string name="skip">Skip</string>
+    <string name="continue_text">Continue</string>
+    <string name="error_fields_empty">Fields cannot be empty</string>
+    <string name="welcome_back">Welcome back</string>
+    <string name="sign_in_desc">Sign in to continue your curated experience.</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="forgot_password">Forgot password?</string>
+    <string name="sign_in">Sign in</string>
+    <string name="continue_as_guest">Continue as guest</string>
+    <string name="new_to_safwa">New to Safwa? </string>
+    <string name="create_account">Create account</string>
+    <string name="or">OR</string>
+    <string name="google_icon_desc">Google Icon</string>
+    <string name="continue_with_google">Continue with Google</string>
+    <string name="hide">Hide</string>
+    <string name="show">Show</string>
 </resources>

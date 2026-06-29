@@ -1,4 +1,4 @@
-package com.tasneem.safwa.ui.onboarding.components
+package com.tasneem.safwa.features.onboarding.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -22,6 +22,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.res.stringResource
+import com.tasneem.safwa.R
 
 @Composable
 fun OnboardingBottomBar(
@@ -63,7 +65,7 @@ fun OnboardingBottomBar(
             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
         ) {
             Text(
-                text = "Continue",
+                text = stringResource(id = R.string.continue_text),
                 style = MaterialTheme.typography.titleMedium,
                 color = Color.White
             )

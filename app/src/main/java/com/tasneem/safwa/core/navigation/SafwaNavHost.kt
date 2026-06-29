@@ -8,10 +8,10 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.tasneem.safwa.ui.auth.presentation.login.LoginEvent
-import com.tasneem.safwa.ui.auth.presentation.login.LoginScreen
-import com.tasneem.safwa.ui.auth.presentation.login.LoginViewModel
-import com.tasneem.safwa.ui.onboarding.OnboardingScreen
+import com.tasneem.safwa.features.auth.presentation.login.LoginEvent
+import com.tasneem.safwa.features.auth.presentation.login.LoginScreen
+import com.tasneem.safwa.features.auth.presentation.login.LoginViewModel
+import com.tasneem.safwa.features.onboarding.OnboardingScreen
 
 @Composable
 fun SafwaNavHost(
