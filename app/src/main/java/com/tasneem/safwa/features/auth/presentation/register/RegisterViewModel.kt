@@ -144,11 +144,11 @@ class RegisterViewModel : ViewModel() {
         }
 
         val phoneRegex = Regex("^(010|011|012|015)[0-9]{8}$")
-        if (phone.isBlank()) {
+        /*if (phone.isBlank()) {
             _state.update { it.copy(phoneErrorResId = R.string.error_phone_empty) }
             return
-        }
-        if (!phone.matches(phoneRegex)) {
+        }*/
+        if (!phone.isBlank() && !phone.matches(phoneRegex)) {
             _state.update { it.copy(phoneErrorResId = R.string.error_phone_egypt_invalid) }
             return
         }
