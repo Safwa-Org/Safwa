@@ -1,4 +1,4 @@
-package com.tasneem.safwa.features.auth.presentation.login
+package com.tasneem.safwa.features.authorization.presentation.login
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -28,9 +28,9 @@ import com.tasneem.safwa.R
 import com.tasneem.safwa.core.shared_component.CustomButon
 import com.tasneem.safwa.core.shared_component.SafwaLogo
 import com.tasneem.safwa.core.theme.SafwaTheme
-import com.tasneem.safwa.features.auth.presentation.components.CustomTextField
-import com.tasneem.safwa.features.auth.presentation.components.GoogleButton
-import com.tasneem.safwa.features.auth.presentation.components.OrDivider
+import com.tasneem.safwa.features.authorization.presentation.components.CustomTextField
+import com.tasneem.safwa.features.authorization.presentation.components.GoogleButton
+import com.tasneem.safwa.features.authorization.presentation.components.OrDivider
 
 @Composable
 fun LoginScreen(
@@ -98,7 +98,7 @@ fun LoginScreen(
             isPassword = true
         )
         
-        Box(
+ /*       Box(
             modifier = Modifier.fillMaxWidth(),
             contentAlignment = Alignment.CenterEnd
         ) {
@@ -111,9 +111,9 @@ fun LoginScreen(
                     .padding(vertical = 16.dp)
                     .clickable { onEvent(LoginEvent.ForgotPasswordClicked) }
             )
-        }
+        }*/
         
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(32.dp))
         
         CustomButon(
             title = stringResource(id = R.string.sign_in),
@@ -152,7 +152,7 @@ fun LoginScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = stringResource(id = R.string.new_to_safwa),
+                text = stringResource(id = R.string.new_to_safwa) + " ",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.secondary
             )

@@ -1,4 +1,4 @@
-package com.tasneem.safwa.features.auth.presentation.components
+package com.tasneem.safwa.features.authorization.presentation.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
