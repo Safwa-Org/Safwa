@@ -1,13 +1,10 @@
-package com.tasneem.safwa.features.wishlist.presentation.productdetails.presentation.viewmodel
+package com.tasneem.safwa.features.productdetails.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.android.gms.tasks.Tasks.call
-import com.tasneem.safwa.features.wishlist.domain.model.Product
-import com.tasneem.safwa.features.wishlist.presentation.productdetails.presentation.state.mapper.toUiModel
-import com.tasneem.safwa.features.wishlist.presentation.productdetails.presentation.state.ProductDetailsEffect
-import com.tasneem.safwa.features.wishlist.presentation.productdetails.presentation.state.ProductDetailsEvent
-import com.tasneem.safwa.features.wishlist.presentation.productdetails.presentation.state.ProductDetailsState
+import com.tasneem.safwa.features.productdetails.presentation.state.ProductDetailsEffect
+import com.tasneem.safwa.features.productdetails.presentation.state.ProductDetailsEvent
+import com.tasneem.safwa.features.productdetails.presentation.state.ProductDetailsState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
