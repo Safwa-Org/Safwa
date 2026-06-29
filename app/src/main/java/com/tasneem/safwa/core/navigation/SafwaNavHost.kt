@@ -11,16 +11,18 @@ import androidx.navigation.compose.rememberNavController
 import com.tasneem.safwa.features.auth.presentation.login.LoginEvent
 import com.tasneem.safwa.features.auth.presentation.login.LoginScreen
 import com.tasneem.safwa.features.auth.presentation.login.LoginViewModel
-import com.tasneem.safwa.features.wishlist.presentation.WishlistScreen
 import com.tasneem.safwa.features.onboarding.OnboardingScreen
 import com.tasneem.safwa.features.search.presentation.SearchScreen
+import com.tasneem.safwa.features.wishlist.presentation.WishlistScreen
+import com.tasneem.safwa.features.wishlist.presentation.productdetails.presentation.view.ProductDetailsScreen
+
 @Composable
 fun SafwaNavHost(
     navController: NavHostController = rememberNavController(),
 ) {
     NavHost(
         navController = navController,
-        startDestination = ScreenRoute.Onboarding
+        startDestination = ScreenRoute.ProductDetails
     ) {
 
         composable<ScreenRoute.Splash> {
@@ -76,6 +78,9 @@ fun SafwaNavHost(
         }
 
         composable<ScreenRoute.ProductDetails> {
+            ProductDetailsScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
         }
 
         composable<ScreenRoute.Cart> {
