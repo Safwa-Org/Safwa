@@ -35,7 +35,7 @@ fun EmptyWishlistState(modifier: Modifier = Modifier) {
         ) {
             Icon(
                 imageVector = Icons.Outlined.FavoriteBorder,
-                contentDescription = "Empty Wishlist",
+                contentDescription = stringResource(id = R.string.empty_wishlist),
                 modifier = Modifier.size(100.dp),
                 tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
             )
@@ -48,7 +48,7 @@ fun EmptyWishlistState(modifier: Modifier = Modifier) {
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Explore our products and add your favorites here!",
+                text = stringResource(id = R.string.explore_products),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.secondary,
                 textAlign = TextAlign.Center

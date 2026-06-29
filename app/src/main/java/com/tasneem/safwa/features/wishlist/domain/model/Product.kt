@@ -10,5 +10,4 @@ data class Product(
     val price: String,
     val currency: String,
     val imageUrl: String,
-    val isFavorite: Boolean = false
 )

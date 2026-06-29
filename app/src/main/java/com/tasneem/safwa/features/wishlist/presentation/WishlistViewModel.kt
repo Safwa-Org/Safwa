@@ -33,7 +33,6 @@ class WishlistViewModel @Inject constructor() : ViewModel() {
                         price = "120.00",
                         currency = "USD",
                         imageUrl = "https://images.unsplash.com/photo-1542291026-7eec264c27ff",
-                        isFavorite = true
                     ),
                     Product(
                         id = "2",
@@ -45,7 +44,6 @@ class WishlistViewModel @Inject constructor() : ViewModel() {
                         price = "85.00",
                         currency = "USD",
                         imageUrl = "https://images.unsplash.com/photo-1524805444758-089113d48a6d",
-                        isFavorite = true
                     ),
                     Product(
                         id = "3",
@@ -57,7 +55,6 @@ class WishlistViewModel @Inject constructor() : ViewModel() {
                         price = "299.99",
                         currency = "USD",
                         imageUrl = "https://images.unsplash.com/photo-1505740420928-5e560c06d30e",
-                        isFavorite = true
                     )
                 )
                 
