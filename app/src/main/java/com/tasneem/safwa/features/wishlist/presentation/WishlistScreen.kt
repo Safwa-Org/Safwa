@@ -48,21 +48,14 @@ fun WishlistContent(
     onIntent: (WishlistIntent) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Scaffold(
-        modifier = modifier.fillMaxSize(),
-        topBar = {
-            SafwaTopAppBar(
-                title = stringResource(id = R.string.wishlist),
-                onBackClick = {},
-                onCartClick = {}
-            )
-        }
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+    ) {
+        SafwaTopAppBar(
+            title = stringResource(id = R.string.wishlist),
+            onCartClick = {}
+        )
             CategoriesRow(
                 categories = state.categories,
                 selectedCategory = state.selectedCategory,
@@ -91,7 +84,6 @@ fun WishlistContent(
             }
         }
     }
-}
 
 @Preview(showBackground = true)
 @Composable

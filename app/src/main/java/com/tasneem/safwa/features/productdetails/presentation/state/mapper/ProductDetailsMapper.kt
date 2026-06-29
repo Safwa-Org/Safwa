@@ -1,4 +1,4 @@
-package com.tasneem.safwa.features.wishlist.presentation.productdetails.presentation.state.mapper
+package com.tasneem.safwa.features.productdetails.presentation.state.mapper
 
 import com.tasneem.safwa.features.wishlist.domain.model.Product
 

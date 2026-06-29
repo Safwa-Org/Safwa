@@ -18,9 +18,9 @@ import com.tasneem.safwa.features.auth.presentation.register.RegisterSideEffect
 import com.tasneem.safwa.features.auth.presentation.register.RegisterViewModel
 import com.tasneem.safwa.features.wishlist.presentation.WishlistScreen
 import com.tasneem.safwa.features.onboarding.OnboardingScreen
+import com.tasneem.safwa.features.productdetails.presentation.view.ProductDetailsScreen
 import com.tasneem.safwa.features.search.presentation.SearchScreen
 import com.tasneem.safwa.features.wishlist.presentation.WishlistScreen
-import com.tasneem.safwa.features.wishlist.presentation.productdetails.presentation.view.ProductDetailsScreen
 
 @Composable
 fun SafwaNavHost(
@@ -79,6 +79,14 @@ fun SafwaNavHost(
         }
 
         composable<ScreenRoute.Home> {
+            MainScreen(
+                onNavigateToProductDetails = {
+                    navController.navigate(ScreenRoute.ProductDetails)
+                },
+                onNavigateToCart = {
+                    navController.navigate(ScreenRoute.Cart)
+                }
+            )
         }
 
         composable<ScreenRoute.Search> {

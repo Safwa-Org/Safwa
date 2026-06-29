@@ -127,6 +127,10 @@ class LoginViewModel @Inject constructor(
             handleAuthResult(result)
         }
     }
+//        if (currentEmail.isBlank() || currentPassword.isBlank()) {
+//            _state.update { it.copy(errorResId = R.string.error_fields_empty) }
+//            return
+//        }
 
     private fun executeGuestLogin() {
         viewModelScope.launch {

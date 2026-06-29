@@ -1,4 +1,4 @@
-package com.tasneem.safwa.features.wishlist.presentation.productdetails.presentation.state
+package com.tasneem.safwa.features.productdetails.presentation.state
 
 sealed interface ProductDetailsEvent {
     data class LoadProduct(val productId: String) : ProductDetailsEvent

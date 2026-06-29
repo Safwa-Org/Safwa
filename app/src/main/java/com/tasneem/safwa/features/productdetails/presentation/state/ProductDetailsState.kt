@@ -1,6 +1,6 @@
-package com.tasneem.safwa.features.wishlist.presentation.productdetails.presentation.state
+package com.tasneem.safwa.features.productdetails.presentation.state
 
-import com.tasneem.safwa.features.wishlist.presentation.productdetails.presentation.state.mapper.ProductUiModel
+import com.tasneem.safwa.features.productdetails.presentation.state.mapper.ProductUiModel
 
 data class ProductDetailsState(
     val isLoading: Boolean = false,
