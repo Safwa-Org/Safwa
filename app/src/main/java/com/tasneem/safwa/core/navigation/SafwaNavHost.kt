@@ -3,6 +3,7 @@ package com.tasneem.safwa.core.navigation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -11,7 +12,9 @@ import androidx.navigation.compose.rememberNavController
 import com.tasneem.safwa.features.auth.presentation.login.LoginEvent
 import com.tasneem.safwa.features.auth.presentation.login.LoginScreen
 import com.tasneem.safwa.features.auth.presentation.login.LoginViewModel
+import com.tasneem.safwa.features.wishlist.presentation.WishlistScreen
 import com.tasneem.safwa.features.onboarding.OnboardingScreen
+import com.tasneem.safwa.features.wishlist.presentation.WishlistViewModel
 
 @Composable
 fun SafwaNavHost(
@@ -67,6 +70,13 @@ fun SafwaNavHost(
         }
 
         composable<ScreenRoute.Wishlist> {
+            val viewModel: WishlistViewModel = hiltViewModel()
+            val state by viewModel.state.collectAsState()
+
+            WishlistScreen(
+                state = state,
+                onEvent = viewModel::onEvent
+            )
         }
 
         composable<ScreenRoute.Profile> {

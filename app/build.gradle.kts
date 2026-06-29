@@ -45,7 +45,9 @@ android {
 dependencies {
     implementation(project(":network"))
     implementation(libs.hilt.android)
+    implementation(libs.hilt.navigation.compose)
     ksp(libs.hilt.android.compiler)
+    ksp("org.jetbrains.kotlin:kotlin-metadata-jvm:2.4.0")
     implementation(libs.androidx.compose.foundation.layout)
     val room_version = "2.8.4"
     implementation("androidx.room:room-runtime:$room_version")
@@ -57,6 +59,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.ui.google.fonts)
+    implementation("androidx.compose.material:material-icons-extended")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     testImplementation(libs.junit)
@@ -84,4 +87,8 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.kotlinx.serialization.json)
+
+    // Coil (Image Loading)
+    implementation("io.coil-kt.coil3:coil-compose:3.5.0")
+    implementation("io.coil-kt.coil3:coil-network-okhttp:3.5.0")
 }
