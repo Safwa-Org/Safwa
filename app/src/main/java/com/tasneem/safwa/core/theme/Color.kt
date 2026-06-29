@@ -43,3 +43,6 @@ val ErrorDark = Color(0xFFF87171)
 val OnErrorDark = Color.Black
 
 val OutlineDark = Color(0xFF4B5563)
+
+// additional colors
+val yellow = Color(0xFFDDB049)
