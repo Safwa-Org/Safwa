@@ -1,4 +1,4 @@
-package com.tasneem.safwa.features.wishlist.presentation.productdetails.presentation.view.component
+package com.tasneem.safwa.features.productdetails.presentation.view.component
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background

@@ -1,4 +1,4 @@
-package com.tasneem.safwa.features.wishlist.presentation.productdetails.presentation.view
+package com.tasneem.safwa.features.productdetails.presentation.view
 
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Box
@@ -24,15 +24,15 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.tasneem.safwa.core.theme.SafwaTheme
-import com.tasneem.safwa.features.wishlist.presentation.productdetails.presentation.state.ProductDetailsEffect
-import com.tasneem.safwa.features.wishlist.presentation.productdetails.presentation.state.ProductDetailsEvent
-import com.tasneem.safwa.features.wishlist.presentation.productdetails.presentation.state.ProductDetailsState
-import com.tasneem.safwa.features.wishlist.presentation.productdetails.presentation.state.mapper.ProductUiModel
-import com.tasneem.safwa.features.wishlist.presentation.productdetails.presentation.view.component.ProductDescriptionSection
-import com.tasneem.safwa.features.wishlist.presentation.productdetails.presentation.view.component.ProductImageHeader
-import com.tasneem.safwa.features.wishlist.presentation.productdetails.presentation.view.component.ProductInfoSection
-import com.tasneem.safwa.features.wishlist.presentation.productdetails.presentation.view.component.StickyBottomActionBar
-import com.tasneem.safwa.features.wishlist.presentation.productdetails.presentation.viewmodel.ProductDetailsViewModel
+import com.tasneem.safwa.features.productdetails.presentation.state.ProductDetailsEffect
+import com.tasneem.safwa.features.productdetails.presentation.state.ProductDetailsEvent
+import com.tasneem.safwa.features.productdetails.presentation.state.ProductDetailsState
+import com.tasneem.safwa.features.productdetails.presentation.state.mapper.ProductUiModel
+import com.tasneem.safwa.features.productdetails.presentation.view.component.ProductDescriptionSection
+import com.tasneem.safwa.features.productdetails.presentation.view.component.ProductImageHeader
+import com.tasneem.safwa.features.productdetails.presentation.view.component.ProductInfoSection
+import com.tasneem.safwa.features.productdetails.presentation.view.component.StickyBottomActionBar
+import com.tasneem.safwa.features.productdetails.presentation.viewmodel.ProductDetailsViewModel
 
 @Composable
 fun ProductDetailsScreen(
