@@ -50,7 +50,7 @@ fun ProductCard(
                     .background(Color.LightGray.copy(alpha = 0.2f))
             ) {
                 AsyncImage(
-                    model = product.imageUrl.ifEmpty { "https://cdn.shopify.com/s/files/1/0694/2579/1019/files/snowboard_purple_hydrogen.png?v=1782078977" },
+                    model = product.imageUrl.firstOrNull() ?: "https://cdn.shopify.com/s/files/1/0694/2579/1019/files/snowboard_purple_hydrogen.png?v=1782078977",
                     contentDescription = product.title,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()
@@ -103,8 +103,8 @@ fun ProductCardPreview() {
         productType = "Snowboard",
         price = "199.99",
         currency = "USD",
-        imageUrl = "",
-        isFavorite = false
+        imageUrl = listOf(""),
+        imageAltText = listOf("")
     )
     ProductCard(
         product = sampleProduct,

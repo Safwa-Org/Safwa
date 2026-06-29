@@ -94,7 +94,8 @@ fun WishlistScreenPreview() {
             "Snowboard",
             "199.99",
             "USD",
-            ""
+            listOf(""),
+            listOf("")
         ),
         Product(
             "2",
@@ -105,7 +106,8 @@ fun WishlistScreenPreview() {
             "Snowboard",
             "249.99",
             "USD",
-            ""
+            listOf(""),
+            listOf("")
         ),
         Product(
             "3",
@@ -116,7 +118,8 @@ fun WishlistScreenPreview() {
             "Snowboard",
             "299.99",
             "USD",
-            ""
+            listOf(""),
+            listOf("")
         )
     )
     WishlistScreen(
