@@ -1,4 +1,4 @@
-package com.tasneem.safwa.ui.onboarding.components
+package com.tasneem.safwa.features.onboarding.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -18,9 +18,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.tasneem.safwa.core.models.OnboardingPage
+import com.tasneem.safwa.features.onboarding.OnboardingPage
 
 @Composable
 fun OnboardingPageItem(page: OnboardingPage, modifier: Modifier = Modifier) {
@@ -33,7 +34,7 @@ fun OnboardingPageItem(page: OnboardingPage, modifier: Modifier = Modifier) {
         ) {
             Image(
                 painter = painterResource(id = page.imageRes),
-                contentDescription = page.title,
+                contentDescription = stringResource(id = page.titleRes),
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
             )
@@ -44,7 +45,7 @@ fun OnboardingPageItem(page: OnboardingPage, modifier: Modifier = Modifier) {
                     .padding(horizontal = 12.dp, vertical = 6.dp)
             ) {
                 Text(
-                    text = page.tag,
+                    text = stringResource(id = page.tagRes),
                     style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.Bold,
                     color = Color.Black
@@ -55,13 +56,13 @@ fun OnboardingPageItem(page: OnboardingPage, modifier: Modifier = Modifier) {
         Spacer(modifier = Modifier.height(48.dp))
 
         Text(
-            text = page.title,
+            text = stringResource(id = page.titleRes),
             style = MaterialTheme.typography.headlineLarge,
             color = MaterialTheme.colorScheme.onBackground
         )
         Spacer(modifier = Modifier.height(16.dp))
         Text(
-            text = page.description,
+            text = stringResource(id = page.descriptionRes),
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
             lineHeight = MaterialTheme.typography.bodyLarge.fontSize * 1.5f

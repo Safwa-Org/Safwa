@@ -1,4 +1,4 @@
-package com.tasneem.safwa.ui.auth.presentation.login
+package com.tasneem.safwa.features.auth.presentation.login
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -19,16 +19,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.tasneem.safwa.R
 import com.tasneem.safwa.core.shared_component.CustomButon
 import com.tasneem.safwa.core.shared_component.SafwaLogo
 import com.tasneem.safwa.core.theme.SafwaTheme
-import com.tasneem.safwa.ui.auth.presentation.components.CustomTextField
-import com.tasneem.safwa.ui.auth.presentation.components.GoogleButton
-import com.tasneem.safwa.ui.auth.presentation.components.OrDivider
+import com.tasneem.safwa.features.auth.presentation.components.CustomTextField
+import com.tasneem.safwa.features.auth.presentation.components.GoogleButton
+import com.tasneem.safwa.features.auth.presentation.components.OrDivider
 
 @Composable
 fun LoginScreen(
@@ -53,7 +55,7 @@ fun LoginScreen(
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = "Safwa",
+                text = stringResource(id = R.string.app_name),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
                 fontFamily = FontFamily.Serif
@@ -63,7 +65,7 @@ fun LoginScreen(
         Spacer(modifier = Modifier.height(64.dp))
         
         Text(
-            text = "Welcome back",
+            text = stringResource(id = R.string.welcome_back),
             style = MaterialTheme.typography.displaySmall,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onBackground,
@@ -73,7 +75,7 @@ fun LoginScreen(
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = "Sign in to continue your curated experience.",
+            text = stringResource(id = R.string.sign_in_desc),
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.secondary
         )
@@ -81,17 +83,19 @@ fun LoginScreen(
         Spacer(modifier = Modifier.height(48.dp))
         
         CustomTextField(
-            label = "Email",
+            label = stringResource(id = R.string.email),
             value = state.email,
-            onValueChange = { onEvent(LoginEvent.EmailChanged(it)) }
+            onValueChange = { onEvent(LoginEvent.EmailChanged(it)) },
+            keyboardType = androidx.compose.ui.text.input.KeyboardType.Email
         )
         
         Spacer(modifier = Modifier.height(24.dp))
         
         CustomTextField(
-            label = "Password",
+            label = stringResource(id = R.string.password),
             value = state.password,
-            onValueChange = { onEvent(LoginEvent.PasswordChanged(it)) }
+            onValueChange = { onEvent(LoginEvent.PasswordChanged(it)) },
+            isPassword = true
         )
         
         Box(
@@ -99,7 +103,7 @@ fun LoginScreen(
             contentAlignment = Alignment.CenterEnd
         ) {
             Text(
-                text = "Forgot password?",
+                text = stringResource(id = R.string.forgot_password),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.primary,
                 fontWeight = FontWeight.Medium,
@@ -112,7 +116,7 @@ fun LoginScreen(
         Spacer(modifier = Modifier.height(16.dp))
         
         CustomButon(
-            title = "Sign in",
+            title = stringResource(id = R.string.sign_in),
             onContinue = { onEvent(LoginEvent.LoginClicked) },
             modifier = Modifier.fillMaxWidth()
         )
@@ -132,7 +136,7 @@ fun LoginScreen(
         
         Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
             Text(
-                text = "Continue as guest",
+                text = stringResource(id = R.string.continue_as_guest),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.secondary,
                 modifier = Modifier.clickable { onEvent(LoginEvent.GuestClicked) }
@@ -148,12 +152,12 @@ fun LoginScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "New to Safwa? ",
+                text = stringResource(id = R.string.new_to_safwa),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.secondary
             )
             Text(
-                text = "Create account",
+                text = stringResource(id = R.string.create_account),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.primary,
                 fontWeight = FontWeight.Bold,

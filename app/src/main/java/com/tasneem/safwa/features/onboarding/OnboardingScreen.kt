@@ -1,4 +1,4 @@
-package com.tasneem.safwa.ui.onboarding
+package com.tasneem.safwa.features.onboarding
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -13,10 +13,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.tasneem.safwa.core.models.onboardingPages
-import com.tasneem.safwa.ui.onboarding.components.OnboardingBottomBar
-import com.tasneem.safwa.ui.onboarding.components.OnboardingPageItem
-import com.tasneem.safwa.ui.onboarding.components.OnboardingTopBar
+import com.tasneem.safwa.features.onboarding.components.OnboardingBottomBar
+import com.tasneem.safwa.features.onboarding.components.OnboardingPageItem
+import com.tasneem.safwa.features.onboarding.components.OnboardingTopBar
 import kotlinx.coroutines.launch
 
 @Composable

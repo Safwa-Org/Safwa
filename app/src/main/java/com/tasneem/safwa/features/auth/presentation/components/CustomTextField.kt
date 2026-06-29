@@ -1,4 +1,4 @@
-package com.tasneem.safwa.ui.auth.presentation.components
+package com.tasneem.safwa.features.auth.presentation.components
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -24,6 +24,8 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import com.tasneem.safwa.R
 
 @Composable
 fun CustomTextField(
@@ -31,7 +33,8 @@ fun CustomTextField(
     value: String,
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
-    isPassword: Boolean = label.contains("Password", ignoreCase = true)
+    isPassword: Boolean = false,
+    keyboardType: KeyboardType = KeyboardType.Text
 ) {
     var isPasswordVisible by remember { mutableStateOf(false) }
 
@@ -54,11 +57,11 @@ fun CustomTextField(
             )
         },
         visualTransformation = if (isPassword && !isPasswordVisible) PasswordVisualTransformation() else VisualTransformation.None,
-        keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Unspecified, autoCorrectEnabled = false, keyboardType = if (isPassword) KeyboardType.Password else if (label.contains("Email", ignoreCase = true)) KeyboardType.Email else KeyboardType.Text, imeAction = ImeAction.Unspecified,platformImeOptions = null, showKeyboardOnFocus = null,hintLocales = null),
+        keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Unspecified, autoCorrectEnabled = false, keyboardType = if (isPassword) KeyboardType.Password else keyboardType, imeAction = ImeAction.Unspecified,platformImeOptions = null, showKeyboardOnFocus = null,hintLocales = null),
         trailingIcon = if (isPassword) {
             {
                 Text(
-                    text = if (isPasswordVisible) "Hide" else "Show",
+                    text = if (isPasswordVisible) stringResource(id = R.string.hide) else stringResource(id = R.string.show),
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier
@@ -87,7 +90,8 @@ fun CustomTextFieldPreview() {
     CustomTextField(
         label = "Email",
         value = "",
-        onValueChange = {}
+        onValueChange = {},
+        keyboardType = KeyboardType.Email
     )
 }
 
@@ -97,6 +101,7 @@ fun PasswordTextFieldPreview() {
     CustomTextField(
         label = "Password",
         value = "password123",
-        onValueChange = {}
+        onValueChange = {},
+        isPassword = true
     )
 }
