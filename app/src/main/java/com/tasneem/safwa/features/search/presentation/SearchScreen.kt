@@ -21,11 +21,30 @@ import com.tasneem.safwa.features.search.presentation.components.SearchInput
 import com.tasneem.safwa.features.wishlist.presentation.components.CategoriesRow
 import com.tasneem.safwa.features.wishlist.presentation.components.ProductCard
 
-@OptIn(ExperimentalMaterial3Api::class)
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.hilt.navigation.compose.hiltViewModel
+
 @Composable
 fun SearchScreen(
+    modifier: Modifier = Modifier,
+    viewModel: SearchViewModel = hiltViewModel()
+
+) {
+    val state by viewModel.state.collectAsState()
+    
+    SearchContent(
+        state = state,
+        onIntent = viewModel::onIntent,
+        modifier = modifier
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SearchContent(
     state: SearchState,
-    onEvent: (SearchEvent) -> Unit,
+    onIntent: (SearchIntent) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -45,15 +64,15 @@ fun SearchScreen(
         ) {
             SearchInput(
                 query = state.searchQuery,
-                onQueryChanged = { onEvent(SearchEvent.QueryChanged(it)) },
-                onExecuteSearch = { onEvent(SearchEvent.ExecuteSearch) },
+                onQueryChanged = { onIntent(SearchIntent.QueryChanged(it)) },
+                onExecuteSearch = { onIntent(SearchIntent.ExecuteSearch) },
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
             )
 
             CategoriesRow(
                 categories = state.categories,
                 selectedCategory = state.selectedCategory,
-                onCategorySelected = { onEvent(SearchEvent.FilterSelected(it)) }
+                onCategorySelected = { onIntent(SearchIntent.FilterSelected(it)) }
             )
 
             if (state.filteredProducts.isEmpty()) {
@@ -70,8 +89,8 @@ fun SearchScreen(
                         ProductCard(
                             product = product,
                             isFavorite = false,
-                            onToggleFavorite = { onEvent(SearchEvent.ToggleFavorite(product)) },
-                            onClick = { onEvent(SearchEvent.ProductClicked(product)) }
+                            onToggleFavorite = { onIntent(SearchIntent.ToggleFavorite(product)) },
+                            onClick = { onIntent(SearchIntent.ProductClicked(product)) }
                         )
                     }
                 }

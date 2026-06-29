@@ -26,24 +26,24 @@ class SearchViewModel @Inject constructor() : ViewModel() {
         ) }
     }
 
-    fun onEvent(event: SearchEvent) {
-        when (event) {
-            is SearchEvent.QueryChanged -> {
+    fun onIntent(intent: SearchIntent) {
+        when (intent) {
+            is SearchIntent.QueryChanged -> {
                 _state.update { currentState ->
-                    currentState.copy(searchQuery = event.query)
+                    currentState.copy(searchQuery = intent.query)
                 }
                 filterProducts()
             }
-            is SearchEvent.FilterSelected -> {
+            is SearchIntent.FilterSelected -> {
                 _state.update { currentState ->
-                    currentState.copy(selectedCategory = event.category)
+                    currentState.copy(selectedCategory = intent.category)
                 }
                 filterProducts()
             }
-            is SearchEvent.ToggleFavorite -> {
+            is SearchIntent.ToggleFavorite -> {
                 _state.update { currentState ->
                     val newProducts = currentState.products.map { 
-                        if (it.id == event.product.id) {
+                        if (it.id == intent.product.id) {
                             it
                         } else {
                             it
@@ -52,9 +52,9 @@ class SearchViewModel @Inject constructor() : ViewModel() {
                     currentState.copy(products = newProducts)
                 }
             }
-            is SearchEvent.ProductClicked -> {
+            is SearchIntent.ProductClicked -> {
             }
-            is SearchEvent.ExecuteSearch -> {
+            is SearchIntent.ExecuteSearch -> {
                 filterProducts()
             }
         }

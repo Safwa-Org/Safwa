@@ -3,7 +3,6 @@ package com.tasneem.safwa.core.navigation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -15,16 +14,13 @@ import com.tasneem.safwa.features.auth.presentation.login.LoginViewModel
 import com.tasneem.safwa.features.wishlist.presentation.WishlistScreen
 import com.tasneem.safwa.features.onboarding.OnboardingScreen
 import com.tasneem.safwa.features.search.presentation.SearchScreen
-import com.tasneem.safwa.features.search.presentation.SearchViewModel
-import com.tasneem.safwa.features.wishlist.presentation.WishlistViewModel
-
 @Composable
 fun SafwaNavHost(
     navController: NavHostController = rememberNavController(),
 ) {
     NavHost(
         navController = navController,
-        startDestination = ScreenRoute.Search
+        startDestination = ScreenRoute.Onboarding
     ) {
 
         composable<ScreenRoute.Splash> {
@@ -69,23 +65,11 @@ fun SafwaNavHost(
         }
 
         composable<ScreenRoute.Search> {
-            val viewModel: SearchViewModel = hiltViewModel()
-            val state by viewModel.state.collectAsState()
-
-            SearchScreen(
-                state = state,
-                onEvent = viewModel::onEvent
-            )
+            SearchScreen()
         }
 
         composable<ScreenRoute.Wishlist> {
-            val viewModel: WishlistViewModel = hiltViewModel()
-            val state by viewModel.state.collectAsState()
-
-            WishlistScreen(
-                state = state,
-                onEvent = viewModel::onEvent
-            )
+            WishlistScreen()
         }
 
         composable<ScreenRoute.Profile> {

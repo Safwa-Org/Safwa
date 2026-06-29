@@ -22,11 +22,30 @@ import com.tasneem.safwa.features.wishlist.presentation.components.EmptyWishlist
 import com.tasneem.safwa.features.wishlist.presentation.components.ProductCard
 import com.tasneem.safwa.core.shared_component.SafwaTopAppBar
 
-@OptIn(ExperimentalMaterial3Api::class)
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.hilt.navigation.compose.hiltViewModel
+
 @Composable
 fun WishlistScreen(
+    modifier: Modifier = Modifier,
+    viewModel: WishlistViewModel = hiltViewModel()
+
+) {
+    val state by viewModel.state.collectAsState()
+    
+    WishlistContent(
+        state = state,
+        onIntent = viewModel::onIntent,
+        modifier = modifier
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun WishlistContent(
     state: WishlistState,
-    onEvent: (WishlistEvent) -> Unit,
+    onIntent: (WishlistIntent) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -47,7 +66,7 @@ fun WishlistScreen(
             CategoriesRow(
                 categories = state.categories,
                 selectedCategory = state.selectedCategory,
-                onCategorySelected = { onEvent(WishlistEvent.FilterSelected(it)) }
+                onCategorySelected = { onIntent(WishlistIntent.FilterSelected(it)) }
             )
 
             if (state.filteredProducts.isEmpty()) {
@@ -64,8 +83,8 @@ fun WishlistScreen(
                         ProductCard(
                             product = product,
                             isFavorite = true,
-                            onToggleFavorite = { onEvent(WishlistEvent.ToggleFavorite(product)) },
-                            onClick = { onEvent(WishlistEvent.ProductClicked(product)) }
+                            onToggleFavorite = { onIntent(WishlistIntent.ToggleFavorite(product)) },
+                            onClick = { onIntent(WishlistIntent.ProductClicked(product)) }
                         )
                     }
                 }
@@ -115,8 +134,8 @@ fun WishlistScreenPreview() {
             listOf("")
         )
     )
-    WishlistScreen(
+    WishlistContent(
         state = WishlistState(products = sampleProducts),
-        onEvent = {}
+        onIntent = {}
     )
 }

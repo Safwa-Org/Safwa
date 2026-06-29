@@ -14,12 +14,12 @@ class WishlistViewModel @Inject constructor() : ViewModel() {
     val state: StateFlow<WishlistState> = _state.asStateFlow()
 
     init {
-        onEvent(WishlistEvent.LoadWishlist)
+        onIntent(WishlistIntent.LoadWishlist)
     }
 
-    fun onEvent(event: WishlistEvent) {
-        when (event) {
-            is WishlistEvent.LoadWishlist -> {
+    fun onIntent(intent: WishlistIntent) {
+        when (intent) {
+            is WishlistIntent.LoadWishlist -> {
                 _state.update { it.copy(isLoading = true) }
                 val mockProducts = WishlistMockData.products
                 val categories = WishlistMockData.defaultCategories + mockProducts.map { it.productType }.distinct().sorted()
@@ -31,9 +31,9 @@ class WishlistViewModel @Inject constructor() : ViewModel() {
                     isLoading = false
                 ) }
             }
-            is WishlistEvent.ToggleFavorite -> {
+            is WishlistIntent.ToggleFavorite -> {
                 _state.update { currentState ->
-                    val newProducts = currentState.products.filter { it.id != event.product.id }
+                    val newProducts = currentState.products.filter { it.id != intent.product.id }
                     val newFiltered = if (currentState.selectedCategory == "All") {
                         newProducts
                     } else {
@@ -49,20 +49,20 @@ class WishlistViewModel @Inject constructor() : ViewModel() {
                     )
                 }
             }
-            is WishlistEvent.FilterSelected -> {
+            is WishlistIntent.FilterSelected -> {
                 _state.update { currentState ->
-                    val newFiltered = if (event.category == "All") {
+                    val newFiltered = if (intent.category == "All") {
                         currentState.products
                     } else {
-                        currentState.products.filter { it.productType == event.category }
+                        currentState.products.filter { it.productType == intent.category }
                     }
                     currentState.copy(
-                        selectedCategory = event.category,
+                        selectedCategory = intent.category,
                         filteredProducts = newFiltered
                     )
                 }
             }
-            is WishlistEvent.ProductClicked -> {
+            is WishlistIntent.ProductClicked -> {
                 // Usually handled by side effects or UI directly
             }
         }
