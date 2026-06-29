@@ -14,6 +14,8 @@ import com.tasneem.safwa.features.auth.presentation.login.LoginScreen
 import com.tasneem.safwa.features.auth.presentation.login.LoginViewModel
 import com.tasneem.safwa.features.wishlist.presentation.WishlistScreen
 import com.tasneem.safwa.features.onboarding.OnboardingScreen
+import com.tasneem.safwa.features.search.presentation.SearchScreen
+import com.tasneem.safwa.features.search.presentation.SearchViewModel
 import com.tasneem.safwa.features.wishlist.presentation.WishlistViewModel
 
 @Composable
@@ -22,7 +24,7 @@ fun SafwaNavHost(
 ) {
     NavHost(
         navController = navController,
-        startDestination = ScreenRoute.Onboarding
+        startDestination = ScreenRoute.Search
     ) {
 
         composable<ScreenRoute.Splash> {
@@ -67,6 +69,13 @@ fun SafwaNavHost(
         }
 
         composable<ScreenRoute.Search> {
+            val viewModel: SearchViewModel = hiltViewModel()
+            val state by viewModel.state.collectAsState()
+
+            SearchScreen(
+                state = state,
+                onEvent = viewModel::onEvent
+            )
         }
 
         composable<ScreenRoute.Wishlist> {

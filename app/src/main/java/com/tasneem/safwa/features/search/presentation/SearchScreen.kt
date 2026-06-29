@@ -1,4 +1,4 @@
-package com.tasneem.safwa.features.wishlist.presentation
+package com.tasneem.safwa.features.search.presentation
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -13,29 +13,28 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.tasneem.safwa.R
-import com.tasneem.safwa.features.wishlist.domain.model.Product
-import com.tasneem.safwa.features.wishlist.presentation.components.CategoriesRow
-import com.tasneem.safwa.features.wishlist.presentation.components.EmptyWishlistState
-import com.tasneem.safwa.features.wishlist.presentation.components.ProductCard
 import com.tasneem.safwa.core.shared_component.SafwaTopAppBar
+import com.tasneem.safwa.features.search.presentation.components.EmptySearchState
+import com.tasneem.safwa.features.search.presentation.components.SearchInput
+import com.tasneem.safwa.features.wishlist.presentation.components.CategoriesRow
+import com.tasneem.safwa.features.wishlist.presentation.components.ProductCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun WishlistScreen(
-    state: WishlistState,
-    onEvent: (WishlistEvent) -> Unit,
+fun SearchScreen(
+    state: SearchState,
+    onEvent: (SearchEvent) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
             SafwaTopAppBar(
-                title = stringResource(id = R.string.wishlist),
-                onBackClick = {},
-                onCartClick = {}
+                title = stringResource(id = R.string.search),
+                onBackClick = { /* Handle back navigation */ },
+                onCartClick = { /* Handle cart navigation */ }
             )
         }
     ) { paddingValues ->
@@ -44,14 +43,21 @@ fun WishlistScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
+            SearchInput(
+                query = state.searchQuery,
+                onQueryChanged = { onEvent(SearchEvent.QueryChanged(it)) },
+                onExecuteSearch = { onEvent(SearchEvent.ExecuteSearch) },
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+            )
+
             CategoriesRow(
                 categories = state.categories,
                 selectedCategory = state.selectedCategory,
-                onCategorySelected = { onEvent(WishlistEvent.FilterSelected(it)) }
+                onCategorySelected = { onEvent(SearchEvent.FilterSelected(it)) }
             )
 
             if (state.filteredProducts.isEmpty()) {
-                EmptyWishlistState()
+                EmptySearchState()
             } else {
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(2),
@@ -63,60 +69,13 @@ fun WishlistScreen(
                     items(state.filteredProducts, key = { it.id }) { product ->
                         ProductCard(
                             product = product,
-                            isFavorite = true,
-                            onToggleFavorite = { onEvent(WishlistEvent.ToggleFavorite(product)) },
-                            onClick = { onEvent(WishlistEvent.ProductClicked(product)) }
+                            isFavorite = false,
+                            onToggleFavorite = { onEvent(SearchEvent.ToggleFavorite(product)) },
+                            onClick = { onEvent(SearchEvent.ProductClicked(product)) }
                         )
                     }
                 }
             }
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun WishlistScreenPreview() {
-    val sampleProducts = listOf(
-        Product(
-            "1",
-            "Hydrogen Snowboard",
-            "hydrogen",
-            "Desc 1",
-            "Snowboard Co",
-            "Snowboard",
-            "199.99",
-            "USD",
-            listOf(""),
-            listOf("")
-        ),
-        Product(
-            "2",
-            "Helium Snowboard",
-            "helium",
-            "Desc 2",
-            "Snowboard Co",
-            "Snowboard",
-            "249.99",
-            "USD",
-            listOf(""),
-            listOf("")
-        ),
-        Product(
-            "3",
-            "Lithium Snowboard",
-            "lithium",
-            "Desc 3",
-            "Snowboard Co",
-            "Snowboard",
-            "299.99",
-            "USD",
-            listOf(""),
-            listOf("")
-        )
-    )
-    WishlistScreen(
-        state = WishlistState(products = sampleProducts),
-        onEvent = {}
-    )
 }

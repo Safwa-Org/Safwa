@@ -27,7 +27,7 @@ fun HeartIcon(
     IconButton(
         onClick = onToggleFavorite,
         modifier = modifier
-            .size(36.dp)
+            .size(32.dp)
             .clip(CircleShape)
             .background(Color.White.copy(alpha = 0.8f))
     ) {
