@@ -42,56 +42,32 @@ fun SafwaNavHost(
         }
 
         composable<ScreenRoute.Login> {
-            val viewModel: LoginViewModel = hiltViewModel()
-            val state by viewModel.state.collectAsState()
-            LaunchedEffect(Unit) {
-                viewModel.sideEffect.collect { effect ->
-                    when (effect) {
-                        LoginSideEffect.NavigateToSignUp -> navController.navigate(ScreenRoute.Register)
-                        LoginSideEffect.NavigateToForgotPassword -> navController.navigate(ScreenRoute.ForgotPassword)
-                        LoginSideEffect.NavigateToHome -> navController.navigate(ScreenRoute.Home) {
-                            popUpTo(ScreenRoute.Login) { inclusive = true }
-                        }
-                        is LoginSideEffect.ShowToast -> {
-
-                        }
-                    }
-                }
-            }
-
             LoginScreen(
-                state = state,
-                onEvent = { event ->
-                    viewModel.onEvent(event)
+                onNavigateToHome = {
+                    navController.navigate(ScreenRoute.Home) {
+                        popUpTo(ScreenRoute.Login) { inclusive = true }
+                    }
                 },
-                onGoogleSignInResult = { idToken ->
-                    viewModel.handleGoogleLogin(idToken)
+                onNavigateToSignUp = {
+                    navController.navigate(ScreenRoute.Register)
+                },
+                onNavigateToForgotPassword = {
+                    navController.navigate(ScreenRoute.ForgotPassword)
                 }
             )
         }
 
         composable<ScreenRoute.Register> {
-            val viewModel: RegisterViewModel = hiltViewModel()
-            val state by viewModel.state.collectAsState()
-
-            LaunchedEffect(Unit) {
-                viewModel.sideEffect.collect { effect ->
-                    when (effect) {
-                        RegisterSideEffect.NavigateToLogin -> navController.navigate(ScreenRoute.Login) {
-                            popUpTo(ScreenRoute.Register) { inclusive = true }
-                        }
-                        RegisterSideEffect.NavigateToHome -> navController.navigate(ScreenRoute.Home) {
-                            popUpTo(ScreenRoute.Register) { inclusive = true }
-                        }
-                        is RegisterSideEffect.ShowToast -> { /* optional */ }
-                    }
-                }
-            }
-
             RegisterScreen(
-                state = state,
-                onEvent = { event ->
-                    viewModel.onEvent(event)
+                onNavigateToLogin = {
+                    navController.navigate(ScreenRoute.Login) {
+                        popUpTo(ScreenRoute.Register) { inclusive = true }
+                    }
+                },
+                onNavigateToHome = {
+                    navController.navigate(ScreenRoute.Home) {
+                        popUpTo(ScreenRoute.Register) { inclusive = true }
+                    }
                 }
             )
         }

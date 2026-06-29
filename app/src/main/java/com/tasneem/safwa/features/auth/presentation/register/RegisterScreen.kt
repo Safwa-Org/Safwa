@@ -18,12 +18,17 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -31,6 +36,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.tasneem.safwa.R
 import com.tasneem.safwa.core.shared_component.CustomButon
 import com.tasneem.safwa.core.shared_component.SafwaLogo
@@ -38,19 +45,54 @@ import com.tasneem.safwa.core.theme.SafwaTheme
 import com.tasneem.safwa.features.auth.presentation.components.CustomTextField
 import com.tasneem.safwa.features.auth.presentation.components.ErrorText
 
+
 @Composable
 fun RegisterScreen(
+    viewModel: RegisterViewModel = hiltViewModel(),
+    onNavigateToLogin: () -> Unit,
+    onNavigateToHome: () -> Unit,
+) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(Unit) {
+        viewModel.sideEffect.collect { effect ->
+            when (effect) {
+                RegisterSideEffect.NavigateToLogin -> onNavigateToLogin()
+                RegisterSideEffect.NavigateToHome -> onNavigateToHome()
+                is RegisterSideEffect.ShowToast -> {
+                    effect.message?.let { snackbarHostState.showSnackbar(it) }
+                }
+            }
+        }
+    }
+
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) }
+    ) { innerPadding ->
+        RegisterContent(
+            state = state,
+            onEvent = viewModel::onEvent,
+            modifier = Modifier.padding(innerPadding)
+        )
+    }
+}
+
+
+@Composable
+fun RegisterContent(
     state: RegisterState,
-    onEvent: (RegisterEvent) -> Unit
+    onEvent: (RegisterEvent) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     if (state.showVerificationDialog) {
         AlertDialog(
-            onDismissRequest = { /* Prevent dismiss by tapping outside */ },
+            onDismissRequest = {  },
             shape = RoundedCornerShape(24.dp),
             containerColor = MaterialTheme.colorScheme.surface,
             icon = {
                 SafwaLogo(
-                    size = 48.dp, // Slightly larger for dialog prominence
+                    size = 48.dp,
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
                     iconColor = MaterialTheme.colorScheme.primary
                 )
@@ -58,7 +100,7 @@ fun RegisterScreen(
             title = {
                 Text(
                     text = stringResource(R.string.verify_email_title),
-                    style = MaterialTheme.typography.headlineSmall, // Fraunces bold
+                    style = MaterialTheme.typography.headlineSmall,
                     color = MaterialTheme.colorScheme.onSurface,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxWidth()
@@ -67,7 +109,7 @@ fun RegisterScreen(
             text = {
                 Text(
                     text = stringResource(R.string.verify_email_message),
-                    style = MaterialTheme.typography.bodyMedium, // Plus Jakarta Sans
+                    style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.secondary,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxWidth()
@@ -80,7 +122,7 @@ fun RegisterScreen(
                 ) {
                     Button(
                         onClick = { onEvent(RegisterEvent.LoginClicked) },
-                        modifier = Modifier.fillMaxWidth(), // Makes the button stretch across the dialog
+                        modifier = Modifier.fillMaxWidth(),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.primary,
                             contentColor = MaterialTheme.colorScheme.onPrimary
@@ -106,9 +148,11 @@ fun RegisterScreen(
                     }
                 }
             }
-        )  }
+        )
+    }
+
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .padding(24.dp)
             .imePadding()
@@ -154,8 +198,8 @@ fun RegisterScreen(
             value = state.firstName,
             onValueChange = { onEvent(RegisterEvent.FirstNameChanged(it)) }
         )
-        if (state.firstNameErrorResId != null) {
-            ErrorText(stringResource(state.firstNameErrorResId))
+        state.firstNameErrorResId?.let { errorRes ->
+            ErrorText(stringResource(errorRes))
         }
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -164,8 +208,8 @@ fun RegisterScreen(
             value = state.lastName,
             onValueChange = { onEvent(RegisterEvent.LastNameChanged(it)) }
         )
-        if (state.lastNameErrorResId != null) {
-            ErrorText(stringResource(state.lastNameErrorResId))
+        state.lastNameErrorResId?.let { errorRes ->
+            ErrorText(stringResource(errorRes))
         }
         Spacer(modifier = Modifier.height(24.dp))
 
@@ -175,8 +219,8 @@ fun RegisterScreen(
             onValueChange = { onEvent(RegisterEvent.EmailChanged(it)) },
             keyboardType = KeyboardType.Email
         )
-        if (state.emailErrorResId != null) {
-            ErrorText(stringResource(state.emailErrorResId))
+        state.emailErrorResId?.let { errorRes ->
+            ErrorText(stringResource(errorRes))
         }
         Spacer(modifier = Modifier.height(24.dp))
 
@@ -186,8 +230,8 @@ fun RegisterScreen(
             onValueChange = { onEvent(RegisterEvent.PhoneChanged(it)) },
             keyboardType = KeyboardType.Phone
         )
-        if (state.phoneErrorResId != null) {
-            ErrorText(stringResource(state.phoneErrorResId))
+        state.phoneErrorResId?.let { errorRes ->
+            ErrorText(stringResource(errorRes))
         }
         Spacer(modifier = Modifier.height(24.dp))
 
@@ -197,8 +241,8 @@ fun RegisterScreen(
             onValueChange = { onEvent(RegisterEvent.PasswordChanged(it)) },
             isPassword = true
         )
-        if (state.passwordErrorResId != null) {
-            ErrorText(stringResource(state.passwordErrorResId))
+        state.passwordErrorResId?.let { errorRes ->
+            ErrorText(stringResource(errorRes))
         }
         Spacer(modifier = Modifier.height(24.dp))
 
@@ -208,8 +252,8 @@ fun RegisterScreen(
             onValueChange = { onEvent(RegisterEvent.ConfirmPasswordChanged(it)) },
             isPassword = true
         )
-        if (state.confirmPasswordErrorResId != null) {
-            ErrorText(stringResource(state.confirmPasswordErrorResId))
+        state.confirmPasswordErrorResId?.let { errorRes ->
+            ErrorText(stringResource(errorRes))
         }
         Spacer(modifier = Modifier.height(32.dp))
 
@@ -250,13 +294,3 @@ fun RegisterScreen(
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun RegisterScreenPreview() {
-    SafwaTheme {
-        RegisterScreen(
-            state = RegisterState(),
-            onEvent = {}
-        )
-    }
-}

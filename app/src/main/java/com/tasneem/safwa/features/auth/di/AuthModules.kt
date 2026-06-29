@@ -11,7 +11,6 @@ import com.tasneem.safwa.features.auth.data.datasource.auth.FirebaseAuthDataSour
 import com.tasneem.safwa.features.auth.data.datasource.auth.FirebaseAuthDataSourceImpl
 import com.tasneem.safwa.features.auth.data.datasource.firestore.FirestoreDataSource
 import com.tasneem.safwa.features.auth.data.datasource.firestore.FirestoreDataSourceImpl
-import com.tasneem.safwa.features.auth.data.local.RegistrationPrefs
 import com.tasneem.safwa.features.auth.data.repository.AuthRepositoryImpl
 import com.tasneem.safwa.features.auth.domain.repository.AuthRepository
 import com.tasneem.safwa.features.auth.domain.usecase.GetCurrentUserUseCase

@@ -19,6 +19,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -29,6 +31,8 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.common.api.ApiException
 import com.tasneem.safwa.R
@@ -49,14 +53,42 @@ import dagger.hilt.components.SingletonComponent
 interface GoogleSignInClientEntryPoint {
     fun googleSignInClient(): com.google.android.gms.auth.api.signin.GoogleSignInClient
 }
-
 @Composable
 fun LoginScreen(
+    viewModel: LoginViewModel = hiltViewModel(),
+    onNavigateToHome: () -> Unit,
+    onNavigateToSignUp: () -> Unit,
+    onNavigateToForgotPassword: () -> Unit,
+) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
+
+    LaunchedEffect(Unit) {
+        viewModel.sideEffect.collect { effect ->
+            when (effect) {
+                LoginSideEffect.NavigateToSignUp -> onNavigateToSignUp()
+                LoginSideEffect.NavigateToForgotPassword -> onNavigateToForgotPassword()
+                LoginSideEffect.NavigateToHome -> onNavigateToHome()
+                is LoginSideEffect.ShowToast -> {
+                }
+            }
+        }
+    }
+
+    LoginContent(
+        state = state,
+        onEvent = viewModel::onEvent,
+        onGoogleSignInResult = viewModel::handleGoogleLogin
+    )
+}
+
+// Your actual UI component from earlier...
+@Composable
+fun LoginContent(
     state: LoginState,
     onEvent: (LoginEvent) -> Unit,
-    onGoogleSignInResult: (String) -> Unit
-) {
-
+    onGoogleSignInResult: (String) -> Unit,
+    modifier: Modifier = Modifier
+){
     val context = LocalContext.current
     val googleSignInClient = remember {
         val entryPoint = EntryPointAccessors.fromApplication(
@@ -134,10 +166,10 @@ fun LoginScreen(
             onValueChange = { onEvent(LoginEvent.EmailChanged(it)) },
             keyboardType = androidx.compose.ui.text.input.KeyboardType.Email
         )
-        if (state.emailErrorResId != null) {
-            ErrorText(stringResource(state.emailErrorResId))
-        }
 
+        state.emailErrorResId?.let { errorRes ->
+            ErrorText(stringResource(errorRes))
+        }
         Spacer(modifier = Modifier.height(24.dp))
 
         CustomTextField(
@@ -146,8 +178,8 @@ fun LoginScreen(
             onValueChange = { onEvent(LoginEvent.PasswordChanged(it)) },
             isPassword = true
         )
-        if (state.passwordErrorResId != null) {
-            ErrorText(stringResource(state.passwordErrorResId))
+        state.passwordErrorResId?.let { errorRes ->
+            ErrorText(stringResource(errorRes))
         }
 
         Spacer(modifier = Modifier.height(32.dp))
@@ -159,9 +191,10 @@ fun LoginScreen(
         )
 
         if (state.generalErrorMessage != null) {
-            ErrorText(state.generalErrorMessage)
-        } else if (state.generalErrorResId != null) {
-            ErrorText(stringResource(state.generalErrorResId))
+            ErrorText(state.generalErrorMessage ?: "")
+        }
+        state.generalErrorResId?.let {
+            errorRes -> ErrorText(stringResource(errorRes))
         }
 
         Spacer(modifier = Modifier.height(32.dp))
@@ -169,7 +202,6 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Google Button triggers the launcher
         GoogleButton(
             onContinue = {
                 val signInIntent = googleSignInClient.signInIntent
@@ -212,17 +244,5 @@ fun LoginScreen(
         }
 
         Spacer(modifier = Modifier.height(16.dp))
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun LoginScreenPreview() {
-    SafwaTheme {
-        LoginScreen(
-            state = LoginState(),
-            onEvent = {},
-            onGoogleSignInResult = {}
-        )
     }
 }
