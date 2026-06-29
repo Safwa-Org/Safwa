@@ -12,9 +12,9 @@ import com.tasneem.safwa.features.auth.presentation.login.LoginEvent
 import com.tasneem.safwa.features.auth.presentation.login.LoginScreen
 import com.tasneem.safwa.features.auth.presentation.login.LoginViewModel
 import com.tasneem.safwa.features.onboarding.OnboardingScreen
+import com.tasneem.safwa.features.productdetails.presentation.view.ProductDetailsScreen
 import com.tasneem.safwa.features.search.presentation.SearchScreen
 import com.tasneem.safwa.features.wishlist.presentation.WishlistScreen
-import com.tasneem.safwa.features.wishlist.presentation.productdetails.presentation.view.ProductDetailsScreen
 
 @Composable
 fun SafwaNavHost(
