@@ -16,8 +16,9 @@ import com.tasneem.safwa.features.auth.presentation.login.LoginViewModel
 import com.tasneem.safwa.features.auth.presentation.register.RegisterScreen
 import com.tasneem.safwa.features.auth.presentation.register.RegisterSideEffect
 import com.tasneem.safwa.features.auth.presentation.register.RegisterViewModel
+import com.tasneem.safwa.features.wishlist.presentation.WishlistScreen
 import com.tasneem.safwa.features.onboarding.OnboardingScreen
-
+import com.tasneem.safwa.features.search.presentation.SearchScreen
 @Composable
 fun SafwaNavHost(
     navController: NavHostController = rememberNavController(),
@@ -102,9 +103,11 @@ fun SafwaNavHost(
         }
 
         composable<ScreenRoute.Search> {
+            SearchScreen()
         }
 
         composable<ScreenRoute.Wishlist> {
+            WishlistScreen()
         }
 
         composable<ScreenRoute.Profile> {
