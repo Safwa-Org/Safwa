@@ -19,6 +19,9 @@ import com.tasneem.safwa.features.auth.presentation.register.RegisterViewModel
 import com.tasneem.safwa.features.wishlist.presentation.WishlistScreen
 import com.tasneem.safwa.features.onboarding.OnboardingScreen
 import com.tasneem.safwa.features.search.presentation.SearchScreen
+import com.tasneem.safwa.features.wishlist.presentation.WishlistScreen
+import com.tasneem.safwa.features.wishlist.presentation.productdetails.presentation.view.ProductDetailsScreen
+
 @Composable
 fun SafwaNavHost(
     navController: NavHostController = rememberNavController(),
@@ -114,6 +117,9 @@ fun SafwaNavHost(
         }
 
         composable<ScreenRoute.ProductDetails> {
+            ProductDetailsScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
         }
 
         composable<ScreenRoute.Cart> {

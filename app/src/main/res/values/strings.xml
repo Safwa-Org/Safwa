@@ -75,4 +75,12 @@
     <string name="search_icon_desc">Search Icon</string>
     <string name="no_results">No results found</string>
     <string name="no_results_desc">We couldn\'t find any products matching your search criteria.</string>
+    <string name="reviews_count">· %1$d reviews</string>
+    <string name="in_stock">In stock</string>
+    <string name="size_label">SIZE</string>
+    <string name="description_label">DESCRIPTION</string>
+    <string name="add_to_cart_format">Add to cart · %1$s</string>
+    <string name="back">Back</string>
+    <string name="share">Share</string>
+    <string name="shopping_bag">Shopping Bag</string>
 </resources>
