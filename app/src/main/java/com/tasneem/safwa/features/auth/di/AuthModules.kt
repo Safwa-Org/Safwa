@@ -17,6 +17,8 @@ import com.tasneem.safwa.features.auth.domain.usecase.GetCurrentUserUseCase
 import com.tasneem.safwa.features.auth.domain.usecase.GoogleLoginUseCase
 import com.tasneem.safwa.features.auth.domain.usecase.GuestLoginUseCase
 import com.tasneem.safwa.features.auth.domain.usecase.LoginUseCase
+import com.tasneem.safwa.features.auth.domain.usecase.LogoutUseCase
+import com.tasneem.safwa.features.auth.domain.usecase.RegisterUseCase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -44,7 +46,7 @@ object GoogleSignInModule {
     @Provides
     @Singleton
     fun provideGoogleSignInOptions(
-        @ApplicationContext context: Context // Inject context here
+        @ApplicationContext context: Context
     ): GoogleSignInOptions {
         return GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(context.getString(R.string.default_web_client_id))
@@ -106,4 +108,14 @@ object AuthUseCaseModule {
     @Singleton
     fun provideGetCurrentUserUseCase(repository: AuthRepository): GetCurrentUserUseCase =
         GetCurrentUserUseCase(repository)
+
+    @Provides
+    @Singleton
+    fun provideRegisterUseCase(repository: AuthRepository): RegisterUseCase =
+        RegisterUseCase(repository)
+
+    @Provides
+    @Singleton
+    fun provideLogoutUseCase(repository: AuthRepository): LogoutUseCase =
+        LogoutUseCase(repository)
 }

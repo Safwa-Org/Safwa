@@ -3,6 +3,11 @@ package com.tasneem.safwa.features.auth.presentation.register
 import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.tasneem.safwa.R
+import com.tasneem.safwa.core.util.Resource
+import com.tasneem.safwa.features.auth.domain.model.User
+import com.tasneem.safwa.features.auth.domain.usecase.RegisterUseCase
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -10,9 +15,12 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import com.tasneem.safwa.R
+import javax.inject.Inject
 
-class RegisterViewModel : ViewModel() {
+@HiltViewModel
+class RegisterViewModel @Inject constructor(
+    private val registerUseCase: RegisterUseCase
+) : ViewModel() {
 
     private val _state = MutableStateFlow(RegisterState())
     val state: StateFlow<RegisterState> = _state.asStateFlow()
@@ -85,9 +93,6 @@ class RegisterViewModel : ViewModel() {
             RegisterEvent.RegisterClicked -> {
                 executeRegistration()
             }
-            RegisterEvent.GoogleSignUpClicked -> {
-                // TODO: implement Google sign-up
-            }
             RegisterEvent.LoginClicked -> {
                 viewModelScope.launch { _sideEffect.emit(RegisterSideEffect.NavigateToLogin) }
             }
@@ -116,6 +121,7 @@ class RegisterViewModel : ViewModel() {
             )
         }
 
+        // First name
         if (firstName.isBlank()) {
             _state.update { it.copy(firstNameErrorResId = R.string.error_first_name_empty) }
             return
@@ -125,6 +131,7 @@ class RegisterViewModel : ViewModel() {
             return
         }
 
+        // Last name
         if (lastName.isBlank()) {
             _state.update { it.copy(lastNameErrorResId = R.string.error_last_name_empty) }
             return
@@ -134,6 +141,7 @@ class RegisterViewModel : ViewModel() {
             return
         }
 
+        // Email
         if (email.isBlank()) {
             _state.update { it.copy(emailErrorResId = R.string.error_email_empty) }
             return
@@ -143,16 +151,14 @@ class RegisterViewModel : ViewModel() {
             return
         }
 
+        // Phone (optional)
         val phoneRegex = Regex("^(010|011|012|015)[0-9]{8}$")
-        /*if (phone.isBlank()) {
-            _state.update { it.copy(phoneErrorResId = R.string.error_phone_empty) }
-            return
-        }*/
-        if (!phone.isBlank() && !phone.matches(phoneRegex)) {
+        if (phone.isNotBlank() && !phone.matches(phoneRegex)) {
             _state.update { it.copy(phoneErrorResId = R.string.error_phone_egypt_invalid) }
             return
         }
 
+        // Password
         if (password.isBlank()) {
             _state.update { it.copy(passwordErrorResId = R.string.error_password_empty) }
             return
@@ -178,6 +184,7 @@ class RegisterViewModel : ViewModel() {
             return
         }
 
+        // Confirm password
         if (confirmPassword.isBlank()) {
             _state.update { it.copy(confirmPasswordErrorResId = R.string.error_confirm_password_empty) }
             return
@@ -187,21 +194,44 @@ class RegisterViewModel : ViewModel() {
             return
         }
 
+        // Proceed with registration
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
-            try {
-                // TODO: replace with real API call
+            val result = registerUseCase(email, password, firstName, lastName, phone)
+            handleRegistrationResult(result)
+        }
+    }
+
+    private suspend fun handleRegistrationResult(result: Resource<User>) {
+        _state.update { it.copy(isLoading = false) }
+        when (result) {
+            is Resource.Success -> {
                 _sideEffect.emit(RegisterSideEffect.NavigateToHome)
-            } catch (e: Exception) {
-                _state.update {
-                    it.copy(
-                        isLoading = false,
-                        generalErrorMessage = e.localizedMessage
-                    )
-                }
-            } finally {
-                _state.update { it.copy(isLoading = false) }
             }
+            is Resource.Error -> {
+                val message = result.message ?: "Registration failed"
+                // Map Firebase exceptions to field-specific errors
+                when {
+                    message.contains("email already in use", ignoreCase = true) -> {
+                        _state.update { it.copy(emailErrorResId = R.string.error_email_exists) }
+                    }
+                    message.contains("password too weak", ignoreCase = true) -> {
+                        _state.update { it.copy(passwordErrorResId = R.string.error_password_weak) }
+                    }
+                    message.contains("invalid email", ignoreCase = true) -> {
+                        _state.update { it.copy(emailErrorResId = R.string.error_invalid_email) }
+                    }
+                    else -> {
+                        _state.update {
+                            it.copy(
+                                generalErrorMessage = message,
+                                generalErrorResId = null
+                            )
+                        }
+                    }
+                }
+            }
+            is Resource.Loading -> { /* handled */ }
         }
     }
 }

@@ -26,9 +26,9 @@ sealed interface RegisterEvent {
     data class PasswordChanged(val password: String) : RegisterEvent
     data class ConfirmPasswordChanged(val confirmPassword: String) : RegisterEvent
     object RegisterClicked : RegisterEvent
-    object GoogleSignUpClicked : RegisterEvent
     object LoginClicked : RegisterEvent
 }
+
 sealed interface RegisterSideEffect {
     object NavigateToLogin : RegisterSideEffect
     object NavigateToHome : RegisterSideEffect

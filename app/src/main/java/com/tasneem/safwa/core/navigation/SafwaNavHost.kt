@@ -71,7 +71,7 @@ fun SafwaNavHost(
         }
 
         composable<ScreenRoute.Register> {
-            val viewModel: RegisterViewModel = viewModel()
+            val viewModel: RegisterViewModel = hiltViewModel()
             val state by viewModel.state.collectAsState()
 
             LaunchedEffect(Unit) {
@@ -83,9 +83,7 @@ fun SafwaNavHost(
                         RegisterSideEffect.NavigateToHome -> navController.navigate(ScreenRoute.Home) {
                             popUpTo(ScreenRoute.Register) { inclusive = true }
                         }
-                        is RegisterSideEffect.ShowToast -> {
-                            // Show toast
-                        }
+                        is RegisterSideEffect.ShowToast -> { /* optional */ }
                     }
                 }
             }
@@ -97,7 +95,6 @@ fun SafwaNavHost(
                 }
             )
         }
-
         composable<ScreenRoute.ForgotPassword> {
         }
 

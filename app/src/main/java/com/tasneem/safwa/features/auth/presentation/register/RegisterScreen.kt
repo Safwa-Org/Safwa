@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -30,8 +31,6 @@ import com.tasneem.safwa.core.shared_component.SafwaLogo
 import com.tasneem.safwa.core.theme.SafwaTheme
 import com.tasneem.safwa.features.auth.presentation.components.CustomTextField
 import com.tasneem.safwa.features.auth.presentation.components.ErrorText
-import com.tasneem.safwa.features.auth.presentation.components.GoogleButton
-import com.tasneem.safwa.features.auth.presentation.components.OrDivider
 
 @Composable
 fun RegisterScreen(
@@ -42,6 +41,7 @@ fun RegisterScreen(
         modifier = Modifier
             .fillMaxSize()
             .padding(24.dp)
+            .imePadding()
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.Start
     ) {
@@ -151,20 +151,9 @@ fun RegisterScreen(
 
         if (state.generalErrorResId != null) {
             ErrorText(stringResource(state.generalErrorResId))
-
         } else if (state.generalErrorMessage != null) {
             ErrorText(state.generalErrorMessage)
         }
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        OrDivider()
-        Spacer(modifier = Modifier.height(32.dp))
-
-        GoogleButton(
-            onContinue = { onEvent(RegisterEvent.GoogleSignUpClicked) },
-            modifier = Modifier.fillMaxWidth()
-        )
 
         Spacer(modifier = Modifier.weight(1f))
         Spacer(modifier = Modifier.height(48.dp))

@@ -48,8 +48,8 @@
     <string name="error_name_need_two_parts">Please enter your full first and last name</string>
     <string name="error_name_letters_only">Name can only contain letters</string>
     <string name="error_invalid_email">Please enter a valid email address</string>
-    <string name="error_password_no_uppercase">Password must contain at least one uppercase letter</string>
-    <string name="error_password_no_lowercase">Password must contain at least one lowercase letter</string>
+    <string name="error_password_no_uppercase">Password must contain at least one uppercase</string>
+    <string name="error_password_no_lowercase">Password must contain at least one lowercase</string>
     <string name="error_password_no_digit">Password must contain at least one digit</string>
 
     <string name="error_password_no_symbol">Password must contain at least one special character</string>
@@ -57,5 +57,7 @@
     <string name="error_space">"      "</string>
     <string name="error_invalid_or_password">Invalid Email Or Password</string>
     <string name="failed_guest">Guest Login Failed</string>
+    <string name="error_email_exists">Email already in use</string>
+    <string name="error_password_weak">Password Is Too Weak</string>
 
 </resources>
