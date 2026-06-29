@@ -73,10 +73,10 @@ class LoginViewModel : ViewModel() {
         val currentEmail = _state.value.email
         val currentPassword = _state.value.password
 
-        if (currentEmail.isBlank() || currentPassword.isBlank()) {
-            _state.update { it.copy(errorResId = R.string.error_fields_empty) }
-            return
-        }
+//        if (currentEmail.isBlank() || currentPassword.isBlank()) {
+//            _state.update { it.copy(errorResId = R.string.error_fields_empty) }
+//            return
+//        }
 
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true, errorMessage = null, errorResId = null) }

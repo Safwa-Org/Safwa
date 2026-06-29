@@ -1,6 +1,7 @@
 package com.tasneem.safwa.core.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -8,8 +9,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.tasneem.safwa.features.auth.presentation.login.LoginEvent
 import com.tasneem.safwa.features.auth.presentation.login.LoginScreen
+import com.tasneem.safwa.features.auth.presentation.login.LoginSideEffect
 import com.tasneem.safwa.features.auth.presentation.login.LoginViewModel
 import com.tasneem.safwa.features.onboarding.OnboardingScreen
 import com.tasneem.safwa.features.search.presentation.SearchScreen
@@ -43,16 +44,26 @@ fun SafwaNavHost(
             val viewModel: LoginViewModel = viewModel()
             val state by viewModel.state.collectAsState()
 
+            LaunchedEffect(Unit) {
+                viewModel.sideEffect.collect { effect ->
+                    when (effect) {
+                        is LoginSideEffect.NavigateToHome -> {
+                            navController.navigate(ScreenRoute.Home) {
+                                popUpTo(ScreenRoute.Login) { inclusive = true }
+                            }
+                        }
+                        is LoginSideEffect.NavigateToSignUp -> navController.navigate(ScreenRoute.Register)
+                        is LoginSideEffect.NavigateToForgotPassword -> navController.navigate(ScreenRoute.ForgotPassword)
+                        is LoginSideEffect.NavigateAsGuest -> navController.navigate(ScreenRoute.Home)
+                        else -> {  }
+                    }
+                }
+            }
+
             LoginScreen(
                 state = state,
                 onEvent = { event ->
                     viewModel.onEvent(event)
-                    when (event) {
-                        is LoginEvent.SignUpClicked -> navController.navigate(ScreenRoute.Register)
-                        is LoginEvent.ForgotPasswordClicked -> navController.navigate(ScreenRoute.ForgotPassword)
-                        is LoginEvent.GuestClicked -> navController.navigate(ScreenRoute.Home)
-                        else -> { /* Other events handled by ViewModel */ }
-                    }
                 }
             )
         }
@@ -64,6 +75,14 @@ fun SafwaNavHost(
         }
 
         composable<ScreenRoute.Home> {
+            MainScreen(
+                onNavigateToProductDetails = {
+                    navController.navigate(ScreenRoute.ProductDetails)
+                },
+                onNavigateToCart = {
+                    navController.navigate(ScreenRoute.Cart)
+                }
+            )
         }
 
         composable<ScreenRoute.Search> {

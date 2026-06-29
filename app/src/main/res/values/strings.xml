@@ -45,4 +45,21 @@
     <string name="back">Back</string>
     <string name="share">Share</string>
     <string name="shopping_bag">Shopping Bag</string>
+    <string name="home">Home</string>
+    <string name="good_morning">Good morning</string>
+    <string name="good_afternoon">Good afternoon</string>
+    <string name="good_evening">Good evening</string>
+    <string name="home_headline">Curated for your\nrefined taste.</string>
+    <string name="categories">Categories</string>
+    <string name="view_all">View all</string>
+    <string name="best_sellers">Best sellers</string>
+    <string name="see_all">See all</string>
+    <string name="shop_by_brand">Shop by brand</string>
+    <string name="shop_edit">Shop edit</string>
+    <string name="new_label">NEW</string>
+    <string name="profile">Profile</string>
+    <string name="edit_label">EDIT · %1$d</string>
+    <string name="editorial_headline">Quiet luxury,\nsealed in glass.</string>
+    <string name="search_icon_content_desc">Search</string>
+    <string name="cart_icon_content_desc">Cart</string>
 </resources>
