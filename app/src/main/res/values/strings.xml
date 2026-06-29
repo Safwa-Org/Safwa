@@ -64,4 +64,23 @@
     <string name="verify_email_message">We sent a verification link to your email. Please check your inbox and click the link to verify your account.</string>
     <string name="resend_email">Resend Email</string>
     <string name="go_to_login">Go to Login</string>
+    <string name="wishlist">Wishlist</string>
+    <string name="wishlist_empty">Your wishlist is empty.</string>
+    <string name="remove_from_favorites">Remove from favorites</string>
+    <string name="add_to_favorites">Add to favorites</string>
+    <string name="empty_wishlist">Empty Wishlist</string>
+    <string name="explore_products">Explore our products and add your favorites here!</string>
+    <string name="search">Search</string>
+    <string name="search_products_placeholder">Search products...</string>
+    <string name="search_icon_desc">Search Icon</string>
+    <string name="no_results">No results found</string>
+    <string name="no_results_desc">We couldn\'t find any products matching your search criteria.</string>
+    <string name="reviews_count">· %1$d reviews</string>
+    <string name="in_stock">In stock</string>
+    <string name="size_label">SIZE</string>
+    <string name="description_label">DESCRIPTION</string>
+    <string name="add_to_cart_format">Add to cart · %1$s</string>
+    <string name="back">Back</string>
+    <string name="share">Share</string>
+    <string name="shopping_bag">Shopping Bag</string>
 </resources>

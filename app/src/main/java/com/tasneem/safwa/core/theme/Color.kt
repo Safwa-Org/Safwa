@@ -14,7 +14,7 @@ val OnSecondaryContainer = Color(0xFF1F2937)
 val Background = Color(0xFFFCFCFA)
 val OnBackground = Color(0xFF1A1A1A)
 
-val Surface = Color(0xFFFAF9F6)
+val Surface = Color(0xFFF6F6F6)
 val OnSurface = Color(0xFF1A1A1A)
 
 val Error = Color(0xFFDC2626)
@@ -43,3 +43,6 @@ val ErrorDark = Color(0xFFF87171)
 val OnErrorDark = Color.Black
 
 val OutlineDark = Color(0xFF4B5563)
+
+// additional colors
+val yellow = Color(0xFFDDB049)
