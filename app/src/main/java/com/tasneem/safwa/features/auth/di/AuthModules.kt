@@ -12,6 +12,8 @@ import com.tasneem.safwa.features.auth.data.datasource.auth.FirebaseAuthDataSour
 import com.tasneem.safwa.features.auth.data.datasource.firestore.FirestoreDataSource
 import com.tasneem.safwa.features.auth.data.datasource.firestore.FirestoreDataSourceImpl
 import com.tasneem.safwa.features.auth.data.repository.AuthRepositoryImpl
+import com.tasneem.safwa.features.core.domain.AuthDataSource
+import com.tasneem.safwa.features.core.data.AuthDataSourceImpl
 import com.tasneem.safwa.features.auth.domain.repository.AuthRepository
 import com.tasneem.safwa.features.auth.domain.usecase.GetCurrentUserUseCase
 import com.tasneem.safwa.features.auth.domain.usecase.GoogleLoginUseCase
@@ -84,6 +86,12 @@ object AuthDataModule {
         firebaseAuthDataSource: FirebaseAuthDataSource,
         firestoreDataSource: FirestoreDataSource
     ): AuthRepository = AuthRepositoryImpl(firebaseAuthDataSource, firestoreDataSource)
+
+    @Provides
+    @Singleton
+    fun provideCoreAuthDataSource(
+        auth: FirebaseAuth
+    ): AuthDataSource = AuthDataSourceImpl(auth)
 }
 
 @Module

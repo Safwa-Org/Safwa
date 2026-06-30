@@ -6,6 +6,7 @@ import com.tasneem.safwa.features.home.presentation.state.GreetingType
 import com.tasneem.safwa.features.home.presentation.state.HomeEffect
 import com.tasneem.safwa.features.home.presentation.state.HomeEvent
 import com.tasneem.safwa.features.home.presentation.state.HomeState
+import com.tasneem.safwa.features.wishlist.domain.usecase.ToggleFavoriteUseCase
 import com.tasneem.safwa.features.wishlist.presentation.WishlistMockData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
@@ -19,7 +20,9 @@ import java.util.Calendar
 import javax.inject.Inject
 
 @HiltViewModel
-class HomeViewModel @Inject constructor() : ViewModel() {
+class HomeViewModel @Inject constructor(
+    private val toggleFavoriteUseCase: ToggleFavoriteUseCase
+) : ViewModel() {
 
     private val _state = MutableStateFlow(HomeState())
     val state: StateFlow<HomeState> = _state.asStateFlow()
@@ -68,6 +71,9 @@ class HomeViewModel @Inject constructor() : ViewModel() {
             }
 
             is HomeEvent.ToggleFavorite -> {
+                viewModelScope.launch {
+                    toggleFavoriteUseCase(event.product)
+                }
             }
 
             is HomeEvent.ProductClicked -> {
