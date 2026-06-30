@@ -1,6 +1,6 @@
 package com.tasneem.safwa.features.wishlist.presentation
 
-import com.tasneem.safwa.features.wishlist.domain.model.Product
+import com.tasneem.safwa.features.core.domain.model.Product
 
 data class WishlistState(
     val products: List<Product> = emptyList(),

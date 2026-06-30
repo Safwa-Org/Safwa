@@ -1,16 +1,22 @@
 package com.tasneem.safwa.core.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.tasneem.safwa.features.auth.presentation.login.LoginEvent
 import com.tasneem.safwa.features.auth.presentation.login.LoginScreen
+import com.tasneem.safwa.features.auth.presentation.login.LoginSideEffect
 import com.tasneem.safwa.features.auth.presentation.login.LoginViewModel
+import com.tasneem.safwa.features.auth.presentation.register.RegisterScreen
+import com.tasneem.safwa.features.auth.presentation.register.RegisterSideEffect
+import com.tasneem.safwa.features.auth.presentation.register.RegisterViewModel
+import com.tasneem.safwa.features.wishlist.presentation.WishlistScreen
 import com.tasneem.safwa.features.onboarding.OnboardingScreen
 import com.tasneem.safwa.features.productdetails.presentation.view.ProductDetailsScreen
 import com.tasneem.safwa.features.search.presentation.SearchScreen
@@ -40,30 +46,47 @@ fun SafwaNavHost(
         }
 
         composable<ScreenRoute.Login> {
-            val viewModel: LoginViewModel = viewModel()
-            val state by viewModel.state.collectAsState()
-
             LoginScreen(
-                state = state,
-                onEvent = { event ->
-                    viewModel.onEvent(event)
-                    when (event) {
-                        is LoginEvent.SignUpClicked -> navController.navigate(ScreenRoute.Register)
-                        is LoginEvent.ForgotPasswordClicked -> navController.navigate(ScreenRoute.ForgotPassword)
-                        is LoginEvent.GuestClicked -> navController.navigate(ScreenRoute.Home)
-                        else -> { /* Other events handled by ViewModel */ }
+                onNavigateToHome = {
+                    navController.navigate(ScreenRoute.Home) {
+                        popUpTo(ScreenRoute.Login) { inclusive = true }
                     }
+                },
+                onNavigateToSignUp = {
+                    navController.navigate(ScreenRoute.Register)
+                },
+                onNavigateToForgotPassword = {
+                    navController.navigate(ScreenRoute.ForgotPassword)
                 }
             )
         }
 
         composable<ScreenRoute.Register> {
+            RegisterScreen(
+                onNavigateToLogin = {
+                    navController.navigate(ScreenRoute.Login) {
+                        popUpTo(ScreenRoute.Register) { inclusive = true }
+                    }
+                },
+                onNavigateToHome = {
+                    navController.navigate(ScreenRoute.Home) {
+                        popUpTo(ScreenRoute.Register) { inclusive = true }
+                    }
+                }
+            )
         }
-
         composable<ScreenRoute.ForgotPassword> {
         }
 
         composable<ScreenRoute.Home> {
+            MainScreen(
+                onNavigateToProductDetails = {
+                    navController.navigate(ScreenRoute.ProductDetails)
+                },
+                onNavigateToCart = {
+                    navController.navigate(ScreenRoute.Cart)
+                }
+            )
         }
 
         composable<ScreenRoute.Search> {

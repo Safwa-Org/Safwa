@@ -47,21 +47,14 @@ fun SearchContent(
     onIntent: (SearchIntent) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Scaffold(
-        modifier = modifier.fillMaxSize(),
-        topBar = {
-            SafwaTopAppBar(
-                title = stringResource(id = R.string.search),
-                onBackClick = { /* Handle back navigation */ },
-                onCartClick = { /* Handle cart navigation */ }
-            )
-        }
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+    ) {
+        SafwaTopAppBar(
+            title = stringResource(id = R.string.search),
+            onCartClick = { /* Handle cart navigation */ }
+        )
             SearchInput(
                 query = state.searchQuery,
                 onQueryChanged = { onIntent(SearchIntent.QueryChanged(it)) },
@@ -88,7 +81,7 @@ fun SearchContent(
                     items(state.filteredProducts, key = { it.id }) { product ->
                         ProductCard(
                             product = product,
-                            isFavorite = false,
+                            isFavorite = state.favoriteProductIds.contains(product.id),
                             onToggleFavorite = { onIntent(SearchIntent.ToggleFavorite(product)) },
                             onClick = { onIntent(SearchIntent.ProductClicked(product)) }
                         )
@@ -97,4 +90,3 @@ fun SearchContent(
             }
         }
     }
-}

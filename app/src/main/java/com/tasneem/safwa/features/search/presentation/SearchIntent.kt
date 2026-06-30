@@ -1,6 +1,6 @@
 package com.tasneem.safwa.features.search.presentation
 
-import com.tasneem.safwa.features.wishlist.domain.model.Product
+import com.tasneem.safwa.features.core.domain.model.Product
 
 sealed interface SearchIntent {
     data class QueryChanged(val query: String) : SearchIntent
