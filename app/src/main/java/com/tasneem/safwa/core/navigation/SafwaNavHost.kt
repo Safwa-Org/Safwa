@@ -1,26 +1,16 @@
 package com.tasneem.safwa.core.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.tasneem.safwa.features.auth.presentation.login.LoginScreen
-import com.tasneem.safwa.features.auth.presentation.login.LoginSideEffect
-import com.tasneem.safwa.features.auth.presentation.login.LoginViewModel
-import com.tasneem.safwa.features.auth.presentation.register.RegisterScreen
-import com.tasneem.safwa.features.auth.presentation.register.RegisterSideEffect
-import com.tasneem.safwa.features.auth.presentation.register.RegisterViewModel
+import com.tasneem.safwa.features.auth.presentation.login.view.LoginScreen
+import com.tasneem.safwa.features.auth.presentation.register.view.RegisterScreen
 import com.tasneem.safwa.features.wishlist.presentation.WishlistScreen
 import com.tasneem.safwa.features.onboarding.OnboardingScreen
 import com.tasneem.safwa.features.productdetails.presentation.view.ProductDetailsScreen
 import com.tasneem.safwa.features.search.presentation.SearchScreen
-import com.tasneem.safwa.features.wishlist.presentation.WishlistScreen
 
 @Composable
 fun SafwaNavHost(

@@ -1,4 +1,4 @@
-package com.tasneem.safwa.features.auth.presentation.login
+package com.tasneem.safwa.features.auth.presentation.login.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -9,6 +9,9 @@ import com.tasneem.safwa.features.auth.domain.usecase.GetCurrentUserUseCase
 import com.tasneem.safwa.features.auth.domain.usecase.GoogleLoginUseCase
 import com.tasneem.safwa.features.auth.domain.usecase.GuestLoginUseCase
 import com.tasneem.safwa.features.auth.domain.usecase.LoginUseCase
+import com.tasneem.safwa.features.auth.presentation.login.state.LoginEvent
+import com.tasneem.safwa.features.auth.presentation.login.state.LoginSideEffect
+import com.tasneem.safwa.features.auth.presentation.login.state.LoginState
 import com.tasneem.safwa.features.wishlist.domain.usecase.SyncWishlistUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
@@ -25,7 +28,7 @@ class LoginViewModel @Inject constructor(
     private val loginUseCase: LoginUseCase,
     private val googleLoginUseCase: GoogleLoginUseCase,
     private val guestLoginUseCase: GuestLoginUseCase,
-    private val getCurrentUserUseCase: GetCurrentUserUseCase,
+  //  private val getCurrentUserUseCase: GetCurrentUserUseCase,
     private val syncWishlistUseCase: SyncWishlistUseCase
 ) : ViewModel() {
 
@@ -35,7 +38,7 @@ class LoginViewModel @Inject constructor(
     private val _sideEffect = Channel<LoginSideEffect>()
     val sideEffect = _sideEffect.receiveAsFlow()
 
-    init {
+/*    init {
         viewModelScope.launch {
             val result = getCurrentUserUseCase()
             if (result is Resource.Success && result.data != null) {
@@ -45,24 +48,16 @@ class LoginViewModel @Inject constructor(
                 _sideEffect.send(LoginSideEffect.NavigateToHome)
             }
         }
-    }
+    }*/
 
     fun onEvent(event: LoginEvent) {
         when (event) {
-            is LoginEvent.EmailChanged -> {
+            is LoginEvent.FormInputChanged -> {
                 _state.update {
                     it.copy(
-                        email = event.email,
+                        email = event.email ?: it.email,
+                        password = event.password ?: it.password,
                         emailErrorResId = null,
-                        generalErrorMessage = null,
-                        generalErrorResId = null
-                    )
-                }
-            }
-            is LoginEvent.PasswordChanged -> {
-                _state.update {
-                    it.copy(
-                        password = event.password,
                         passwordErrorResId = null,
                         generalErrorMessage = null,
                         generalErrorResId = null
@@ -86,42 +81,22 @@ class LoginViewModel @Inject constructor(
 
     private fun executeLogin() {
         val currentState = _state.value
-        val email = currentState.email.trim()
-        val password = currentState.password
 
         _state.update {
             it.copy(
                 emailErrorResId = null,
                 passwordErrorResId = null,
                 generalErrorMessage = null,
-                generalErrorResId = null
+                generalErrorResId = null,
+                isLoading = true
             )
         }
 
-        if (email.isBlank()) {
-            _state.update { it.copy(emailErrorResId = R.string.error_email_empty) }
-            return
-        }
-/*        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            _state.update { it.copy(emailErrorResId = R.string.error_invalid_email) }
-            return
-        }*/
-        if (password.isBlank()) {
-            _state.update { it.copy(passwordErrorResId = R.string.error_password_empty) }
-            return
-        }
-      /*  if (password.length < 6) {
-            _state.update { it.copy(passwordErrorResId = R.string.error_password_too_short) }
-            return
-        }*/
-
         viewModelScope.launch {
-            _state.update { it.copy(isLoading = true) }
-            val result = loginUseCase(email, password)
+            val result = loginUseCase(currentState.email, currentState.password)
             handleAuthResult(result)
         }
     }
-
     fun handleGoogleLogin(idToken: String) {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
@@ -129,10 +104,6 @@ class LoginViewModel @Inject constructor(
             handleAuthResult(result)
         }
     }
-//        if (currentEmail.isBlank() || currentPassword.isBlank()) {
-//            _state.update { it.copy(errorResId = R.string.error_fields_empty) }
-//            return
-//        }
 
     private fun executeGuestLogin() {
         viewModelScope.launch {
@@ -157,13 +128,21 @@ class LoginViewModel @Inject constructor(
         when (result) {
             is Resource.Success -> {
                 val user = result.data
-                _state.update { it.copy(isGuest = user.isGuest) }
+                if (user != null) {
+                    _state.update { it.copy(isGuest = user.isGuest) }
+                }
                 syncWishlistUseCase()
                 _sideEffect.send(LoginSideEffect.NavigateToHome)
             }
             is Resource.Error -> {
                 val message = result.message ?: ""
                 when {
+                    message == "error_email_empty" -> {
+                        _state.update { it.copy(emailErrorResId = R.string.error_email_empty) }
+                    }
+                    message == "error_password_empty" -> {
+                        _state.update { it.copy(passwordErrorResId = R.string.error_password_empty) }
+                    }
                     message.contains("email", ignoreCase = true) ||
                             message.contains("password", ignoreCase = true) -> {
                         _state.update { it.copy(emailErrorResId = R.string.error_invalid_or_password) }
