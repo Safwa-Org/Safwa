@@ -117,10 +117,7 @@ object AuthUseCaseModule {
     fun provideRegisterUseCase(repository: AuthRepository): RegisterUseCase =
         RegisterUseCase(repository)
 
-    @Provides
-    @Singleton
-    fun provideLogoutUseCase(repository: AuthRepository): LogoutUseCase =
-        LogoutUseCase(repository)
+
 
     @Provides
     @Singleton

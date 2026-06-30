@@ -7,4 +7,5 @@ interface WishlistRepository {
     fun getWishlist(): Flow<List<Product>>
     suspend fun toggleFavorite(product: Product)
     suspend fun syncWishlist()
+    suspend fun clearWishlist()
 }

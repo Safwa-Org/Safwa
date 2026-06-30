@@ -1,0 +1,28 @@
+query SearchProducts($query: String!, $first: Int!) {
+  products(first: $first, query: $query) {
+    edges {
+      node {
+        id
+        title
+        handle
+        vendor
+        productType
+        description
+        priceRange {
+          minVariantPrice {
+            amount
+            currencyCode
+          }
+        }
+        images(first: 3) {
+          edges {
+            node {
+              url
+              altText
+            }
+          }
+        }
+      }
+    }
+  }
+}

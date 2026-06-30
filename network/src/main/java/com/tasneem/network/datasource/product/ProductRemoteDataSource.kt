@@ -6,4 +6,6 @@ interface ProductRemoteDataSource {
 
     suspend fun getProducts(page: Int): List<ProductDto>
 
+    suspend fun searchProducts(query: String, first: Int): List<ProductDto>
+
 }
