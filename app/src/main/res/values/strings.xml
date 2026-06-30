@@ -117,4 +117,17 @@
     <string name="save_preferences">Save Prefrences</string>
     <string name="app_language">App Language</string>
     <string name="currency">Currency</string>
+    <string name="address_add_title">Add New Address</string>
+    <string name="address_edit_title">Edit Address</string>
+    <string name="address_label">Label (e.g., Home, Office)</string>
+    <string name="address_recipient_name">Recipient Name *</string>
+    <string name="address_mobile_number">Mobile Number *</string>
+    <string name="address_street">Street Address</string>
+    <string name="address_city_zip">City, Zip Code, Country</string>
+    <string name="address_default_label">Address</string>
+    <string name="cancel">Cancel</string>
+    <string name="save">Save</string>
+    <string name="delete_address">Delete Address?</string>
+    <string name="confirm_delete_address">Are you sure you want to delete this address? This action cannot be undone.</string>
+    <string name="delete">Delete</string>
 </resources>

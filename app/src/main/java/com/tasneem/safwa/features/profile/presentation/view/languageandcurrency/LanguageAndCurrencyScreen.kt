@@ -1,4 +1,4 @@
-package com.tasneem.safwa.features.profile.presentation.view
+package com.tasneem.safwa.features.profile.presentation.view.languageandcurrency
 
 import android.content.res.Configuration
 import androidx.compose.foundation.background
@@ -30,9 +30,6 @@ import androidx.compose.ui.unit.dp
 import com.tasneem.safwa.R
 import com.tasneem.safwa.core.shared_component.SafwaTopAppBar
 import com.tasneem.safwa.core.theme.SafwaTheme
-import com.tasneem.safwa.features.profile.presentation.view.components.FlagIcon
-import com.tasneem.safwa.features.profile.presentation.view.components.LanguageIcon
-import com.tasneem.safwa.features.profile.presentation.view.components.RadioSettingsItem
 import com.tasneem.safwa.features.profile.presentation.view.components.SectionTitle
 import com.tasneem.safwa.features.profile.presentation.view.components.SettingsDivider
 import com.tasneem.safwa.features.profile.presentation.view.components.SettingsGroupCard

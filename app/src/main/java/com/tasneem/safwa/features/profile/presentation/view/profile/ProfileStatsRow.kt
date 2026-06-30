@@ -1,4 +1,4 @@
-package com.tasneem.safwa.features.profile.presentation.view.components
+package com.tasneem.safwa.features.profile.presentation.view.profile
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -20,8 +20,20 @@ fun ProfileStatsRow(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        StatItem(value = ordersCount, label = stringResource(R.string.orderscapital), modifier = Modifier.weight(1f))
-        StatItem(value = wishlistCount, label = stringResource(R.string.wishlistcapital), modifier = Modifier.weight(1f))
-        StatItem(value = points, label = stringResource(R.string.pointscapital), modifier = Modifier.weight(1f))
+        StatItem(
+            value = ordersCount,
+            label = stringResource(R.string.orderscapital),
+            modifier = Modifier.weight(1f)
+        )
+        StatItem(
+            value = wishlistCount,
+            label = stringResource(R.string.wishlistcapital),
+            modifier = Modifier.weight(1f)
+        )
+        StatItem(
+            value = points,
+            label = stringResource(R.string.pointscapital),
+            modifier = Modifier.weight(1f)
+        )
     }
 }

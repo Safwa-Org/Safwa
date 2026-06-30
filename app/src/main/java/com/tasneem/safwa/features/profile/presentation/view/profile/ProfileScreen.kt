@@ -1,4 +1,4 @@
-package com.tasneem.safwa.features.profile.presentation.view
+package com.tasneem.safwa.features.profile.presentation.view.profile
 
 import android.content.res.Configuration
 import androidx.compose.foundation.BorderStroke
@@ -27,13 +27,10 @@ import androidx.compose.ui.unit.dp
 import com.tasneem.safwa.R
 import com.tasneem.safwa.core.shared_component.SafwaTopAppBar
 import com.tasneem.safwa.core.theme.SafwaTheme
-import com.tasneem.safwa.features.profile.presentation.view.components.ProfileHeader
-import com.tasneem.safwa.features.profile.presentation.view.components.ProfileStatsRow
 import com.tasneem.safwa.features.profile.presentation.view.components.SectionTitle
 import com.tasneem.safwa.features.profile.presentation.view.components.SettingsDivider
 import com.tasneem.safwa.features.profile.presentation.view.components.SettingsGroupCard
 import com.tasneem.safwa.features.profile.presentation.view.components.SettingsItem
-import com.tasneem.safwa.features.profile.presentation.view.components.SettingsSwitchItem
 
 @Composable
 fun ProfileScreen(
