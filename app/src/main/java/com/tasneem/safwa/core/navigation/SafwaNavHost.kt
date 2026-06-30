@@ -22,7 +22,7 @@ fun SafwaNavHost(
 ) {
     NavHost(
         navController = navController,
-        startDestination = ScreenRoute.Onboarding
+        startDestination = ScreenRoute.ProductDetails("gift-card")
     ) {
 
         composable<ScreenRoute.Splash> {

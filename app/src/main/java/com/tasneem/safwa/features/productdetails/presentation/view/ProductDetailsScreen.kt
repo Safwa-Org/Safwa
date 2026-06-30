@@ -27,7 +27,7 @@ import com.tasneem.safwa.core.theme.SafwaTheme
 import com.tasneem.safwa.features.productdetails.presentation.state.ProductDetailsEffect
 import com.tasneem.safwa.features.productdetails.presentation.state.ProductDetailsEvent
 import com.tasneem.safwa.features.productdetails.presentation.state.ProductDetailsState
-import com.tasneem.safwa.features.productdetails.presentation.state.mapper.ProductUiModel
+import com.tasneem.safwa.features.productdetails.presentation.state.mapper.ProductDetailsUiModel
 import com.tasneem.safwa.features.productdetails.presentation.view.component.ProductDescriptionSection
 import com.tasneem.safwa.features.productdetails.presentation.view.component.ProductImageHeader
 import com.tasneem.safwa.features.productdetails.presentation.view.component.ProductInfoSection
@@ -45,7 +45,7 @@ fun ProductDetailsScreen(
     LaunchedEffect(Unit) {
         viewModel.effect.collect { effect ->
             when (effect) {
-                ProductDetailsEffect.NavigateBack -> onNavigateBack
+                ProductDetailsEffect.NavigateBack -> onNavigateBack()
                 is ProductDetailsEffect.ShowSnackBar -> {
                     snackBarHostState.showSnackbar(effect.message)
                 }
@@ -148,7 +148,7 @@ private fun ProductDetailsContentPreview() {
                 isLoading = false,
                 isWishlisted = true,
                 selectedSize = "M",
-                product = ProductUiModel(
+                product = ProductDetailsUiModel(
                     id = "1",
                     title = "Nike Air Max 270",
                     vendor = "Nike",
