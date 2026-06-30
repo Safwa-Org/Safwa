@@ -59,4 +59,8 @@ class WishlistRepositoryImpl @Inject constructor(
         
         localDataSource.replaceWishlist(combinedProducts.map { it.toEntity() })
     }
+
+    override suspend fun clearWishlist() {
+        localDataSource.clearWishlist()
+    }
 }

@@ -5,35 +5,37 @@ import androidx.lifecycle.viewModelScope
 import com.tasneem.safwa.core.util.Resource
 import com.tasneem.safwa.features.core.domain.usecase.ToggleFavoriteUseCase
 import com.tasneem.safwa.features.core.domain.usecase.GetWishlistUseCase
-import com.tasneem.safwa.features.wishlist.presentation.WishlistMockData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import android.util.Log
+import com.tasneem.safwa.features.search.domain.usecase.SearchProductsUseCase
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.milliseconds
 
 @HiltViewModel
 class SearchViewModel @Inject constructor(
     private val toggleFavoriteUseCase: ToggleFavoriteUseCase,
-    private val getWishlistUseCase: GetWishlistUseCase
+    private val getWishlistUseCase: GetWishlistUseCase,
+    private val searchProductsUseCase: SearchProductsUseCase
 ) : ViewModel() {
     private val _state = MutableStateFlow(SearchState())
     val state: StateFlow<SearchState> = _state.asStateFlow()
+    private var searchJob: Job? = null
 
     init {
-        val mockProducts = WishlistMockData.products
-        val categories = WishlistMockData.defaultCategories + mockProducts.map { it.productType }.distinct().sorted()
-        
         _state.update { it.copy(
-            products = mockProducts,
-            filteredProducts = mockProducts,
-            categories = categories,
+            categories = listOf("All", "T-shirts", "Pants", "Shoes", "Accessories"),
             isLoading = false
         ) }
         
         observeWishlist()
+        performSearch("")
     }
 
     private fun observeWishlist() {
@@ -52,7 +54,11 @@ class SearchViewModel @Inject constructor(
                 _state.update { currentState ->
                     currentState.copy(searchQuery = intent.query)
                 }
-                filterProducts()
+                searchJob?.cancel()
+                searchJob = viewModelScope.launch {
+                    delay(500.milliseconds)
+                    performSearch(intent.query)
+                }
             }
             is SearchIntent.FilterSelected -> {
                 _state.update { currentState ->
@@ -68,22 +74,50 @@ class SearchViewModel @Inject constructor(
             is SearchIntent.ProductClicked -> {
             }
             is SearchIntent.ExecuteSearch -> {
-                filterProducts()
+                searchJob?.cancel()
+                performSearch(_state.value.searchQuery)
+            }
+        }
+    }
+
+    private fun performSearch(query: String) {
+        if (query.isBlank()) {
+            _state.update { 
+                it.copy(
+                    products = emptyList(), 
+                    filteredProducts = emptyList()
+                ) 
+            }
+            return
+        }
+        viewModelScope.launch {
+            searchProductsUseCase(query).collect { result ->
+                when (result) {
+                    is Resource.Loading -> _state.update { it.copy(isLoading = true) }
+                    is Resource.Success -> {
+                        _state.update { 
+                            it.copy(
+                                isLoading = false, 
+                                products = result.data,
+                                categories =  it.categories
+                            ) 
+                        }
+                        filterProducts()
+                    }
+                    is Resource.Error -> {
+                        Log.e("SearchViewModel", "Search failed: ${result.message}")
+                        _state.update { it.copy(isLoading = false) }
+                    }
+                }
             }
         }
     }
 
     private fun filterProducts() {
         _state.update { currentState ->
-            val query = currentState.searchQuery.trim().lowercase()
             val category = currentState.selectedCategory
-
             val filtered = currentState.products.filter { product ->
-                val matchesCategory = if (category == "All") true else product.productType == category
-                val matchesQuery = if (query.isEmpty()) true else {
-                    product.title.lowercase().contains(query) || product.vendor.lowercase().contains(query)
-                }
-                matchesCategory && matchesQuery
+                if (category == "All") true else product.productType == category
             }
             currentState.copy(filteredProducts = filtered)
         }

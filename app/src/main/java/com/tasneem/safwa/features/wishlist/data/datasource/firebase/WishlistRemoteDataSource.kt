@@ -21,9 +21,10 @@ class WishlistRemoteDataSource @Inject constructor(
 
     suspend fun addProduct(userId: String, product: Product) {
         try {
+            val docId = product.id.replace("/", "_")
             wishlistsCollection.document(userId)
                 .collection("products")
-                .document(product.id)
+                .document(docId)
                 .set(product)
                 .await()
         } catch (e: Exception) {
@@ -33,9 +34,10 @@ class WishlistRemoteDataSource @Inject constructor(
 
     suspend fun removeProduct(userId: String, productId: String) {
         try {
+            val docId = productId.replace("/", "_")
             wishlistsCollection.document(userId)
                 .collection("products")
-                .document(productId)
+                .document(docId)
                 .delete()
                 .await()
         } catch (e: Exception) {
