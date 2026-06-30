@@ -5,13 +5,13 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import com.tasneem.safwa.core.local_datasource.ProductsDAO
-import com.tasneem.safwa.core.models.ProductNode
+import com.tasneem.safwa.features.wishlist.data.datasource.local.WishlistDao
+import com.tasneem.safwa.features.wishlist.data.datasource.local.WishlistEntity
 
-@Database(entities = [ProductNode::class], version = 1)
-@TypeConverters
+@Database(entities = [WishlistEntity::class], version = 1)
+@TypeConverters(SafwaTypeConverters::class)
 abstract class SafwaDP : RoomDatabase() {
-    abstract fun ProductsDAO(): ProductsDAO
+    abstract fun wishlistDao(): WishlistDao
     companion object {
         @Volatile
         private var INSTANCE: SafwaDP? = null

@@ -1,16 +1,24 @@
 package com.tasneem.safwa.features.search.presentation
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.tasneem.safwa.core.util.Resource
+import com.tasneem.safwa.features.core.domain.usecase.ToggleFavoriteUseCase
+import com.tasneem.safwa.features.core.domain.usecase.GetWishlistUseCase
 import com.tasneem.safwa.features.wishlist.presentation.WishlistMockData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class SearchViewModel @Inject constructor() : ViewModel() {
+class SearchViewModel @Inject constructor(
+    private val toggleFavoriteUseCase: ToggleFavoriteUseCase,
+    private val getWishlistUseCase: GetWishlistUseCase
+) : ViewModel() {
     private val _state = MutableStateFlow(SearchState())
     val state: StateFlow<SearchState> = _state.asStateFlow()
 
@@ -24,6 +32,18 @@ class SearchViewModel @Inject constructor() : ViewModel() {
             categories = categories,
             isLoading = false
         ) }
+        
+        observeWishlist()
+    }
+
+    private fun observeWishlist() {
+        viewModelScope.launch {
+            getWishlistUseCase().collect { result ->
+                if (result is Resource.Success) {
+                    _state.update { it.copy(favoriteProductIds = result.data.map { p -> p.id }.toSet()) }
+                }
+            }
+        }
     }
 
     fun onIntent(intent: SearchIntent) {
@@ -41,15 +61,8 @@ class SearchViewModel @Inject constructor() : ViewModel() {
                 filterProducts()
             }
             is SearchIntent.ToggleFavorite -> {
-                _state.update { currentState ->
-                    val newProducts = currentState.products.map { 
-                        if (it.id == intent.product.id) {
-                            it
-                        } else {
-                            it
-                        }
-                    }
-                    currentState.copy(products = newProducts)
+                viewModelScope.launch {
+                    toggleFavoriteUseCase(intent.product)
                 }
             }
             is SearchIntent.ProductClicked -> {

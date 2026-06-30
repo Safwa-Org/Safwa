@@ -1,6 +1,6 @@
 package com.tasneem.safwa.features.productdetails.presentation.state.mapper
 
-import com.tasneem.safwa.features.wishlist.domain.model.Product
+import com.tasneem.safwa.features.core.domain.model.Product
 
 data class ProductUiModel(
     val id: String = "",

@@ -2,10 +2,13 @@ package com.tasneem.safwa.features.home.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.tasneem.safwa.core.util.Resource
 import com.tasneem.safwa.features.home.presentation.state.GreetingType
 import com.tasneem.safwa.features.home.presentation.state.HomeEffect
 import com.tasneem.safwa.features.home.presentation.state.HomeEvent
 import com.tasneem.safwa.features.home.presentation.state.HomeState
+import com.tasneem.safwa.features.core.domain.usecase.GetWishlistUseCase
+import com.tasneem.safwa.features.core.domain.usecase.ToggleFavoriteUseCase
 import com.tasneem.safwa.features.wishlist.presentation.WishlistMockData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
@@ -19,7 +22,10 @@ import java.util.Calendar
 import javax.inject.Inject
 
 @HiltViewModel
-class HomeViewModel @Inject constructor() : ViewModel() {
+class HomeViewModel @Inject constructor(
+    private val toggleFavoriteUseCase: ToggleFavoriteUseCase,
+    private val getWishlistUseCase: GetWishlistUseCase
+) : ViewModel() {
 
     private val _state = MutableStateFlow(HomeState())
     val state: StateFlow<HomeState> = _state.asStateFlow()
@@ -29,6 +35,17 @@ class HomeViewModel @Inject constructor() : ViewModel() {
 
     init {
         onEvent(HomeEvent.LoadHome)
+        observeWishlist()
+    }
+
+    private fun observeWishlist() {
+        viewModelScope.launch {
+            getWishlistUseCase().collect { result ->
+                if (result is Resource.Success) {
+                    _state.update { it.copy(favoriteProductIds = result.data.map { p -> p.id }.toSet()) }
+                }
+            }
+        }
     }
 
     fun onEvent(event: HomeEvent) {
@@ -68,6 +85,9 @@ class HomeViewModel @Inject constructor() : ViewModel() {
             }
 
             is HomeEvent.ToggleFavorite -> {
+                viewModelScope.launch {
+                    toggleFavoriteUseCase(event.product)
+                }
             }
 
             is HomeEvent.ProductClicked -> {

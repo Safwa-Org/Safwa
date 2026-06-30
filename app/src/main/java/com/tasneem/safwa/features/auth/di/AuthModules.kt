@@ -9,6 +9,8 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.tasneem.safwa.R
 import com.tasneem.safwa.features.auth.data.datasource.auth.FirebaseAuthDataSource
 import com.tasneem.safwa.features.auth.data.datasource.auth.FirebaseAuthDataSourceImpl
+import com.tasneem.safwa.features.core.domain.usecase.GetCurrentUserIdUseCase
+import com.tasneem.safwa.features.auth.domain.usecase.GetCurrentUserIdUseCaseImpl
 import com.tasneem.safwa.features.auth.data.datasource.firestore.FirestoreDataSource
 import com.tasneem.safwa.features.auth.data.datasource.firestore.FirestoreDataSourceImpl
 import com.tasneem.safwa.features.auth.data.repository.AuthRepositoryImpl
@@ -125,4 +127,10 @@ object AuthUseCaseModule {
     fun provideSendVerificationEmailUseCase(
         repository: AuthRepository
     ): SendVerificationEmailUseCase = SendVerificationEmailUseCase(repository)
+
+    @Provides
+    @Singleton
+    fun provideGetCurrentUserIdUseCase(
+        authDataSource: FirebaseAuthDataSource
+    ): GetCurrentUserIdUseCase = GetCurrentUserIdUseCaseImpl(authDataSource)
 }

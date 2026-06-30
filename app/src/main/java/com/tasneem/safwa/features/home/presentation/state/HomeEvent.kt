@@ -1,6 +1,6 @@
 package com.tasneem.safwa.features.home.presentation.state
 
-import com.tasneem.safwa.features.wishlist.domain.model.Product
+import com.tasneem.safwa.features.core.domain.model.Product
 
 sealed interface HomeEvent {
     data object LoadHome : HomeEvent

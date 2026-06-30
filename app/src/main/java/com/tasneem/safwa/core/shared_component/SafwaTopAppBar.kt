@@ -1,5 +1,6 @@
 package com.tasneem.safwa.core.shared_component
 
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.ShoppingCart
@@ -24,6 +25,7 @@ fun SafwaTopAppBar(
 ) {
     CenterAlignedTopAppBar(
         modifier = modifier,
+        windowInsets = WindowInsets(0, 0, 0, 0),
         title = {
             Text(
                 text = title,

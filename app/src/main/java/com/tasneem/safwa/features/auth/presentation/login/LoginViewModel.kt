@@ -1,6 +1,5 @@
 package com.tasneem.safwa.features.auth.presentation.login
 
-import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tasneem.safwa.R
@@ -10,6 +9,7 @@ import com.tasneem.safwa.features.auth.domain.usecase.GetCurrentUserUseCase
 import com.tasneem.safwa.features.auth.domain.usecase.GoogleLoginUseCase
 import com.tasneem.safwa.features.auth.domain.usecase.GuestLoginUseCase
 import com.tasneem.safwa.features.auth.domain.usecase.LoginUseCase
+import com.tasneem.safwa.features.wishlist.domain.usecase.SyncWishlistUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,7 +25,8 @@ class LoginViewModel @Inject constructor(
     private val loginUseCase: LoginUseCase,
     private val googleLoginUseCase: GoogleLoginUseCase,
     private val guestLoginUseCase: GuestLoginUseCase,
-    private val getCurrentUserUseCase: GetCurrentUserUseCase
+    private val getCurrentUserUseCase: GetCurrentUserUseCase,
+    private val syncWishlistUseCase: SyncWishlistUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(LoginState())
@@ -40,6 +41,7 @@ class LoginViewModel @Inject constructor(
             if (result is Resource.Success && result.data != null) {
                 val user = result.data
                 _state.update { it.copy(isGuest = user.isGuest) }
+                syncWishlistUseCase()
                 _sideEffect.send(LoginSideEffect.NavigateToHome)
             }
         }
@@ -156,6 +158,7 @@ class LoginViewModel @Inject constructor(
             is Resource.Success -> {
                 val user = result.data
                 _state.update { it.copy(isGuest = user.isGuest) }
+                syncWishlistUseCase()
                 _sideEffect.send(LoginSideEffect.NavigateToHome)
             }
             is Resource.Error -> {
