@@ -126,7 +126,7 @@ fun AddressEditDialog(
                     onValueChange = { street = it },
                     label = { Text(stringResource(R.string.address_street)) },
                     modifier = Modifier.fillMaxWidth(),
-                    minLines = 2,
+                    minLines = 1,
                     shape = textFieldShape
                 )
 

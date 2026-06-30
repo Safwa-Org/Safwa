@@ -130,4 +130,14 @@
     <string name="delete_address">Delete Address?</string>
     <string name="confirm_delete_address">Are you sure you want to delete this address? This action cannot be undone.</string>
     <string name="delete">Delete</string>
+    <string name="filter_all">All</string>
+    <string name="filter_in_transit">In transit</string>
+    <string name="filter_delivered">Delivered</string>
+    <string name="filter_cancelled">Cancelled</string>
+    <string name="order">Order</string>
+    <string name="item">Item</string>
+    <string name="view_details">View Details</string>
+    <string name="items">Items</string>
+    <string name="order_history">Order History</string>
+    <string name="search_orders">Search Orders</string>
 </resources>

@@ -10,8 +10,14 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import com.tasneem.safwa.features.home.presentation.view.HomeScreen
+import com.tasneem.safwa.features.home.presentation.view.component.HomeBottomBar
 import com.tasneem.safwa.features.profile.presentation.view.languageandcurrency.LanguageAndCurrencyScreen
+import com.tasneem.safwa.features.profile.presentation.view.orderhistory.OrderHistoryScreen
+import com.tasneem.safwa.features.profile.presentation.view.profile.ProfileScreen
 import com.tasneem.safwa.features.profile.presentation.view.savedaddresses.SavedAddressesScreen
+import com.tasneem.safwa.features.search.presentation.SearchScreen
+import com.tasneem.safwa.features.wishlist.presentation.WishlistScreen
 
 @Composable
 fun MainScreen(
@@ -21,19 +27,19 @@ fun MainScreen(
     var selectedTab by rememberSaveable { mutableIntStateOf(0) }
 
     Scaffold(
-        /*bottomBar = {
+        bottomBar = {
             HomeBottomBar(
                 selectedIndex = selectedTab,
                 onItemSelected = { index -> selectedTab = index }
             )
-        }*/
+        }
     ) { innerPadding ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-          /*  when (selectedTab) {
+            when (selectedTab) {
                 0 -> HomeScreen(
                     onNavigateToProductDetails = onNavigateToProductDetails,
                     onNavigateToCart = onNavigateToCart
@@ -41,8 +47,7 @@ fun MainScreen(
                 1 -> SearchScreen()
                 2 -> WishlistScreen()
                 3 -> ProfileScreen()
-            }*/
-            SavedAddressesScreen()
+            }
         }
     }
 }
