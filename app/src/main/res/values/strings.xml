@@ -100,4 +100,21 @@
     <string name="editorial_headline">Quiet luxury,\nsealed in glass.</string>
     <string name="search_icon_content_desc">Search</string>
     <string name="cart_icon_content_desc">Cart</string>
+    <string name="elite">ELITE</string>
+    <string name="orderscapital">ORDERS</string>
+    <string name="wishlistcapital">WISHLIST</string>
+    <string name="pointscapital">POINTS</string>
+    <string name="accountcapital">ACCOUNT</string>
+    <string name="orderhistory">Order History</string>
+    <string name="orders">Orders</string>
+    <string name="savedaddresses">Saved Addresses</string>
+    <string name="addresses">Addresses</string>
+    <string name="langandcurrency"><![CDATA[Language & Currency]]></string>
+    <string name="darkmode">Dark mode</string>
+    <string name="logout">Log out</string>
+    <string name="appearance">Appearance</string>
+    <string name="singlespace">" "</string>
+    <string name="save_preferences">Save Prefrences</string>
+    <string name="app_language">App Language</string>
+    <string name="currency">Currency</string>
 </resources>

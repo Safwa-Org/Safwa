@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tasneem.safwa.R
 import com.tasneem.safwa.core.util.Resource
-import com.tasneem.safwa.features.auth.domain.model.User
+import com.tasneem.safwa.core.domain.model.User
 import com.tasneem.safwa.features.auth.domain.usecase.RegisterUseCase
 import com.tasneem.safwa.features.auth.domain.usecase.SendVerificationEmailUseCase
 import com.tasneem.safwa.features.auth.presentation.register.state.RegisterEvent

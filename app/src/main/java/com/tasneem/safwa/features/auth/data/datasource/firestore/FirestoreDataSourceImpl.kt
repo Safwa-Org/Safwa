@@ -1,7 +1,7 @@
 package com.tasneem.safwa.features.auth.data.datasource.firestore
 
 import com.google.firebase.firestore.FirebaseFirestore
-import com.tasneem.safwa.features.auth.data.model.UserEntity
+import com.tasneem.safwa.core.data.model.UserEntity
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 

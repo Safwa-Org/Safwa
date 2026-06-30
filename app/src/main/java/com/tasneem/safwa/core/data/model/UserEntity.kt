@@ -1,7 +1,8 @@
-package com.tasneem.safwa.features.auth.domain.model
+package com.tasneem.safwa.core.data.model
 
-data class User(
-    val id: String ,
+
+data class UserEntity(
+    val id: String = "",
     val email: String? = null,
     val firstName: String = "",
     val lastName: String = "",

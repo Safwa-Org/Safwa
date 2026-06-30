@@ -13,6 +13,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.tasneem.safwa.features.home.presentation.view.HomeScreen
 import com.tasneem.safwa.features.home.presentation.view.component.HomeBottomBar
+import com.tasneem.safwa.features.profile.presentation.view.LanguageAndCurrencyScreen
+import com.tasneem.safwa.features.profile.presentation.view.ProfileScreen
 import com.tasneem.safwa.features.search.presentation.SearchScreen
 import com.tasneem.safwa.features.wishlist.presentation.WishlistScreen
 
@@ -24,29 +26,28 @@ fun MainScreen(
     var selectedTab by rememberSaveable { mutableIntStateOf(0) }
 
     Scaffold(
-        bottomBar = {
+        /*bottomBar = {
             HomeBottomBar(
                 selectedIndex = selectedTab,
                 onItemSelected = { index -> selectedTab = index }
             )
-        }
+        }*/
     ) { innerPadding ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            when (selectedTab) {
+          /*  when (selectedTab) {
                 0 -> HomeScreen(
                     onNavigateToProductDetails = onNavigateToProductDetails,
                     onNavigateToCart = onNavigateToCart
                 )
                 1 -> SearchScreen()
                 2 -> WishlistScreen()
-                3 -> {
-                    // ProfileScreen
-                }
-            }
+                3 -> ProfileScreen()
+            }*/
+            LanguageAndCurrencyScreen()
         }
     }
 }
