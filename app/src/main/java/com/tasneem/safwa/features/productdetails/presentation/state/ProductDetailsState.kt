@@ -5,7 +5,9 @@ import com.tasneem.safwa.features.productdetails.presentation.state.mapper.Produ
 data class ProductDetailsState(
     val isLoading: Boolean = true,
     val product: ProductDetailsUiModel? = null,
-    val selectedSize: String = "",
+    val selectedOptions: Map<String, String> = emptyMap(),
+    val selectedVariantPrice: String? = null,
+    val isSelectedVariantAvailable: Boolean = true,
     val isWishlisted: Boolean = false,
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
 )

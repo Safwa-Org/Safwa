@@ -28,6 +28,8 @@ import com.tasneem.safwa.features.productdetails.presentation.state.ProductDetai
 import com.tasneem.safwa.features.productdetails.presentation.state.ProductDetailsEvent
 import com.tasneem.safwa.features.productdetails.presentation.state.ProductDetailsState
 import com.tasneem.safwa.features.productdetails.presentation.state.mapper.ProductDetailsUiModel
+import com.tasneem.safwa.features.productdetails.presentation.state.mapper.VariantOptionGroup
+import com.tasneem.safwa.features.productdetails.presentation.state.mapper.VariantOptionValue
 import com.tasneem.safwa.features.productdetails.presentation.view.component.ProductDescriptionSection
 import com.tasneem.safwa.features.productdetails.presentation.view.component.ProductImageHeader
 import com.tasneem.safwa.features.productdetails.presentation.view.component.ProductInfoSection
@@ -62,13 +64,15 @@ fun ProductDetailsScreen(
 fun ProductDetailsContent(
     state: ProductDetailsState,
     onEvent: (ProductDetailsEvent) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
+    val product = state.product
     Scaffold(
         bottomBar = {
-            state.product?.let { product ->
+            if (product != null) {
                 StickyBottomActionBar(
-                    priceFormatted = product.priceFormatted,
+                    priceFormatted = state.selectedVariantPrice ?: product.priceFormatted,
+                    isAvailable = state.isSelectedVariantAvailable,
                     onAddToCart = { onEvent(ProductDetailsEvent.AddToCartClicked) }
                 )
             }
@@ -86,11 +90,13 @@ fun ProductDetailsContent(
                 }
 
                 state.errorMessage != null -> {
-                    Text(text = state.errorMessage, modifier = Modifier.align(Alignment.Center))
+                    Text(
+                        text = state.errorMessage,
+                        modifier = Modifier.align(Alignment.Center)
+                    )
                 }
 
-                state.product != null -> {
-                    val product = state.product
+                product != null -> {
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
@@ -107,19 +113,19 @@ fun ProductDetailsContent(
                         )
 
                         ProductInfoSection(
-                            title = product.title,
                             vendor = product.vendor,
-                            rating = product.rating,
-                            reviewCount = product.reviewCount,
+                            productType = product.productType,
+                            title = product.title,
                             priceFormatted = product.priceFormatted,
-                            sizes = product.sizes,
-                            selectedSize = state.selectedSize,
-                            onSizeSelected = { size -> onEvent(ProductDetailsEvent.SizeSelected(size)) }
+                            priceRangeFormatted = product.priceRangeFormatted,
+                            variantOptions = product.variantOptions,
+                            selectedOptions = state.selectedOptions,
+                            onOptionSelected = { name, value ->
+                                onEvent(ProductDetailsEvent.OptionSelected(name, value))
+                            }
                         )
 
-                        ProductDescriptionSection(
-                            description = product.description,
-                        )
+                        ProductDescriptionSection(description = product.description)
 
                         Spacer(modifier = Modifier.height(24.dp))
                     }
@@ -129,17 +135,8 @@ fun ProductDetailsContent(
     }
 }
 
-@Preview(
-    name = "Light",
-    showBackground = true,
-    showSystemUi = true
-)
-@Preview(
-    name = "Dark",
-    uiMode = Configuration.UI_MODE_NIGHT_YES,
-    showBackground = true,
-    showSystemUi = true
-)
+@Preview(name = "Light", showBackground = true, showSystemUi = true)
+@Preview(name = "Dark", uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true, showSystemUi = true)
 @Composable
 private fun ProductDetailsContentPreview() {
     SafwaTheme {
@@ -147,26 +144,41 @@ private fun ProductDetailsContentPreview() {
             state = ProductDetailsState(
                 isLoading = false,
                 isWishlisted = true,
-                selectedSize = "M",
+                selectedOptions = mapOf("Size" to "M", "Color" to "Black"),
+                selectedVariantPrice = "USD 149.99",
+                isSelectedVariantAvailable = true,
                 product = ProductDetailsUiModel(
                     id = "1",
                     title = "Nike Air Max 270",
                     vendor = "Nike",
-                    description = "The Nike Air Max 270 delivers visible cushioning under every step. Designed for everyday comfort, it features a lightweight upper and responsive Air unit for all-day wear.",
-                    priceFormatted = "$149.99",
+                    productType = "Running Shoes",
+                    description = "The Nike Air Max 270 delivers visible cushioning under every step.",
+                    priceFormatted = "USD 149.99",
+                    priceRangeFormatted = "USD 149.99 – 189.99",
                     imageUrls = listOf(
-                        "https://picsum.photos/600/600?1",
                         "https://picsum.photos/600/600?1",
                         "https://picsum.photos/600/600?2",
                     ),
-                    imageLabels = listOf(
-                        "Front view",
-                        "Side view",
-                        "Back view"
-                    ),
+                    imageLabels = listOf("Front view", "Side view"),
                     rating = 4.8f,
                     reviewCount = 236,
-                    sizes = listOf("S", "M", "L", "XL")
+                    variantOptions = listOf(
+                        VariantOptionGroup(
+                            "Size", listOf(
+                                VariantOptionValue("S", true),
+                                VariantOptionValue("M", true),
+                                VariantOptionValue("L", false),
+                                VariantOptionValue("XL", true),
+                            )
+                        ),
+                        VariantOptionGroup(
+                            "Color", listOf(
+                                VariantOptionValue("Black", true),
+                                VariantOptionValue("White", false),
+                            )
+                        )
+                    ),
+                    variants = emptyList(),
                 )
             ),
             onEvent = {}

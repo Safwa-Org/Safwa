@@ -7,6 +7,8 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.tasneem.safwa.R
 import com.tasneem.safwa.core.navigation.ScreenRoute
+import com.tasneem.safwa.features.productdetails.domain.model.ProductDetails
+import com.tasneem.safwa.features.productdetails.domain.model.ProductVariant
 import com.tasneem.safwa.features.productdetails.domain.usecase.GetProductDetailsUseCase
 import com.tasneem.safwa.features.productdetails.presentation.state.ProductDetailsEffect
 import com.tasneem.safwa.features.productdetails.presentation.state.ProductDetailsEvent
@@ -26,7 +28,7 @@ import javax.inject.Inject
 class ProductDetailsViewModel @Inject constructor(
     private val detailsUseCase: GetProductDetailsUseCase,
     private val context: Application,
-    savedStateHandle: SavedStateHandle
+    savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(ProductDetailsState())
@@ -45,20 +47,23 @@ class ProductDetailsViewModel @Inject constructor(
             _state.update { it.copy(isLoading = true, errorMessage = null) }
             try {
                 val product = detailsUseCase(handle)
-                val firstSize = product.variants
-                    .flatMap { it.selectedOptions }
-                    .firstOrNull { it.name.equals("Size", ignoreCase = true) }
-                    ?.value ?: product.variants.firstOrNull()?.title.orEmpty()
+                val defaultOptions = resolveDefaultOptions(product)
+                val matchedVariant = findMatchingVariant(product, defaultOptions)
                 _state.update {
                     it.copy(
                         isLoading = false,
                         product = product.toUiModel(),
-                        selectedSize = firstSize
+                        selectedOptions = defaultOptions,
+                        selectedVariantPrice = matchedVariant?.price?.let { p -> "${p.currency} ${p.amount}" },
+                        isSelectedVariantAvailable = matchedVariant?.availableForSale ?: true,
                     )
                 }
             } catch (e: Exception) {
                 _state.update {
-                    it.copy(isLoading = false, errorMessage = e.message ?: context.getString(R.string.something_went_wrong))
+                    it.copy(
+                        isLoading = false,
+                        errorMessage = e.message ?: context.getString(R.string.something_went_wrong),
+                    )
                 }
             }
         }
@@ -66,8 +71,17 @@ class ProductDetailsViewModel @Inject constructor(
 
     fun onEvent(event: ProductDetailsEvent) {
         when (event) {
-            is ProductDetailsEvent.SizeSelected -> {
-                _state.update { it.copy(selectedSize = event.size) }
+            is ProductDetailsEvent.OptionSelected -> {
+                val newOptions = _state.value.selectedOptions + (event.optionName to event.value)
+                val product = _state.value.product ?: return
+                val matchedVariant = findMatchingVariant(product.variants, newOptions)
+                _state.update {
+                    it.copy(
+                        selectedOptions = newOptions,
+                        selectedVariantPrice = matchedVariant?.price?.let { p -> "${p.currency} ${p.amount}" },
+                        isSelectedVariantAvailable = matchedVariant?.availableForSale ?: true,
+                    )
+                }
             }
 
             is ProductDetailsEvent.ToggleWishlist -> {
@@ -75,7 +89,7 @@ class ProductDetailsViewModel @Inject constructor(
             }
 
             is ProductDetailsEvent.AddToCartClicked -> {
-                TODO("Implement cart")
+                // TODO: implement cart
             }
 
             is ProductDetailsEvent.BackClicked -> {
@@ -85,8 +99,30 @@ class ProductDetailsViewModel @Inject constructor(
             }
 
             is ProductDetailsEvent.ShareClicked -> {
-                TODO("Implement share")
+                // TODO: implement share
             }
+        }
+    }
+
+    private fun resolveDefaultOptions(product: ProductDetails): Map<String, String> {
+        val firstAvailableVariant = product.variants.firstOrNull { it.availableForSale }
+            ?: product.variants.firstOrNull()
+        return firstAvailableVariant?.selectedOptions
+            ?.associate { it.name to it.value }
+            ?: emptyMap()
+    }
+
+    private fun findMatchingVariant(
+        product: ProductDetails,
+        options: Map<String, String>,
+    ): ProductVariant? = findMatchingVariant(product.variants, options)
+
+    private fun findMatchingVariant(
+        variants: List<ProductVariant>,
+        options: Map<String, String>,
+    ): ProductVariant? = variants.firstOrNull { variant ->
+        variant.selectedOptions.all { option ->
+            options[option.name] == option.value
         }
     }
 }
