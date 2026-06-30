@@ -6,4 +6,5 @@ sealed interface ProductDetailsEvent {
     object AddToCartClicked : ProductDetailsEvent
     object BackClicked : ProductDetailsEvent
     object ShareClicked : ProductDetailsEvent
+    object RetryClicked : ProductDetailsEvent
 }

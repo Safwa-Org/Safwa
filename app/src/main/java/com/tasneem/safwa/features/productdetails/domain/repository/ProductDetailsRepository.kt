@@ -6,5 +6,4 @@ interface ProductDetailsRepository {
 
     suspend fun getProductDetailsByHandle(handle: String): ProductDetails
 
-    suspend fun toggleWishlist(productId: String, isWishlist: Boolean): Boolean
 }

@@ -1,12 +1,14 @@
 package com.tasneem.safwa.features.productdetails.presentation.viewmodel
 
-import android.app.Application
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.tasneem.safwa.R
+import com.tasneem.safwa.core.exception.DomainException
 import com.tasneem.safwa.core.navigation.ScreenRoute
+import com.tasneem.safwa.core.presentation.mapper.toUiError
+import com.tasneem.safwa.core.presentation.model.UiError
 import com.tasneem.safwa.features.productdetails.domain.model.ProductDetails
 import com.tasneem.safwa.features.productdetails.domain.model.ProductVariant
 import com.tasneem.safwa.features.productdetails.domain.usecase.GetProductDetailsUseCase
@@ -27,7 +29,6 @@ import javax.inject.Inject
 @HiltViewModel
 class ProductDetailsViewModel @Inject constructor(
     private val detailsUseCase: GetProductDetailsUseCase,
-    private val context: Application,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
@@ -45,29 +46,33 @@ class ProductDetailsViewModel @Inject constructor(
 
     private fun loadProduct(handle: String) {
         viewModelScope.launch {
-            _state.update { it.copy(isLoading = true, errorMessage = null) }
+            _state.update { it.copy(isLoading = true, error = null) }
             try {
-                val product = detailsUseCase(handle)
-                val defaultOptions = resolveDefaultOptions(product)
-                val matchedVariant = findMatchingVariant(product, defaultOptions)
-                _state.update {
-                    it.copy(
-                        isLoading = false,
-                        product = product.toUiModel(),
-                        selectedOptions = defaultOptions,
-                        selectedVariantPrice = matchedVariant?.price?.let { p -> "${p.currency} ${p.amount}" },
-                        isSelectedVariantAvailable = matchedVariant?.availableForSale ?: true,
-                    )
-                }
-            } catch (e: Exception) {
-                _state.update {
-                    it.copy(
-                        isLoading = false,
-                        errorMessage = e.message ?: context.getString(R.string.something_went_wrong),
-                    )
-                }
+                onProductLoaded(detailsUseCase(handle))
+            } catch (e: DomainException) {
+                onLoadError(e.toUiError())
+            } catch (_: Exception) {
+                onLoadError(UiError(R.string.something_went_wrong, R.string.error_generic_desc))
             }
         }
+    }
+
+    private fun onProductLoaded(product: ProductDetails) {
+        val defaultOptions = resolveDefaultOptions(product)
+        val matchedVariant = findMatchingVariant(product, defaultOptions)
+        _state.update {
+            it.copy(
+                isLoading = false,
+                product = product.toUiModel(),
+                selectedOptions = defaultOptions,
+                selectedVariantPrice = matchedVariant?.price?.let { p -> "${p.currency} ${p.amount}" },
+                isSelectedVariantAvailable = matchedVariant?.availableForSale ?: true,
+            )
+        }
+    }
+
+    private fun onLoadError(error: UiError) {
+        _state.update { it.copy(isLoading = false, error = error) }
     }
 
     fun onEvent(event: ProductDetailsEvent) {
@@ -90,13 +95,17 @@ class ProductDetailsViewModel @Inject constructor(
             }
 
             is ProductDetailsEvent.AddToCartClicked -> {
-                TODO("implement add to cart")
+                // TODO: implement add to cart
             }
 
             is ProductDetailsEvent.BackClicked -> {
                 viewModelScope.launch {
                     _effect.send(ProductDetailsEffect.NavigateBack)
                 }
+            }
+
+            is ProductDetailsEvent.RetryClicked -> {
+                loadProduct(productHandle)
             }
 
             is ProductDetailsEvent.ShareClicked -> {

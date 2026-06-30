@@ -1,5 +1,6 @@
 package com.tasneem.safwa.features.productdetails.presentation.state
 
+import com.tasneem.safwa.core.presentation.model.UiError
 import com.tasneem.safwa.features.productdetails.presentation.state.mapper.ProductDetailsUiModel
 
 data class ProductDetailsState(
@@ -9,5 +10,5 @@ data class ProductDetailsState(
     val selectedVariantPrice: String? = null,
     val isSelectedVariantAvailable: Boolean = true,
     val isWishlisted: Boolean = false,
-    val errorMessage: String? = null,
+    val error: UiError? = null,
 )

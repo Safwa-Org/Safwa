@@ -16,7 +16,7 @@ import javax.inject.Inject
 class ProductRemoteDataSourceImpl @Inject constructor(
     private val apolloClient: ApolloClient,
     private val mapper: ProductMapper,
-    private val searchMapper: SearchProductMapper
+    private val searchMapper: SearchProductMapper,
     private val productDetailsDtoMapper: ProductDetailsDtoMapper
 ) : ProductRemoteDataSource {
 
