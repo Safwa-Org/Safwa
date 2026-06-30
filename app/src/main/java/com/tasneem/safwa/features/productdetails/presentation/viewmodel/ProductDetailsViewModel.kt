@@ -37,9 +37,10 @@ class ProductDetailsViewModel @Inject constructor(
     private val _effect = Channel<ProductDetailsEffect>()
     val effect = _effect.receiveAsFlow()
 
+    private val productHandle: String = savedStateHandle.toRoute<ScreenRoute.ProductDetails>().handle
+
     init {
-        val handle = savedStateHandle.toRoute<ScreenRoute.ProductDetails>().handle
-        loadProduct(handle)
+        loadProduct(productHandle)
     }
 
     private fun loadProduct(handle: String) {
@@ -89,7 +90,7 @@ class ProductDetailsViewModel @Inject constructor(
             }
 
             is ProductDetailsEvent.AddToCartClicked -> {
-                // TODO: implement cart
+                TODO("implement add to cart")
             }
 
             is ProductDetailsEvent.BackClicked -> {
@@ -99,7 +100,13 @@ class ProductDetailsViewModel @Inject constructor(
             }
 
             is ProductDetailsEvent.ShareClicked -> {
-                // TODO: implement share
+                val title = _state.value.product?.title ?: return
+                val storeBaseUrl = com.tasneem.safwa.network.BuildConfig.SHOPIFY_ENDPOINT
+                    .substringBefore("/api/")
+                val url = "$storeBaseUrl/products/$productHandle"
+                viewModelScope.launch {
+                    _effect.send(ProductDetailsEffect.ShareProduct(title = title, url = url))
+                }
             }
         }
     }
