@@ -81,7 +81,7 @@ fun SearchContent(
                     items(state.filteredProducts, key = { it.id }) { product ->
                         ProductCard(
                             product = product,
-                            isFavorite = false,
+                            isFavorite = state.favoriteProductIds.contains(product.id),
                             onToggleFavorite = { onIntent(SearchIntent.ToggleFavorite(product)) },
                             onClick = { onIntent(SearchIntent.ProductClicked(product)) }
                         )

@@ -9,11 +9,11 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.tasneem.safwa.R
 import com.tasneem.safwa.features.auth.data.datasource.auth.FirebaseAuthDataSource
 import com.tasneem.safwa.features.auth.data.datasource.auth.FirebaseAuthDataSourceImpl
+import com.tasneem.safwa.features.core.domain.usecase.GetCurrentUserIdUseCase
+import com.tasneem.safwa.features.auth.domain.usecase.GetCurrentUserIdUseCaseImpl
 import com.tasneem.safwa.features.auth.data.datasource.firestore.FirestoreDataSource
 import com.tasneem.safwa.features.auth.data.datasource.firestore.FirestoreDataSourceImpl
 import com.tasneem.safwa.features.auth.data.repository.AuthRepositoryImpl
-import com.tasneem.safwa.features.core.domain.AuthDataSource
-import com.tasneem.safwa.features.core.data.AuthDataSourceImpl
 import com.tasneem.safwa.features.auth.domain.repository.AuthRepository
 import com.tasneem.safwa.features.auth.domain.usecase.GetCurrentUserUseCase
 import com.tasneem.safwa.features.auth.domain.usecase.GoogleLoginUseCase
@@ -86,12 +86,6 @@ object AuthDataModule {
         firebaseAuthDataSource: FirebaseAuthDataSource,
         firestoreDataSource: FirestoreDataSource
     ): AuthRepository = AuthRepositoryImpl(firebaseAuthDataSource, firestoreDataSource)
-
-    @Provides
-    @Singleton
-    fun provideCoreAuthDataSource(
-        auth: FirebaseAuth
-    ): AuthDataSource = AuthDataSourceImpl(auth)
 }
 
 @Module
@@ -133,4 +127,10 @@ object AuthUseCaseModule {
     fun provideSendVerificationEmailUseCase(
         repository: AuthRepository
     ): SendVerificationEmailUseCase = SendVerificationEmailUseCase(repository)
+
+    @Provides
+    @Singleton
+    fun provideGetCurrentUserIdUseCase(
+        authDataSource: FirebaseAuthDataSource
+    ): GetCurrentUserIdUseCase = GetCurrentUserIdUseCaseImpl(authDataSource)
 }

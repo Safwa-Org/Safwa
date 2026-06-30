@@ -1,6 +1,6 @@
 package com.tasneem.safwa.features.wishlist.domain.repository
 
-import com.tasneem.safwa.features.wishlist.domain.model.Product
+import com.tasneem.safwa.features.core.domain.model.Product
 import kotlinx.coroutines.flow.Flow
 
 interface WishlistRepository {

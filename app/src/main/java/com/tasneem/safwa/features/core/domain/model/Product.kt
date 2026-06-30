@@ -1,4 +1,4 @@
-package com.tasneem.safwa.features.wishlist.domain.model
+package com.tasneem.safwa.features.core.domain.model
 
 data class Product(
     val id: String = "",

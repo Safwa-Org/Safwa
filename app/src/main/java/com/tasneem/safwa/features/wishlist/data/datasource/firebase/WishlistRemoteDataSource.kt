@@ -1,7 +1,7 @@
 package com.tasneem.safwa.features.wishlist.data.datasource.firebase
 
 import com.google.firebase.firestore.FirebaseFirestore
-import com.tasneem.safwa.features.wishlist.domain.model.Product
+import com.tasneem.safwa.features.core.domain.model.Product
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 

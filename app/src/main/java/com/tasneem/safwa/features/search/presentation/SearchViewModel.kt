@@ -2,7 +2,9 @@ package com.tasneem.safwa.features.search.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.tasneem.safwa.features.wishlist.domain.usecase.ToggleFavoriteUseCase
+import com.tasneem.safwa.core.util.Resource
+import com.tasneem.safwa.features.core.domain.usecase.ToggleFavoriteUseCase
+import com.tasneem.safwa.features.core.domain.usecase.GetWishlistUseCase
 import com.tasneem.safwa.features.wishlist.presentation.WishlistMockData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,7 +16,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SearchViewModel @Inject constructor(
-    private val toggleFavoriteUseCase: ToggleFavoriteUseCase
+    private val toggleFavoriteUseCase: ToggleFavoriteUseCase,
+    private val getWishlistUseCase: GetWishlistUseCase
 ) : ViewModel() {
     private val _state = MutableStateFlow(SearchState())
     val state: StateFlow<SearchState> = _state.asStateFlow()
@@ -29,6 +32,18 @@ class SearchViewModel @Inject constructor(
             categories = categories,
             isLoading = false
         ) }
+        
+        observeWishlist()
+    }
+
+    private fun observeWishlist() {
+        viewModelScope.launch {
+            getWishlistUseCase().collect { result ->
+                if (result is Resource.Success) {
+                    _state.update { it.copy(favoriteProductIds = result.data.map { p -> p.id }.toSet()) }
+                }
+            }
+        }
     }
 
     fun onIntent(intent: SearchIntent) {

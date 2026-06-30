@@ -1,4 +1,4 @@
-package com.tasneem.safwa.features.wishlist.data.dp
+package com.tasneem.safwa.core.dp
 
 import android.content.Context
 import androidx.room.Database

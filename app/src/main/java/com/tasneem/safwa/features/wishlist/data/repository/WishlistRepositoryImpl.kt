@@ -1,10 +1,10 @@
 package com.tasneem.safwa.features.wishlist.data.repository
 
-import com.tasneem.safwa.features.core.domain.AuthDataSource
+import com.tasneem.safwa.features.core.domain.usecase.GetCurrentUserIdUseCase
 import com.tasneem.safwa.features.wishlist.data.datasource.firebase.WishlistRemoteDataSource
 import com.tasneem.safwa.features.wishlist.data.datasource.local.WishlistDao
 import com.tasneem.safwa.features.wishlist.data.datasource.local.toEntity
-import com.tasneem.safwa.features.wishlist.domain.model.Product
+import com.tasneem.safwa.features.core.domain.model.Product
 import com.tasneem.safwa.features.wishlist.domain.repository.WishlistRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
@@ -14,7 +14,7 @@ import javax.inject.Inject
 class WishlistRepositoryImpl @Inject constructor(
     private val localDataSource: WishlistDao,
     private val remoteDataSource: WishlistRemoteDataSource,
-    private val authDataSource: AuthDataSource
+    private val getCurrentUserIdUseCase: GetCurrentUserIdUseCase
 ) : WishlistRepository {
 
     override fun getWishlist(): Flow<List<Product>> {
@@ -27,7 +27,7 @@ class WishlistRepositoryImpl @Inject constructor(
         val currentWishlist = localDataSource.getWishlist().firstOrNull() ?: emptyList()
         val isFavorite = currentWishlist.any { it.id == product.id }
         
-        val userId = authDataSource.getCurrentUserId()
+        val userId = getCurrentUserIdUseCase()
 
         if (isFavorite) {
             localDataSource.deleteProduct(product.toEntity())
@@ -43,7 +43,7 @@ class WishlistRepositoryImpl @Inject constructor(
     }
 
     override suspend fun syncWishlist() {
-        val userId = authDataSource.getCurrentUserId() ?: return
+        val userId = getCurrentUserIdUseCase() ?: return
         
         val remoteProducts = remoteDataSource.getWishlist(userId)
         

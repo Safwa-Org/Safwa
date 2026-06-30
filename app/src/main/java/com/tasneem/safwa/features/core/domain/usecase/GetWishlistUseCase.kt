@@ -1,7 +1,7 @@
-package com.tasneem.safwa.features.wishlist.domain.usecase
+package com.tasneem.safwa.features.core.domain.usecase
 
 import com.tasneem.safwa.core.util.Resource
-import com.tasneem.safwa.features.wishlist.domain.model.Product
+import com.tasneem.safwa.features.core.domain.model.Product
 import com.tasneem.safwa.features.wishlist.domain.repository.WishlistRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch

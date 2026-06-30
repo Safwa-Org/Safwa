@@ -3,8 +3,8 @@ package com.tasneem.safwa.features.wishlist.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tasneem.safwa.core.util.Resource
-import com.tasneem.safwa.features.wishlist.domain.usecase.GetWishlistUseCase
-import com.tasneem.safwa.features.wishlist.domain.usecase.ToggleFavoriteUseCase
+import com.tasneem.safwa.features.core.domain.usecase.GetWishlistUseCase
+import com.tasneem.safwa.features.core.domain.usecase.ToggleFavoriteUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

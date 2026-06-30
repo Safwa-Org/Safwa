@@ -1,7 +1,6 @@
 package com.tasneem.safwa.features.home.presentation.view
 
 import android.content.res.Configuration
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -14,7 +13,6 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -39,7 +37,7 @@ import com.tasneem.safwa.features.home.presentation.view.component.GreetingSecti
 import com.tasneem.safwa.features.home.presentation.view.component.HomeTopBar
 import com.tasneem.safwa.features.home.presentation.view.component.SectionHeader
 import com.tasneem.safwa.features.home.presentation.viewmodel.HomeViewModel
-import com.tasneem.safwa.features.wishlist.domain.model.Product
+import com.tasneem.safwa.features.core.domain.model.Product
 import com.tasneem.safwa.features.wishlist.presentation.components.CategoriesRow
 import com.tasneem.safwa.features.wishlist.presentation.components.ProductCard
 
@@ -167,7 +165,7 @@ fun HomeContent(
                         ) { product ->
                             ProductCard(
                                 product = product,
-                                isFavorite = false,
+                                isFavorite = state.favoriteProductIds.contains(product.id),
                                 onToggleFavorite = { onEvent(HomeEvent.ToggleFavorite(product)) },
                                 onClick = { onEvent(HomeEvent.ProductClicked(product)) },
                                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)

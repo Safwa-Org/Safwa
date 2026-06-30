@@ -2,7 +2,7 @@ package com.tasneem.safwa.features.wishlist.data.datasource.local
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.tasneem.safwa.features.wishlist.domain.model.Product
+import com.tasneem.safwa.features.core.domain.model.Product
 
 @Entity(tableName = "wishlist_table")
 data class WishlistEntity(

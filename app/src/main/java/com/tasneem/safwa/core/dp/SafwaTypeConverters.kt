@@ -1,4 +1,4 @@
-package com.tasneem.safwa.features.wishlist.data.dp
+package com.tasneem.safwa.core.dp
 
 import androidx.room.TypeConverter
 import com.google.gson.Gson
