@@ -111,8 +111,12 @@ class SavedAddressesViewModel @Inject constructor(
                                 updatedState
                             }
                         } else {
-                            _effect.send(SavedAddressesEffect.ShowError(error.message ?: "An unknown error occurred."))
-                        }
+                            _state.update { it.copy(
+                                showEditDialog = false,
+                                addressToEdit = null
+                            )}
+
+                            _effect.send(SavedAddressesEffect.ShowError(error.message ?: "An unknown error occurred."))                        }
                     }
                 }
             }
@@ -136,7 +140,6 @@ class SavedAddressesViewModel @Inject constructor(
                         }
                     }
                 }
-                // Dismiss the confirmation modal instantly in the UI layer
                 _state.update { it.copy(addressToDelete = null) }
             }
             is SavedAddressesEvent.DismissDialogs -> {

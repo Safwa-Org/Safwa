@@ -3,13 +3,16 @@ package com.tasneem.safwa.core.domain.usecase.preferences
 import com.tasneem.safwa.core.domain.model.Address
 import com.tasneem.safwa.core.domain.model.AppPreferences
 import com.tasneem.safwa.core.domain.model.User
+import com.tasneem.safwa.core.di.ApplicationScope
 import com.tasneem.safwa.core.domain.repository.RemoteUserRepository
 import com.tasneem.safwa.core.domain.repository.SessionPreferencesRepository
 import com.tasneem.safwa.features.settings.savedaddresses.util.AddressFieldError
 import com.tasneem.safwa.features.settings.savedaddresses.util.AddressValidationException
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import java.util.UUID
 import javax.inject.Inject
 
@@ -42,7 +45,8 @@ class GetSavedAddressesUseCase @Inject constructor(
 
 class UpdateAddressUseCase @Inject constructor(
     private val localRepo: SessionPreferencesRepository,
-    private val remoteRepo: RemoteUserRepository
+    private val remoteRepo: RemoteUserRepository,
+    @ApplicationScope private val externalScope: CoroutineScope
 ) {
     // Enforces accurate Egyptian mobile carrier structure (11 digits total)
     private val phoneRegex = Regex("^(010|011|012|015)[0-9]{8}$")
@@ -87,13 +91,16 @@ class UpdateAddressUseCase @Inject constructor(
 
         localRepo.saveUserSession(updatedUser)
 
-        return try {
-            remoteRepo.uploadUser(updatedUser)
-            Result.success(Unit)
-        } catch (e: Exception) {
-            // Allow success if local caching worked, or route up if strict sync is required
-            Result.success(Unit)
+        externalScope.launch {
+            try {
+                remoteRepo.uploadUser(updatedUser)
+            } catch (e: Exception) {
+                // Log the error silently; the local save was successful.
+            }
         }
+
+        // Return immediately
+        return Result.success(Unit)
     }
 }
 class DeleteAddressUseCase @Inject constructor(
