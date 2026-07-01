@@ -19,7 +19,7 @@ import com.tasneem.safwa.features.wishlist.presentation.components.CategoriesRow
 import com.tasneem.safwa.features.wishlist.presentation.components.EmptyWishlistState
 import com.tasneem.safwa.features.wishlist.presentation.components.ProductCard
 import com.tasneem.safwa.core.shared_component.SafwaTopAppBar
-
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -27,11 +27,20 @@ import androidx.hilt.navigation.compose.hiltViewModel
 @Composable
 fun WishlistScreen(
     modifier: Modifier = Modifier,
+    onNavigateToProductDetails: (String) -> Unit = {},
     viewModel: WishlistViewModel = hiltViewModel()
-
 ) {
     val state by viewModel.state.collectAsState()
-    
+
+    LaunchedEffect(Unit) {
+        viewModel.effect.collect { effect ->
+            when (effect) {
+                is WishlistEffect.NavigateToProductDetails ->
+                    onNavigateToProductDetails(effect.handle)
+            }
+        }
+    }
+
     WishlistContent(
         state = state,
         onIntent = viewModel::onIntent,

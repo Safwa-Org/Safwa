@@ -6,9 +6,11 @@ import com.tasneem.safwa.core.util.Resource
 import com.tasneem.safwa.features.core.domain.usecase.ToggleFavoriteUseCase
 import com.tasneem.safwa.features.core.domain.usecase.GetWishlistUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.Job
@@ -26,6 +28,10 @@ class SearchViewModel @Inject constructor(
 ) : ViewModel() {
     private val _state = MutableStateFlow(SearchState())
     val state: StateFlow<SearchState> = _state.asStateFlow()
+
+    private val _effect = Channel<SearchEffect>()
+    val effect = _effect.receiveAsFlow()
+
     private var searchJob: Job? = null
 
     init {
@@ -72,6 +78,9 @@ class SearchViewModel @Inject constructor(
                 }
             }
             is SearchIntent.ProductClicked -> {
+                viewModelScope.launch {
+                    _effect.send(SearchEffect.NavigateToProductDetails(intent.product.handle))
+                }
             }
             is SearchIntent.ExecuteSearch -> {
                 searchJob?.cancel()

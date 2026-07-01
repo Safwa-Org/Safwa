@@ -98,8 +98,8 @@ fun SafwaNavHost(
         composable<ScreenRoute.Home> {
             MainScreen(
                 isAuthenticated = isAuthenticated,
-                onNavigateToProductDetails = {
-                    // navController.navigate(ScreenRoute.ProductDetails)
+                onNavigateToProductDetails = { handle ->
+                    navController.navigate(ScreenRoute.ProductDetails(handle))
                 },
                 onNavigateToCart = {
                     navController.navigate(ScreenRoute.Cart)

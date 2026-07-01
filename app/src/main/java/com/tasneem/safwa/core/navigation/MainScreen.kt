@@ -55,10 +55,14 @@ fun MainScreen(
                     onNavigateToCart = onNavigateToCart
                 )
 
-                1 -> SearchScreen()
+                1 -> SearchScreen(
+                    onNavigateToProductDetails = onNavigateToProductDetails
+                )
 
                 2 -> if (isAuthenticated) {
-                    WishlistScreen()
+                    WishlistScreen(
+                        onNavigateToProductDetails = onNavigateToProductDetails
+                    )
                 } else {
                     AuthGateContent(
                         title = stringResource(R.string.auth_gate_wishlist_title),
