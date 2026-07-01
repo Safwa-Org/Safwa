@@ -7,6 +7,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.tasneem.safwa.R
+import com.tasneem.safwa.core.domain.repository.SessionPreferencesRepository
 import com.tasneem.safwa.features.auth.data.datasource.auth.FirebaseAuthDataSource
 import com.tasneem.safwa.features.auth.data.datasource.auth.FirebaseAuthDataSourceImpl
 import com.tasneem.safwa.features.core.domain.usecase.GetCurrentUserIdUseCase
@@ -22,6 +23,8 @@ import com.tasneem.safwa.features.auth.domain.usecase.LoginUseCase
 import com.tasneem.safwa.features.auth.domain.usecase.LogoutUseCase
 import com.tasneem.safwa.features.auth.domain.usecase.RegisterUseCase
 import com.tasneem.safwa.features.auth.domain.usecase.SendVerificationEmailUseCase
+import com.tasneem.safwa.features.auth.domain.usecase.SyncUserSessionUseCase
+import com.tasneem.safwa.features.core.domain.usecase.ClearWishlistUseCase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -72,8 +75,8 @@ object AuthDataModule {
 
     @Provides
     @Singleton
-    fun provideAuthDataSource(auth: FirebaseAuth): FirebaseAuthDataSource =
-        FirebaseAuthDataSourceImpl(auth)
+    fun provideAuthDataSource(auth: FirebaseAuth, googleSignInClient: GoogleSignInClient): FirebaseAuthDataSource =
+        FirebaseAuthDataSourceImpl(auth,googleSignInClient)
 
     @Provides
     @Singleton
@@ -94,18 +97,39 @@ object AuthUseCaseModule {
 
     @Provides
     @Singleton
-    fun provideLoginUseCase(repository: AuthRepository): LoginUseCase =
-        LoginUseCase(repository)
+    fun provideLoginUseCase(
+        authRepository: AuthRepository,
+        sessionPreferencesRepository: SessionPreferencesRepository
+    ): LoginUseCase = LoginUseCase(authRepository, sessionPreferencesRepository)
 
     @Provides
     @Singleton
-    fun provideGoogleLoginUseCase(repository: AuthRepository): GoogleLoginUseCase =
-        GoogleLoginUseCase(repository)
+    fun provideGoogleLoginUseCase(
+        authRepository: AuthRepository,
+        sessionPreferencesRepository: SessionPreferencesRepository
+    ): GoogleLoginUseCase = GoogleLoginUseCase(authRepository, sessionPreferencesRepository)
 
     @Provides
     @Singleton
-    fun provideGuestLoginUseCase(repository: AuthRepository): GuestLoginUseCase =
-        GuestLoginUseCase(repository)
+    fun provideGuestLoginUseCase(
+        authRepository: AuthRepository,
+        sessionPreferencesRepository: SessionPreferencesRepository
+    ): GuestLoginUseCase = GuestLoginUseCase(authRepository, sessionPreferencesRepository)
+
+    @Provides
+    @Singleton
+    fun provideLogoutUseCase(
+        authRepository: AuthRepository,
+        sessionPreferencesRepository: SessionPreferencesRepository,
+        clearWishlistUseCase: ClearWishlistUseCase
+    ): LogoutUseCase = LogoutUseCase(authRepository,clearWishlistUseCase ,sessionPreferencesRepository)
+
+    @Provides
+    @Singleton
+    fun provideSyncUserSessionUseCase(
+        authRepository: AuthRepository,
+        sessionPreferencesRepository: SessionPreferencesRepository
+    ): SyncUserSessionUseCase = SyncUserSessionUseCase(authRepository, sessionPreferencesRepository)
 
     @Provides
     @Singleton
@@ -117,17 +141,13 @@ object AuthUseCaseModule {
     fun provideRegisterUseCase(repository: AuthRepository): RegisterUseCase =
         RegisterUseCase(repository)
 
-
+    @Provides
+    @Singleton
+    fun provideSendVerificationEmailUseCase(repository: AuthRepository): SendVerificationEmailUseCase =
+        SendVerificationEmailUseCase(repository)
 
     @Provides
     @Singleton
-    fun provideSendVerificationEmailUseCase(
-        repository: AuthRepository
-    ): SendVerificationEmailUseCase = SendVerificationEmailUseCase(repository)
-
-    @Provides
-    @Singleton
-    fun provideGetCurrentUserIdUseCase(
-        authDataSource: FirebaseAuthDataSource
-    ): GetCurrentUserIdUseCase = GetCurrentUserIdUseCaseImpl(authDataSource)
+    fun provideGetCurrentUserIdUseCase(authDataSource: FirebaseAuthDataSource): GetCurrentUserIdUseCase =
+        GetCurrentUserIdUseCaseImpl(authDataSource)
 }

@@ -3,7 +3,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class UserEntity(
-    val id: String,
+    val id: String = "",
     val email: String? = null,
     val firstName: String = "",
     val lastName: String = "",
