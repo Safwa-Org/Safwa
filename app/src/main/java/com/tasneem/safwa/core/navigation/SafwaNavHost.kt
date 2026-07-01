@@ -11,11 +11,10 @@ import com.tasneem.safwa.features.wishlist.presentation.WishlistScreen
 import com.tasneem.safwa.features.onboarding.OnboardingScreen
 import com.tasneem.safwa.features.productdetails.presentation.view.ProductDetailsScreen
 import com.tasneem.safwa.features.search.presentation.SearchScreen
-import com.tasneem.safwa.features.settings.languageandcurrency.presentation.presentation.LanguageAndCurrencyScreen
+import com.tasneem.safwa.features.settings.languageandcurrency.presentation.view.LanguageAndCurrencyScreen
 import com.tasneem.safwa.features.settings.orderhistory.presentation.view.OrderHistoryScreen
 import com.tasneem.safwa.features.settings.savedaddresses.presentation.view.SavedAddressesScreen
 import com.tasneem.safwa.features.cart.presentation.view.CartScreen
-import com.tasneem.safwa.features.wishlist.presentation.WishlistScreen
 
 @Composable
 fun SafwaNavHost(
@@ -158,8 +157,7 @@ fun SafwaNavHost(
 
         composable<ScreenRoute.Language> {
             LanguageAndCurrencyScreen(
-                // Assuming you add an onNavigateBack callback to this screen
-                // onNavigateBack = { navController.popBackStack() }
+                 onNavigateBack = { navController.popBackStack() }
             )
         }
     }

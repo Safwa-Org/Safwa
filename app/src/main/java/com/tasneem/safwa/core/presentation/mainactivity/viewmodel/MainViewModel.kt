@@ -18,6 +18,13 @@ class MainViewModel @Inject constructor(
     syncUserSessionUseCase: SyncUserSessionUseCase
 ) : ViewModel() {
 
+    val languageCode: StateFlow<String> = preferencesUseCases.getAppPreferences()
+        .map { it.languageCode }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = "en"
+        )
     val isDarkMode: StateFlow<Boolean> = preferencesUseCases.getAppPreferences()
         .map { it.isDarkMode }
         .stateIn(
