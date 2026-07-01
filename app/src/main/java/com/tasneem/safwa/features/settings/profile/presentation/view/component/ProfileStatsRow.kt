@@ -1,4 +1,4 @@
-package com.tasneem.safwa.features.settings.profile.presentation.view
+package com.tasneem.safwa.features.settings.profile.presentation.view.component
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row

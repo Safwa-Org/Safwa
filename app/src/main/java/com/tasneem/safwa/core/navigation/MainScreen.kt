@@ -19,7 +19,11 @@ import com.tasneem.safwa.features.wishlist.presentation.WishlistScreen
 @Composable
 fun MainScreen(
     onNavigateToProductDetails: (String) -> Unit = {},
-    onNavigateToCart: () -> Unit = {}
+    onNavigateToCart: () -> Unit = {},
+    onNavigateToOrderHistory: () -> Unit = {},
+    onNavigateToSavedAddresses: () -> Unit = {},
+    onNavigateToLanguageAndCurrency: () -> Unit = {},
+    onNavigateToLogin: () -> Unit = {}
 ) {
     var selectedTab by rememberSaveable { mutableIntStateOf(0) }
 
@@ -43,7 +47,12 @@ fun MainScreen(
                 )
                 1 -> SearchScreen()
                 2 -> WishlistScreen()
-                3 -> ProfileScreen()
+                3 -> ProfileScreen(
+                    onNavigateToOrderHistory = onNavigateToOrderHistory,
+                    onNavigateToSavedAddresses = onNavigateToSavedAddresses,
+                    onNavigateToLanguageAndCurrency = onNavigateToLanguageAndCurrency,
+                    onNavigateToLogin = onNavigateToLogin
+                )
             }
         }
     }

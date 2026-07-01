@@ -17,9 +17,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun SettingsItem(title: String, subtitle: String, showDivider: Boolean = true) {
+fun SettingsItem(
+    title: String,
+    subtitle: String,
+    modifier: Modifier = Modifier,
+    showDivider: Boolean = true) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 20.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically

@@ -1,4 +1,4 @@
-package com.tasneem.safwa.features.settings.profile.presentation.view
+package com.tasneem.safwa.features.settings.profile.presentation.view.component
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer

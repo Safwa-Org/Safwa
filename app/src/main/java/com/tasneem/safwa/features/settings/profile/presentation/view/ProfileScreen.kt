@@ -17,9 +17,6 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -31,105 +28,135 @@ import com.tasneem.safwa.features.settings.core.presentation.view.components.Sec
 import com.tasneem.safwa.features.settings.core.presentation.view.components.SettingsDivider
 import com.tasneem.safwa.features.settings.core.presentation.view.components.SettingsGroupCard
 import com.tasneem.safwa.features.settings.core.presentation.view.components.SettingsItem
+import com.tasneem.safwa.features.settings.profile.presentation.view.component.ProfileHeader
+import com.tasneem.safwa.features.settings.profile.presentation.view.component.ProfileStatsRow
+import com.tasneem.safwa.features.settings.profile.presentation.view.component.SettingsSwitchItem
+import androidx.compose.foundation.clickable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.tasneem.safwa.features.settings.profile.presentation.state.ProfileEffect
+import com.tasneem.safwa.features.settings.profile.presentation.state.ProfileEvent
+import com.tasneem.safwa.features.settings.profile.presentation.state.ProfileState
+import com.tasneem.safwa.features.settings.profile.presentation.viewmodel.ProfileViewModel
 
 @Composable
 fun ProfileScreen(
-    // viewModel: ProfileViewModel = hiltViewModel(),
-    // onNavigateToOrderHistory: () -> Unit = {}
+    viewModel: ProfileViewModel = hiltViewModel(),
+    onNavigateToOrderHistory: () -> Unit = {},
+    onNavigateToSavedAddresses: () -> Unit = {},
+    onNavigateToLanguageAndCurrency: () -> Unit = {},
+    onNavigateToLogin: () -> Unit = {}
 ) {
-    //     val uiState by viewModel.state.collectAsStateWithLifecycle()
+    val uiState by viewModel.state.collectAsStateWithLifecycle()
 
-    /*    LaunchedEffect(Unit) {
-            viewModel.effect.collect { effect ->
-                when (effect) {
-                    ProgileEffect.NavigateTo -> {}
-                    ProgileEffect.NavigateTo -> {}
-                    ProgileEffect.NavigateTo -> {}
-                    ProgileEffect.NavigateTo -> {}
+    LaunchedEffect(Unit) {
+        viewModel.effect.collect { effect ->
+            when (effect) {
+                is ProfileEffect.NavigateToOrderHistory -> onNavigateToOrderHistory()
+                is ProfileEffect.NavigateToSavedAddresses -> onNavigateToSavedAddresses()
+                is ProfileEffect.NavigateToLanguageAndCurrency -> onNavigateToLanguageAndCurrency()
+                is ProfileEffect.NavigateToLogin -> onNavigateToLogin()
+                is ProfileEffect.ShowError -> {
+                    // TODO: Handle error, e.g., show a Snackbar
                 }
             }
-        }*/
+        }
+    }
+
     ProfileContent(
-        //state = uiState,
-        //onEvent = viewModel::onEvent
+        state = uiState,
+        onEvent = viewModel::onEvent
     )
 }
 
 @Composable
 fun ProfileContent(
-    //state: HomeState,
-    //onEvent: (HomeEvent) -> Unit,
+    state: ProfileState,
+    onEvent: (ProfileEvent) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val scrollState = rememberScrollState()
 
-    // Temporary state to hold switch value until you link it with your ViewModel
-    var isDarkMode by remember { mutableStateOf(false) }
+    // Format points to match "2.4k" style if above 1000
+    val formattedPoints = if (state.points >= 1000) {
+        "${state.points / 1000.0}k".replace(".0k", "k")
+    } else {
+        state.points.toString()
+    }
 
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .verticalScroll(scrollState)
             .padding(horizontal = 20.dp, vertical = 16.dp)
     ) {
         SafwaTopAppBar(
-            stringResource(R.string.profile),
+            title = stringResource(R.string.profile),
         )
-        /*************************************************************************************/
-        // this is now static will be saved in shared prefs to data source to repo to usecase to vm to state
+
         // Profile Header
         ProfileHeader(
-            firstName = "Osama",
-            lastName = "Khaled",
-            email = "osama@safwa.com",
-            photoUrl = null,
-            isElite = true
+            firstName = state.firstName,
+            lastName = state.lastName,
+            email = state.email,
+            photoUrl = state.photoUrl,
+            isElite = state.isElite
         )
 
         Spacer(modifier = Modifier.height(24.dp))
 
         // Stats Row
         ProfileStatsRow(
-            ordersCount = "12",
-            wishlistCount = "8",
-            points = "2.4k"
+            ordersCount = state.ordersCount.toString(),
+            wishlistCount = state.wishlistCount.toString(),
+            points = formattedPoints
         )
 
         Spacer(modifier = Modifier.height(32.dp))
-        /***************************************************************************/
 
         SectionTitle(title = stringResource(R.string.accountcapital))
         Spacer(modifier = Modifier.height(16.dp))
         SettingsGroupCard {
-            SettingsItem(title = stringResource(R.string.orderhistory),
-                /*this should be added dynamically*/
-                subtitle = "12"+ stringResource(R.string.singlespace) + stringResource(R.string.orders))
+            SettingsItem(
+                title = stringResource(R.string.orderhistory),
+                subtitle = "${state.ordersCount}" + stringResource(R.string.singlespace) + stringResource(R.string.orders),
+                modifier = Modifier.clickable { onEvent(ProfileEvent.OrderHistoryClicked) }
+            )
             SettingsDivider()
-            SettingsItem(title = stringResource(R.string.savedaddresses),
-                /*this should be added dynamically*/
-                subtitle = "2"+ stringResource(R.string.singlespace) + stringResource(R.string.addresses))
+            SettingsItem(
+                title = stringResource(R.string.savedaddresses),
+                subtitle = "${state.savedAddressesCount}" + stringResource(R.string.singlespace) + stringResource(R.string.addresses),
+                modifier = Modifier.clickable { onEvent(ProfileEvent.SavedAddressesClicked) }
+            )
             SettingsDivider()
-            SettingsItem(title = stringResource(R.string.langandcurrency),
-                /*this should be added dynamically*/
-                subtitle = "English · USD", showDivider = false)
+            SettingsItem(
+                title = stringResource(R.string.langandcurrency),
+                subtitle = "${state.language} · ${state.currency}",
+                showDivider = false,
+                modifier = Modifier.clickable { onEvent(ProfileEvent.LanguageAndCurrencyClicked) }
+            )
         }
 
         Spacer(modifier = Modifier.height(32.dp))
+
         SectionTitle(title = stringResource(R.string.appearance))
         Spacer(modifier = Modifier.height(16.dp))
         SettingsGroupCard {
             SettingsSwitchItem(
                 title = stringResource(R.string.darkmode),
                 subtitle = "",
-                checked = isDarkMode,
-                onCheckedChange = { isDarkMode = it }
+                checked = state.isDarkMode,
+                onCheckedChange = { isChecked ->
+                    onEvent(ProfileEvent.DarkModeToggled(isChecked))
+                }
             )
         }
 
         Spacer(modifier = Modifier.height(32.dp))
 
         OutlinedButton(
-            onClick = { /* TODO */ },
+            onClick = { onEvent(ProfileEvent.LogoutClicked) },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
@@ -164,6 +191,22 @@ fun ProfileContent(
 @Composable
 private fun ProfileScreenPreview() {
     SafwaTheme {
-        ProfileScreen()
+        // Supply a dummy state and empty event handler for the preview
+        ProfileContent(
+            state = ProfileState(
+                firstName = "Osama",
+                lastName = "Khaled",
+                email = "osama@safwa.com",
+                isElite = true,
+                ordersCount = 12,
+                wishlistCount = 8,
+                savedAddressesCount = 2,
+                points = 2400,
+                language = "English",
+                currency = "USD",
+                isDarkMode = false
+            ),
+            onEvent = {}
+        )
     }
 }

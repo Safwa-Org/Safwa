@@ -33,7 +33,6 @@ import com.tasneem.safwa.features.home.presentation.state.HomeState
 import com.tasneem.safwa.features.home.presentation.view.component.BrandsRow
 import com.tasneem.safwa.features.home.presentation.view.component.EditorialBanner
 import com.tasneem.safwa.features.home.presentation.view.component.GreetingSection
-
 import com.tasneem.safwa.features.home.presentation.view.component.HomeTopBar
 import com.tasneem.safwa.features.home.presentation.view.component.SectionHeader
 import com.tasneem.safwa.features.home.presentation.viewmodel.HomeViewModel
