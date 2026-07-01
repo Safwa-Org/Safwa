@@ -1,5 +1,6 @@
-package com.tasneem.safwa.features.auth.presentation.login
+package com.tasneem.safwa.features.auth.presentation.login.view
 
+import android.app.Activity
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -29,10 +30,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.common.api.ApiException
 import com.tasneem.safwa.R
 import com.tasneem.safwa.core.shared_component.CustomButon
@@ -41,6 +44,10 @@ import com.tasneem.safwa.features.auth.presentation.components.CustomTextField
 import com.tasneem.safwa.features.auth.presentation.components.ErrorText
 import com.tasneem.safwa.features.auth.presentation.components.GoogleButton
 import com.tasneem.safwa.features.auth.presentation.components.OrDivider
+import com.tasneem.safwa.features.auth.presentation.login.state.LoginEvent
+import com.tasneem.safwa.features.auth.presentation.login.state.LoginSideEffect
+import com.tasneem.safwa.features.auth.presentation.login.state.LoginState
+import com.tasneem.safwa.features.auth.presentation.login.viewmodel.LoginViewModel
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
@@ -49,7 +56,7 @@ import dagger.hilt.components.SingletonComponent
 @EntryPoint
 @InstallIn(SingletonComponent::class)
 interface GoogleSignInClientEntryPoint {
-    fun googleSignInClient(): com.google.android.gms.auth.api.signin.GoogleSignInClient
+    fun googleSignInClient(): GoogleSignInClient
 }
 @Composable
 fun LoginScreen(
@@ -79,7 +86,6 @@ fun LoginScreen(
     )
 }
 
-// Your actual UI component from earlier...
 @Composable
 fun LoginContent(
     state: LoginState,
@@ -99,7 +105,7 @@ fun LoginContent(
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
-        if (result.resultCode == android.app.Activity.RESULT_OK) {
+        if (result.resultCode == Activity.RESULT_OK) {
             val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
             try {
                 val account = task.getResult(ApiException::class.java)
@@ -162,7 +168,7 @@ fun LoginContent(
         CustomTextField(
             label = stringResource(id = R.string.email),
             value = state.email,
-            onValueChange = { onEvent(LoginEvent.EmailChanged(it)) },
+            onValueChange = { onEvent(LoginEvent.FormInputChanged(email = it)) },
             keyboardType = androidx.compose.ui.text.input.KeyboardType.Email
         )
 
@@ -174,7 +180,7 @@ fun LoginContent(
         CustomTextField(
             label = stringResource(id = R.string.password),
             value = state.password,
-            onValueChange = { onEvent(LoginEvent.PasswordChanged(it)) },
+            onValueChange = { onEvent(LoginEvent.FormInputChanged(password = it)) },
             isPassword = true
         )
         state.passwordErrorResId?.let { errorRes ->

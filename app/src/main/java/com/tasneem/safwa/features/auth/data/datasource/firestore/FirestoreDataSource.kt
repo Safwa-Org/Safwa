@@ -1,7 +1,7 @@
 package com.tasneem.safwa.features.auth.data.datasource.firestore
 
 
-import com.tasneem.safwa.features.auth.data.model.UserEntity
+import com.tasneem.safwa.core.data.model.UserEntity
 
 interface FirestoreDataSource {
     suspend fun saveUser(userEntity: UserEntity)

@@ -1,7 +1,7 @@
 package com.tasneem.safwa.features.auth.domain.repository
 
 import com.tasneem.safwa.core.util.Resource
-import com.tasneem.safwa.features.auth.domain.model.User
+import com.tasneem.safwa.core.domain.model.User
 
 interface AuthRepository {
 

@@ -1,11 +1,11 @@
 package com.tasneem.safwa.features.auth.data.repository
 
-import android.util.Log
 import com.tasneem.safwa.core.util.Resource
 import com.tasneem.safwa.features.auth.data.datasource.auth.FirebaseAuthDataSource
 import com.tasneem.safwa.features.auth.data.datasource.firestore.FirestoreDataSource
-import com.tasneem.safwa.features.auth.data.model.UserEntity
-import com.tasneem.safwa.features.auth.domain.model.User
+import com.tasneem.safwa.core.data.model.UserEntity
+import com.tasneem.safwa.core.domain.model.User
+import com.tasneem.safwa.core.domain.model.toDomain
 import com.tasneem.safwa.features.auth.domain.repository.AuthRepository
 import javax.inject.Inject
 
@@ -192,16 +192,4 @@ class AuthRepositoryImpl @Inject constructor(
     }
 }
 
-private fun UserEntity.toDomain(): User {
-    return User(
-        id = id,
-        email = email,
-        firstName = firstName,
-        lastName = lastName,
-        phone = phone,
-        photoUrl = photoUrl,
-        isGuest = isGuest,
-        createdAt = createdAt,
-        updatedAt = updatedAt
-    )
-}
+

@@ -1,4 +1,4 @@
-package com.tasneem.safwa.features.auth.presentation.register
+package com.tasneem.safwa.features.auth.presentation.register.view
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -34,16 +34,18 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.tasneem.safwa.R
 import com.tasneem.safwa.core.shared_component.CustomButon
 import com.tasneem.safwa.core.shared_component.SafwaLogo
-import com.tasneem.safwa.core.theme.SafwaTheme
 import com.tasneem.safwa.features.auth.presentation.components.CustomTextField
 import com.tasneem.safwa.features.auth.presentation.components.ErrorText
+import com.tasneem.safwa.features.auth.presentation.register.state.RegisterEvent
+import com.tasneem.safwa.features.auth.presentation.register.state.RegisterSideEffect
+import com.tasneem.safwa.features.auth.presentation.register.state.RegisterState
+import com.tasneem.safwa.features.auth.presentation.register.viewmodel.RegisterViewModel
 
 
 @Composable
@@ -196,7 +198,7 @@ fun RegisterContent(
         CustomTextField(
             label = stringResource(id = R.string.first_name),
             value = state.firstName,
-            onValueChange = { onEvent(RegisterEvent.FirstNameChanged(it)) }
+            onValueChange = { onEvent(RegisterEvent.FormInputChanged(firstName = it)) }
         )
         state.firstNameErrorResId?.let { errorRes ->
             ErrorText(stringResource(errorRes))
@@ -206,7 +208,7 @@ fun RegisterContent(
         CustomTextField(
             label = stringResource(id = R.string.last_name),
             value = state.lastName,
-            onValueChange = { onEvent(RegisterEvent.LastNameChanged(it)) }
+            onValueChange = { onEvent(RegisterEvent.FormInputChanged(lastName = it)) }
         )
         state.lastNameErrorResId?.let { errorRes ->
             ErrorText(stringResource(errorRes))
@@ -216,7 +218,7 @@ fun RegisterContent(
         CustomTextField(
             label = stringResource(id = R.string.email),
             value = state.email,
-            onValueChange = { onEvent(RegisterEvent.EmailChanged(it)) },
+            onValueChange = { onEvent(RegisterEvent.FormInputChanged(email = it)) },
             keyboardType = KeyboardType.Email
         )
         state.emailErrorResId?.let { errorRes ->
@@ -227,7 +229,7 @@ fun RegisterContent(
         CustomTextField(
             label = stringResource(id = R.string.phone),
             value = state.phone,
-            onValueChange = { onEvent(RegisterEvent.PhoneChanged(it)) },
+            onValueChange = { onEvent(RegisterEvent.FormInputChanged(phone = it)) },
             keyboardType = KeyboardType.Phone
         )
         state.phoneErrorResId?.let { errorRes ->
@@ -238,7 +240,7 @@ fun RegisterContent(
         CustomTextField(
             label = stringResource(id = R.string.password),
             value = state.password,
-            onValueChange = { onEvent(RegisterEvent.PasswordChanged(it)) },
+            onValueChange = { onEvent(RegisterEvent.FormInputChanged(password = it)) },
             isPassword = true
         )
         state.passwordErrorResId?.let { errorRes ->
@@ -249,7 +251,7 @@ fun RegisterContent(
         CustomTextField(
             label = stringResource(id = R.string.confirm_password),
             value = state.confirmPassword,
-            onValueChange = { onEvent(RegisterEvent.ConfirmPasswordChanged(it)) },
+            onValueChange = { onEvent(RegisterEvent.FormInputChanged(confirmPassword = it)) },
             isPassword = true
         )
         state.confirmPasswordErrorResId?.let { errorRes ->
