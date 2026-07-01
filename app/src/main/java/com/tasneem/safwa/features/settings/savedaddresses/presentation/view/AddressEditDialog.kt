@@ -19,6 +19,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -32,19 +33,34 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.tasneem.safwa.R
+import com.tasneem.safwa.core.domain.model.Address
 import com.tasneem.safwa.core.shared_component.SafwaLogo
 
 @Composable
 fun AddressEditDialog(
-    initialAddress: SavedAddress?,
+    initialAddress: Address?,
+    nameErrorResId: Int?,
+    mobileErrorResId: Int?,
+    streetErrorResId: Int?,
     onDismiss: () -> Unit,
-    onSave: (SavedAddress) -> Unit
+    onSave: (Address) -> Unit
 ) {
     var label by remember { mutableStateOf(initialAddress?.label ?: "") }
     var recipientName by remember { mutableStateOf(initialAddress?.recipientName ?: "") }
     var mobileNumber by remember { mutableStateOf(initialAddress?.mobileNumber ?: "") }
     var street by remember { mutableStateOf(initialAddress?.street ?: "") }
     var cityAndZip by remember { mutableStateOf(initialAddress?.cityAndZip ?: "") }
+
+    // Control structural errors reactively
+    var isNameDirty by remember { mutableStateOf(false) }
+    var isMobileDirty by remember { mutableStateOf(false) }
+    var isStreetDirty by remember { mutableStateOf(false) }
+
+    LaunchedEffect(initialAddress) {
+        isNameDirty = false
+        isMobileDirty = false
+        isStreetDirty = false
+    }
 
     val textFieldShape = RoundedCornerShape(16.dp)
 
@@ -66,7 +82,6 @@ fun AddressEditDialog(
                     .padding(24.dp)
                     .verticalScroll(rememberScrollState())
             ) {
-                // Pretty Header
                 Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                     SafwaLogo(size = 56.dp)
                 }
@@ -86,6 +101,7 @@ fun AddressEditDialog(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
+                // LABEL
                 OutlinedTextField(
                     value = label,
                     onValueChange = { label = it },
@@ -97,41 +113,58 @@ fun AddressEditDialog(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
+                // RECIPIENT NAME
+                val hasNameError = nameErrorResId != null && !isNameDirty
                 OutlinedTextField(
                     value = recipientName,
-                    onValueChange = { recipientName = it },
+                    onValueChange = { recipientName = it; isNameDirty = true },
                     label = { Text(stringResource(R.string.address_recipient_name)) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
-                    isError = recipientName.isBlank(), // Explicit requirement visual cue
+                    isError = hasNameError,
+                    supportingText = if (hasNameError && nameErrorResId != null) {
+                        { Text(stringResource(nameErrorResId)) }
+                    } else null,
                     shape = textFieldShape
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
 
+                // MOBILE NUMBER (Now captures both blank inputs and regex mismatches seamlessly)
+                val hasMobileError = mobileErrorResId != null && !isMobileDirty
                 OutlinedTextField(
                     value = mobileNumber,
-                    onValueChange = { mobileNumber = it },
+                    onValueChange = { mobileNumber = it; isMobileDirty = true },
                     label = { Text(stringResource(R.string.address_mobile_number)) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
-                    isError = mobileNumber.isBlank(),
+                    isError = hasMobileError,
+                    supportingText = if (hasMobileError && mobileErrorResId != null) {
+                        { Text(stringResource(mobileErrorResId)) }
+                    } else null,
                     shape = textFieldShape
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
 
+                // STREET
+                val hasStreetError = streetErrorResId != null && !isStreetDirty
                 OutlinedTextField(
                     value = street,
-                    onValueChange = { street = it },
+                    onValueChange = { street = it; isStreetDirty = true },
                     label = { Text(stringResource(R.string.address_street)) },
                     modifier = Modifier.fillMaxWidth(),
                     minLines = 1,
+                    isError = hasStreetError,
+                    supportingText = if (hasStreetError && streetErrorResId != null) {
+                        { Text(stringResource(streetErrorResId)) }
+                    } else null,
                     shape = textFieldShape
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
 
+                // CITY & ZIP
                 OutlinedTextField(
                     value = cityAndZip,
                     onValueChange = { cityAndZip = it },
@@ -157,21 +190,22 @@ fun AddressEditDialog(
 
                     Button(
                         onClick = {
-                            if (recipientName.isNotBlank() && mobileNumber.isNotBlank()) {
-                                onSave(
-                                    SavedAddress(
-                                        id = initialAddress?.id ?: "",
-                                        label = label.ifBlank { "Address" },
-                                        isDefault = initialAddress?.isDefault ?: false,
-                                        recipientName = recipientName,
-                                        street = street,
-                                        cityAndZip = cityAndZip,
-                                        mobileNumber = mobileNumber
-                                    )
+                            // Clear dirty flags right before evaluation submission
+                            isNameDirty = false
+                            isMobileDirty = false
+                            isStreetDirty = false
+
+                            onSave(
+                                Address(
+                                    id = initialAddress?.id ?: "",
+                                    label = label.ifBlank { "Address" },
+                                    recipientName = recipientName,
+                                    street = street,
+                                    cityAndZip = cityAndZip,
+                                    mobileNumber = mobileNumber
                                 )
-                            }
+                            )
                         },
-                        enabled = recipientName.isNotBlank() && mobileNumber.isNotBlank(),
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(16.dp)
                     ) {

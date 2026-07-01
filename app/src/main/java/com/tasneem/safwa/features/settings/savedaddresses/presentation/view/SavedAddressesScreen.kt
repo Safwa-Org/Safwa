@@ -1,12 +1,16 @@
 package com.tasneem.safwa.features.settings.savedaddresses.presentation.view
+
 import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -17,134 +21,101 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.tasneem.safwa.R
 import com.tasneem.safwa.core.shared_component.SafwaTopAppBar
 import com.tasneem.safwa.core.theme.SafwaTheme
-
-// Dummy data class
-data class SavedAddress(
-    val id: String,
-    val label: String,
-    val isDefault: Boolean,
-    val recipientName: String,
-    val street: String,
-    val cityAndZip: String,
-    val mobileNumber: String
-)
+import com.tasneem.safwa.features.settings.savedaddresses.presentation.state.SavedAddressesEffect
+import com.tasneem.safwa.features.settings.savedaddresses.presentation.state.SavedAddressesEvent
+import com.tasneem.safwa.features.settings.savedaddresses.presentation.state.SavedAddressesState
+import com.tasneem.safwa.features.settings.savedaddresses.presentation.viewmodel.SavedAddressesViewModel
 
 @Composable
 fun SavedAddressesScreen(
-    // viewModel: ProfileViewModel = hiltViewModel(),
-    // onNavigateBack: () -> Unit = {}
+    viewModel: SavedAddressesViewModel = hiltViewModel(),
+    onNavigateBack: () -> Unit = {}
 ) {
-    // Dummy Data - Will eventually come from ViewModel
-    var addresses by remember {
-        mutableStateOf(
-            listOf(
-                SavedAddress(
-                    id = "1",
-                    label = "Home",
-                    isDefault = true,
-                    recipientName = "Aisha Al-Marri",
-                    street = "Al Olaya District, King Fahd Rd.",
-                    cityAndZip = "Riyadh 12241, KSA",
-                    mobileNumber = "+966 55 204 8891"
-                ),
-                SavedAddress(
-                    id = "2",
-                    label = "Office",
-                    isDefault = false,
-                    recipientName = "Aisha Al-Marri",
-                    street = "Olaya Tower 2, Floor 14",
-                    cityAndZip = "Riyadh 12333, KSA",
-                    mobileNumber = "+966 55 204 8891"
-                )
-            )
-        )
+    val uiState by viewModel.state.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(Unit) {
+        viewModel.effect.collect { effect ->
+            when (effect) {
+                is SavedAddressesEffect.NavigateBack -> onNavigateBack()
+                is SavedAddressesEffect.ShowError -> {
+                    snackbarHostState.showSnackbar(message = effect.message)
+                }
+            }
+        }
     }
-
-    // State for the Edit Dialog
-    var showEditDialog by remember { mutableStateOf(false) }
-    var addressToEdit by remember { mutableStateOf<SavedAddress?>(null) }
-
-    // State for the Delete Dialog
-    var addressToDelete by remember { mutableStateOf<SavedAddress?>(null) }
 
     SavedAddressesContent(
-        addresses = addresses,
-        onAddNewClick = {
-            addressToEdit = null
-            showEditDialog = true
-        },
-        onEditClick = { address ->
-            addressToEdit = address
-            showEditDialog = true
-        },
-        onDeleteClick = { address ->
-            addressToDelete = address
-        }
+        state = uiState,
+        snackbarHostState = snackbarHostState,
+        onEvent = viewModel::onEvent
     )
 
-    if (showEditDialog) {
+    if (uiState.showEditDialog) {
         AddressEditDialog(
-            initialAddress = addressToEdit,
-            onDismiss = { showEditDialog = false },
+            initialAddress = uiState.addressToEdit,
+            nameErrorResId = uiState.recipientNameErrorResId,
+            mobileErrorResId = uiState.mobileNumberErrorResId,
+            streetErrorResId = uiState.streetErrorResId,
+            onDismiss = { viewModel.onEvent(SavedAddressesEvent.DismissDialogs) },
             onSave = { updatedAddress ->
-                addresses = if (addressToEdit == null) {
-                    addresses + updatedAddress.copy(id = System.currentTimeMillis().toString())
-                } else {
-                    addresses.map { if (it.id == updatedAddress.id) updatedAddress else it }
-                }
-                showEditDialog = false
+                viewModel.onEvent(SavedAddressesEvent.SaveAddress(updatedAddress))
             }
         )
     }
 
-    if (addressToDelete != null) {
+    if (uiState.addressToDelete != null) {
         ConfirmDeleteDialog(
-            onDismiss = { addressToDelete = null },
-            onConfirm = {
-                addresses = addresses.filter { it.id != addressToDelete?.id }
-                addressToDelete = null
-            }
+            onDismiss = { viewModel.onEvent(SavedAddressesEvent.DismissDialogs) },
+            onConfirm = { viewModel.onEvent(SavedAddressesEvent.ConfirmDeleteAddress) }
         )
     }
 }
 
 @Composable
 fun SavedAddressesContent(
-    addresses: List<SavedAddress>,
-    onAddNewClick: () -> Unit,
-    onEditClick: (SavedAddress) -> Unit,
-    onDeleteClick: (SavedAddress) -> Unit,
+    state: SavedAddressesState,
+    snackbarHostState: SnackbarHostState,
+    onEvent: (SavedAddressesEvent) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
         modifier = modifier.fillMaxSize(),
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
             SafwaTopAppBar(
-                title = stringResource(R.string.savedaddresses)
+                title = stringResource(R.string.savedaddresses),
+                onBackClick = { onEvent(SavedAddressesEvent.BackClicked) },
+                windowInsets = WindowInsets.systemBars
             )
         },
         bottomBar = {
             Surface(
-                modifier = Modifier.shadow(elevation = 8.dp),
+                modifier = Modifier
+                    .shadow(elevation = 8.dp)
+                    .padding(bottom = WindowInsets.systemBars.asPaddingValues().calculateBottomPadding()),
                 color = MaterialTheme.colorScheme.background
             ) {
                 Button(
-                    onClick = onAddNewClick,
+                    onClick = { onEvent(SavedAddressesEvent.AddNewAddressClicked) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 20.dp, vertical = 16.dp)
@@ -181,11 +152,11 @@ fun SavedAddressesContent(
             ),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            items(addresses, key = { it.id }) { address ->
+            items(state.addresses, key = { it.id }) { address ->
                 AddressCard(
                     address = address,
-                    onEditClick = { onEditClick(address) },
-                    onDeleteClick = { onDeleteClick(address) }
+                    onEditClick = { onEvent(SavedAddressesEvent.EditAddressClicked(address)) },
+                    onDeleteClick = { onEvent(SavedAddressesEvent.DeleteAddressClicked(address)) }
                 )
             }
         }
@@ -197,6 +168,10 @@ fun SavedAddressesContent(
 @Composable
 private fun SavedAddressesScreenPreview() {
     SafwaTheme {
-        SavedAddressesScreen()
+        SavedAddressesContent(
+            state = SavedAddressesState(),
+            snackbarHostState = remember { SnackbarHostState() },
+            onEvent = {}
+        )
     }
 }

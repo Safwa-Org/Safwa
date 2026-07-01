@@ -165,4 +165,7 @@
     <string name="remove_item">Remove item</string>
     <string name="decrease_quantity">Decrease quantity</string>
     <string name="increase_quantity">Increase quantity</string>
+    <string name="err_empty_name">Recipient name cannot be empty</string>
+    <string name="err_invalid_mobile">Please enter a valid mobile number (min 9 digits)</string>
+    <string name="err_empty_street">Street address field is required</string>
 </resources>

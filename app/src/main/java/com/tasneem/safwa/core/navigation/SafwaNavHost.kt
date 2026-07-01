@@ -144,8 +144,7 @@ fun SafwaNavHost(
 
         composable<ScreenRoute.SavedAddresses> {
             SavedAddressesScreen(
-                // Assuming you add an onNavigateBack callback to this screen
-                // onNavigateBack = { navController.popBackStack() }
+                 onNavigateBack = { navController.popBackStack() }
             )
         }
 

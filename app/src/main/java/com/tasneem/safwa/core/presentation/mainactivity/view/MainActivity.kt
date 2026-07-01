@@ -8,17 +8,22 @@ import androidx.compose.runtime.getValue
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.tasneem.safwa.core.data.sync.SessionSyncManager
 import com.tasneem.safwa.core.navigation.SafwaNavHost
 import com.tasneem.safwa.core.presentation.mainactivity.viewmodel.MainViewModel
 import com.tasneem.safwa.core.theme.SafwaTheme
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    @Inject
+    lateinit var syncManager: SessionSyncManager
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        syncManager.startRealTimeSync()
         setContent {
             val mainViewModel: MainViewModel = hiltViewModel()
             val isDarkMode by mainViewModel.isDarkMode.collectAsStateWithLifecycle()
