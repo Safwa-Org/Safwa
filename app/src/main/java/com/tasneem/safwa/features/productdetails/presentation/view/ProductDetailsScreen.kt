@@ -21,9 +21,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.ui.res.stringResource
 import com.tasneem.safwa.R
 import com.tasneem.safwa.core.presentation.model.UiError
 import com.tasneem.safwa.core.theme.SafwaTheme
+import com.tasneem.safwa.features.core.presentation.component.ErrorContentWithRetry
 import com.tasneem.safwa.features.productdetails.presentation.state.ProductDetailsEffect
 import com.tasneem.safwa.features.productdetails.presentation.state.ProductDetailsEvent
 import com.tasneem.safwa.features.productdetails.presentation.state.ProductDetailsState
@@ -31,7 +33,6 @@ import com.tasneem.safwa.features.productdetails.presentation.state.mapper.Produ
 import com.tasneem.safwa.features.productdetails.presentation.state.mapper.VariantOptionGroup
 import com.tasneem.safwa.features.productdetails.presentation.state.mapper.VariantOptionValue
 import com.tasneem.safwa.features.productdetails.presentation.view.component.ProductDescriptionSection
-import com.tasneem.safwa.features.productdetails.presentation.view.component.ProductDetailsErrorSection
 import com.tasneem.safwa.features.productdetails.presentation.view.component.ProductImageHeader
 import com.tasneem.safwa.features.productdetails.presentation.view.component.ProductInfoSection
 import com.tasneem.safwa.features.productdetails.presentation.view.component.StickyBottomActionBar
@@ -102,9 +103,11 @@ fun ProductDetailsContent(
                 }
 
                 state.error != null -> {
-                    ProductDetailsErrorSection(
-                        error = state.error,
+                    ErrorContentWithRetry(
+                        title = stringResource(state.error.titleRes),
+                        description = stringResource(state.error.descriptionRes),
                         onRetry = { onEvent(ProductDetailsEvent.RetryClicked) },
+                        onBack = { onEvent(ProductDetailsEvent.BackClicked) },
                         modifier = Modifier.align(Alignment.Center),
                     )
                 }
