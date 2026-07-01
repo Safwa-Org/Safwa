@@ -44,7 +44,9 @@ import com.tasneem.safwa.features.wishlist.presentation.components.ProductCard
 fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
     onNavigateToProductDetails: (String) -> Unit = {},
-    onNavigateToCart: () -> Unit = {}
+    onNavigateToCart: () -> Unit = {},
+    onNavigateToCategories: () -> Unit = {},
+    onNavigateToCategoryProducts: (String) -> Unit = {}
 ) {
     val uiState by viewModel.state.collectAsStateWithLifecycle()
 
@@ -53,6 +55,8 @@ fun HomeScreen(
             when (effect) {
                 HomeEffect.NavigateToSearch -> {}
                 HomeEffect.NavigateToCart -> onNavigateToCart()
+                HomeEffect.NavigateToCategories -> onNavigateToCategories()
+                is HomeEffect.NavigateToCategoryProducts -> onNavigateToCategoryProducts(effect.categoryName)
                 is HomeEffect.NavigateToProductDetails -> onNavigateToProductDetails(effect.productId)
                 is HomeEffect.NavigateToBrand -> {}
             }
@@ -140,7 +144,10 @@ fun HomeContent(
                             CategoriesRow(
                                 categories = state.categories,
                                 selectedCategory = state.selectedCategory,
-                                onCategorySelected = { onEvent(HomeEvent.CategorySelected(it)) }
+                                onCategorySelected = { category ->
+                                    onEvent(HomeEvent.CategorySelected(category))
+                                },
+                                modifier = Modifier.padding(vertical = 16.dp)
                             )
                         }
 
@@ -226,7 +233,12 @@ private fun HomeContentPreview() {
                 greeting = GreetingType.EVENING,
                 products = sampleProducts,
                 filteredProducts = sampleProducts,
-                categories = listOf("All", "Fragrance", "Leather", "Watches"),
+                categories = listOf(
+                    com.tasneem.safwa.features.category.domain.model.Category("1", "All", "all", null),
+                    com.tasneem.safwa.features.category.domain.model.Category("2", "Fragrance", "fragrance", null),
+                    com.tasneem.safwa.features.category.domain.model.Category("3", "Leather", "leather", null)
+                ),
+                selectedCategory = com.tasneem.safwa.features.category.domain.model.Category("1", "All", "all", null),
                 brands = listOf("Maison", "Atelier", "Noir")
             ),
             onEvent = {}

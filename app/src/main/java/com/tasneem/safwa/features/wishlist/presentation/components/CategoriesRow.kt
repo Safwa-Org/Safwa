@@ -1,5 +1,6 @@
 package com.tasneem.safwa.features.wishlist.presentation.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
@@ -17,11 +18,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
+import com.tasneem.safwa.features.category.domain.model.Category
+
 @Composable
 fun CategoriesRow(
-    categories: List<String>,
-    selectedCategory: String,
-    onCategorySelected: (String) -> Unit,
+    categories: List<Category>,
+    selectedCategory: Category?,
+    onCategorySelected: (Category) -> Unit,
     modifier: Modifier = Modifier
 ) {
     LazyRow(
@@ -30,16 +33,16 @@ fun CategoriesRow(
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(categories) { category ->
-            val isSelected = selectedCategory == category
+            val isSelected = selectedCategory?.id == category.id
             
             Surface(
                 modifier = Modifier.clip(CircleShape).clickable { onCategorySelected(category) },
                 color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
                 shape = CircleShape,
-                border = if (!isSelected) androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)) else null
+                border = if (!isSelected) BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)) else null
             ) {
                 Text(
-                    text = category,
+                    text = category.title,
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
                     color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface,
                     style = MaterialTheme.typography.bodyMedium

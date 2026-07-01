@@ -16,6 +16,8 @@ import com.tasneem.safwa.features.settings.languageandcurrency.presentation.pres
 import com.tasneem.safwa.features.settings.orderhistory.presentation.view.OrderHistoryScreen
 import com.tasneem.safwa.features.settings.savedaddresses.presentation.view.SavedAddressesScreen
 import com.tasneem.safwa.features.cart.presentation.view.CartScreen
+import com.tasneem.safwa.features.category.presentation.categories.CategoriesScreen
+import com.tasneem.safwa.features.category.presentation.category_products.CategoryProductsScreen
 
 @Composable
 fun SafwaNavHost(
@@ -97,6 +99,12 @@ fun SafwaNavHost(
                         // Clear the entire backstack when logging out
                         popUpTo(navController.graph.id) { inclusive = true }
                     }
+                },
+                onNavigateToCategories = {
+                    navController.navigate(ScreenRoute.Categories)
+                },
+                onNavigateToCategoryProducts = { categoryName ->
+                    navController.navigate(ScreenRoute.CategoryProducts(categoryName))
                 }
             )
         }
@@ -172,6 +180,24 @@ fun SafwaNavHost(
             LanguageAndCurrencyScreen(
                 // Assuming you add an onNavigateBack callback to this screen
                 // onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable<ScreenRoute.Categories> {
+            CategoriesScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onCategoryClicked = { categoryName ->
+                    navController.navigate(ScreenRoute.CategoryProducts(categoryName))
+                }
+            )
+        }
+
+        composable<ScreenRoute.CategoryProducts> { backStackEntry ->
+            CategoryProductsScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToProductDetails = { handle ->
+                    navController.navigate(ScreenRoute.ProductDetails(handle))
+                }
             )
         }
     }
