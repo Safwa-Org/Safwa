@@ -1,6 +1,7 @@
 package com.tasneem.safwa.features.auth.data.datasource.auth
 
 import com.google.firebase.auth.AuthResult
+import kotlinx.coroutines.flow.Flow
 
 interface FirebaseAuthDataSource {
     suspend fun signUpWithEmail(email: String, password: String): AuthResult
@@ -12,4 +13,5 @@ interface FirebaseAuthDataSource {
     fun getCurrentUserEmail(): String?
     suspend fun sendEmailVerification()
     fun isEmailVerified(): Boolean
+    fun observeAuthState(): Flow<Boolean>
 }

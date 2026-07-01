@@ -1,7 +1,9 @@
 package com.tasneem.safwa.features.auth.domain.repository
 
+import com.tasneem.safwa.core.domain.model.AuthState
 import com.tasneem.safwa.core.util.Resource
 import com.tasneem.safwa.core.domain.model.User
+import kotlinx.coroutines.flow.Flow
 
 interface AuthRepository {
 
@@ -25,4 +27,6 @@ interface AuthRepository {
 
     suspend fun sendVerificationEmail(): Resource<Unit>
     suspend fun isEmailVerified(): Boolean
+
+    fun observeAuthState(): Flow<AuthState>
 }
