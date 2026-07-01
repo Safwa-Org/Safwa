@@ -1,12 +1,14 @@
 package com.tasneem.safwa.features.auth.data.datasource.auth
 
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 class FirebaseAuthDataSourceImpl @Inject constructor(
-    private val firebaseAuth: FirebaseAuth
+    private val firebaseAuth: FirebaseAuth,
+    private val googleSignInClient: GoogleSignInClient
 ) : FirebaseAuthDataSource {
     override suspend fun signUpWithEmail(email: String, password: String) =
         firebaseAuth.createUserWithEmailAndPassword(email, password).await()
@@ -22,6 +24,12 @@ class FirebaseAuthDataSourceImpl @Inject constructor(
 
     override suspend fun signOut() {
         firebaseAuth.signOut()
+        try {
+            googleSignInClient.signOut()
+            // Optional: googleSignInClient.revokeAccess() to completely disconnect the app
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     override fun getCurrentUserId(): String? = firebaseAuth.currentUser?.uid

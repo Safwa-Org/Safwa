@@ -2,6 +2,8 @@ package com.tasneem.safwa.features.settings.profile.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.tasneem.safwa.core.domain.usecase.preferences.PreferencesUseCases
+import com.tasneem.safwa.features.auth.domain.usecase.LogoutUseCase
 import com.tasneem.safwa.features.settings.profile.presentation.state.ProfileEffect
 import com.tasneem.safwa.features.settings.profile.presentation.state.ProfileEvent
 import com.tasneem.safwa.features.settings.profile.presentation.state.ProfileState
@@ -17,7 +19,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
-    // TODO: Inject UseCases here later (e.g., GetUserProfileUseCase, UpdateThemeUseCase, LogoutUseCase)
+    private val logoutUseCase: LogoutUseCase,
+    private val preferencesUseCases: PreferencesUseCases
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(ProfileState())
@@ -35,25 +38,25 @@ class ProfileViewModel @Inject constructor(
             is ProfileEvent.LoadProfile -> {
                 _state.update { it.copy(isLoading = true) }
 
-                // TODO: Replace with actual data fetching from UseCase later
-                // Simulating a successful data load with dummy data
-                _state.update {
-                    it.copy(
-                        isLoading = false,
-                        firstName = "Osama",
-                        lastName = "Khaled",
-                        email = "osama@safwa.com",
-                        photoUrl = null,
-                        isElite = true,
-                        ordersCount = 12,
-                        wishlistCount = 8,
-                        savedAddressesCount = 2,
-                        points = 2400,
-                        language = "English",
-                        currency = "USD",
-                        isDarkMode = false,
-                        errorMessage = null
-                    )
+                viewModelScope.launch {
+                    preferencesUseCases.getUserSession().collect { user ->
+                        if (user != null) {
+                            _state.update {
+                                it.copy(
+                                    isLoading = false,
+                                    firstName = user.firstName,
+                                    lastName = user.lastName,
+                                    email = user.email ?: "",
+                                    photoUrl = user.photoUrl,
+                                    isElite = true, // Replace with real logic if needed
+                                    ordersCount = 12, // Dummy until Orders UseCase is implemented
+                                    wishlistCount = 8, // Dummy until Wishlist UseCase is implemented
+                                    savedAddressesCount = user.addresses.size,
+                                    points = 2400
+                                )
+                            }
+                        }
+                    }
                 }
             }
 
@@ -76,15 +79,20 @@ class ProfileViewModel @Inject constructor(
             }
 
             is ProfileEvent.DarkModeToggled -> {
-                // Update local UI state
                 _state.update { it.copy(isDarkMode = event.isDarkMode) }
-
-                // TODO: Launch coroutine to save this preference in DataStore/SharedPreferences via UseCase
+                viewModelScope.launch {
+                    preferencesUseCases.updateAppPreferences.updateTheme(event.isDarkMode)
+                }
             }
 
             is ProfileEvent.LogoutClicked -> {
                 viewModelScope.launch {
-                    // TODO: Call LogoutUseCase to clear tokens/session before navigating
+                    _state.update { it.copy(isLoading = true) }
+
+                    // Securely process Logout: Revokes Firebase token and purges DataStore
+                    logoutUseCase()
+
+                    _state.update { it.copy(isLoading = false) }
                     _effect.send(ProfileEffect.NavigateToLogin)
                 }
             }
