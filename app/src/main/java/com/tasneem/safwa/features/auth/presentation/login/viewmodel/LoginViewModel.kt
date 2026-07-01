@@ -29,7 +29,6 @@ class LoginViewModel @Inject constructor(
     private val googleLoginUseCase: GoogleLoginUseCase,
     private val guestLoginUseCase: GuestLoginUseCase,
     private val syncWishlistUseCase: SyncWishlistUseCase,
-    private val syncUserSessionUseCase: SyncUserSessionUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(LoginState())
@@ -38,12 +37,7 @@ class LoginViewModel @Inject constructor(
     private val _sideEffect = Channel<LoginSideEffect>()
     val sideEffect = _sideEffect.receiveAsFlow()
 
-    init {
-        // Sync Firebase with local DataStore immediately when this ViewModel is created
-        viewModelScope.launch {
-            syncUserSessionUseCase()
-        }
-    }
+
 
     fun onEvent(event: LoginEvent) {
         when (event) {

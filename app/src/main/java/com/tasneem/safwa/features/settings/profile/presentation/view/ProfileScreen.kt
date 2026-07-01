@@ -78,7 +78,6 @@ fun ProfileContent(
 ) {
     val scrollState = rememberScrollState()
 
-    // Format points to match "2.4k" style if above 1000
     val formattedPoints = if (state.points >= 1000) {
         "${state.points / 1000.0}k".replace(".0k", "k")
     } else {
@@ -95,7 +94,6 @@ fun ProfileContent(
             title = stringResource(R.string.profile),
         )
 
-        // Profile Header
         ProfileHeader(
             firstName = state.firstName,
             lastName = state.lastName,
@@ -106,7 +104,6 @@ fun ProfileContent(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Stats Row
         ProfileStatsRow(
             ordersCount = state.ordersCount.toString(),
             wishlistCount = state.wishlistCount.toString(),

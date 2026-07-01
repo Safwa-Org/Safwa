@@ -38,7 +38,6 @@ class ProfileViewModel @Inject constructor(
             is ProfileEvent.LoadProfile -> {
                 _state.update { it.copy(isLoading = true) }
 
-                // Observe User Session securely from DataStore cache
                 viewModelScope.launch {
                     preferencesUseCases.getUserSession().collect { user ->
                         if (user != null) {
