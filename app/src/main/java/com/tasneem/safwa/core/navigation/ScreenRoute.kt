@@ -42,6 +42,9 @@ sealed class ScreenRoute {
     object Checkout : ScreenRoute()
 
     @Serializable
+    object Payment : ScreenRoute()
+
+    @Serializable
     object OrderConfirmation : ScreenRoute()
 
     @Serializable
