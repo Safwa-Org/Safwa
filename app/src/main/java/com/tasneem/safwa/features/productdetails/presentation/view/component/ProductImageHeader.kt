@@ -20,13 +20,14 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -77,33 +78,25 @@ fun ProductImageHeader(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            IconButton(
+            HeaderIconButton(
                 onClick = onBack,
-                modifier = Modifier.background(Color.Transparent, CircleShape)
-            ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = stringResource(R.string.back),
-                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
-                )
-            }
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                contentDescription = stringResource(R.string.back)
+            )
+
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                IconButton(onClick = onShare) {
-                    Icon(
-                        imageVector = Icons.Default.Share,
-                        contentDescription = stringResource(R.string.share),
-                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
-                    )
-                }
-                IconButton(onClick = onWishlistToggle) {
-                    Icon(
-                        imageVector = if (isWishlisted) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                        contentDescription = stringResource(R.string.wishlist),
-                        tint = if (isWishlisted) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface.copy(
-                            alpha = 0.8f
-                        )
-                    )
-                }
+                HeaderIconButton(
+                    onClick = onShare,
+                    imageVector = Icons.Default.Share,
+                    contentDescription = stringResource(R.string.share)
+                )
+
+                HeaderIconButton(
+                    onClick = onWishlistToggle,
+                    imageVector = if (isWishlisted) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                    contentDescription = stringResource(R.string.wishlist),
+                    iconTint = if (isWishlisted) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
+                )
             }
         }
 
@@ -126,6 +119,35 @@ fun ProductImageHeader(
                         )
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun HeaderIconButton(
+    onClick: () -> Unit,
+    imageVector: ImageVector,
+    contentDescription: String?,
+    modifier: Modifier = Modifier,
+    iconTint: Color = MaterialTheme.colorScheme.onSurface
+) {
+    Surface(
+        onClick = onClick,
+        shape = CircleShape,
+        color = MaterialTheme.colorScheme.surface,
+        tonalElevation = 4.dp,
+        modifier = modifier.size(40.dp)
+    ) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Icon(
+                imageVector = imageVector,
+                contentDescription = contentDescription,
+                tint = iconTint,
+                modifier = Modifier.size(24.dp)
+            )
         }
     }
 }
