@@ -18,6 +18,8 @@ import com.tasneem.safwa.network.type.ProductCollectionSortKeys
 import com.apollographql.apollo.api.Optional
 import javax.inject.Inject
 
+import com.tasneem.safwa.network.type.ProductSortKeys
+
 class ProductRemoteDataSourceImpl @Inject constructor(
     private val apolloClient: ApolloClient,
     private val mapper: ProductMapper,
@@ -25,11 +27,19 @@ class ProductRemoteDataSourceImpl @Inject constructor(
     private val productDetailsDtoMapper: ProductDetailsDtoMapper
 ) : ProductRemoteDataSource {
 
-    override suspend fun getProducts(page: Int): List<ProductDto> {
+    override suspend fun getProducts(first: Int, after: String?, sortKey: String?): List<ProductDto> {
         return safeApiCall(
             apiCall = {
                 apolloClient.query(
-                    ProductsQuery(first = page)
+                    ProductsQuery(
+                        first = first,
+                        after = Optional.presentIfNotNull(after),
+                        sortKey = Optional.presentIfNotNull(
+                            sortKey?.let {
+                                try { ProductSortKeys.valueOf(it) } catch (_: Exception) { null }
+                            }
+                        )
+                    )
                 ).execute()
             },
             mapper = { data ->

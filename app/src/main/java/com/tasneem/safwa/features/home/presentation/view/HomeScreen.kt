@@ -156,9 +156,7 @@ fun HomeContent(
                         }
                         item(span = { GridItemSpan(2) }) {
                             SectionHeader(
-                                title = stringResource(id = R.string.best_sellers),
-                                actionText = stringResource(id = R.string.see_all),
-                                onActionClick = { onEvent(HomeEvent.SeeAllBestSellers) }
+                                title = stringResource(id = R.string.best_sellers)
                             )
                         }
                         item(span = { GridItemSpan(2) }) {

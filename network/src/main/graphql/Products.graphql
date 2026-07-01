@@ -1,5 +1,5 @@
-query Products($first: Int!) {
-    products(first: $first) {
+query Products($first: Int!, $after: String, $sortKey: ProductSortKeys) {
+    products(first: $first, after: $after, sortKey: $sortKey) {
         pageInfo { hasNextPage endCursor }
         edges {
             node {
@@ -11,6 +11,7 @@ query Products($first: Int!) {
                 productType
                 priceRange {
                     minVariantPrice { amount currencyCode }
+                    maxVariantPrice { amount currencyCode }
                 }
                 images(first: 5) {
                     edges { node { url altText } }
