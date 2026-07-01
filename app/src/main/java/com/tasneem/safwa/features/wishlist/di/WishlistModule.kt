@@ -1,7 +1,7 @@
 package com.tasneem.safwa.features.wishlist.di
 
 import android.content.Context
-import com.tasneem.safwa.core.dp.SafwaDP
+import com.tasneem.safwa.core.dp.SafwaDB
 import com.tasneem.safwa.features.wishlist.data.datasource.local.WishlistDao
 import com.tasneem.safwa.features.wishlist.data.repository.WishlistRepositoryImpl
 import com.tasneem.safwa.features.wishlist.domain.repository.WishlistRepository
@@ -19,7 +19,7 @@ object WishlistProvideModule {
     @Provides
     @Singleton
     fun provideWishlistDao(@ApplicationContext context: Context): WishlistDao {
-        return SafwaDP.getDatabase(context).wishlistDao()
+        return SafwaDB.getDatabase(context).wishlistDao()
     }
 }
 

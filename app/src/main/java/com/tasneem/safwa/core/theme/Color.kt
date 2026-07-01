@@ -1,7 +1,7 @@
 package com.tasneem.safwa.core.theme
 import androidx.compose.ui.graphics.Color
 
-val Primary = Color(0xFF064E3B)
+val Primary = Color(0xFF005D39)
 val OnPrimary = Color(0xFFFFFFFF)
 val PrimaryContainer = Color(0xFFD1FAE5)
 val OnPrimaryContainer = Color(0xFF064E3B)
@@ -23,7 +23,7 @@ val OnError = Color.White
 val Outline = Color(0xFFE5E7EB)
 
 
-val PrimaryDark = Color(0xFF34D399)
+val PrimaryDark = Color(0xFF61D19A)
 val OnPrimaryDark = Color(0xFF0A0A0A)
 val PrimaryContainerDark = Color(0xFF065F46)
 val OnPrimaryContainerDark = Color(0xFF34D399)

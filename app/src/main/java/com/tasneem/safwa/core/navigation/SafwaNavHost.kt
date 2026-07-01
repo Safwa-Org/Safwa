@@ -6,6 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.tasneem.safwa.features.auth.presentation.login.view.LoginScreen
+import com.tasneem.safwa.features.payment.presentation.view.PaymentScreen
 import com.tasneem.safwa.features.auth.presentation.register.view.RegisterScreen
 import com.tasneem.safwa.features.wishlist.presentation.WishlistScreen
 import com.tasneem.safwa.features.onboarding.OnboardingScreen
@@ -15,7 +16,6 @@ import com.tasneem.safwa.features.settings.languageandcurrency.presentation.pres
 import com.tasneem.safwa.features.settings.orderhistory.presentation.view.OrderHistoryScreen
 import com.tasneem.safwa.features.settings.savedaddresses.presentation.view.SavedAddressesScreen
 import com.tasneem.safwa.features.cart.presentation.view.CartScreen
-import com.tasneem.safwa.features.wishlist.presentation.WishlistScreen
 
 @Composable
 fun SafwaNavHost(
@@ -95,7 +95,7 @@ fun SafwaNavHost(
                 onNavigateToLogin = {
                     navController.navigate(ScreenRoute.Login) {
                         // Clear the entire backstack when logging out
-                        popUpTo(0) { inclusive = true }
+                        popUpTo(navController.graph.id) { inclusive = true }
                     }
                 }
             )
@@ -129,6 +129,17 @@ fun SafwaNavHost(
 
         composable<ScreenRoute.Checkout> {
             // Checkout implementation
+        }
+
+        composable<ScreenRoute.Payment> {
+            PaymentScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToHome = {
+                    navController.navigate(ScreenRoute.Home) {
+                        popUpTo(ScreenRoute.Checkout) { inclusive = true }
+                    }
+                }
+            )
         }
 
         composable<ScreenRoute.OrderConfirmation> {
