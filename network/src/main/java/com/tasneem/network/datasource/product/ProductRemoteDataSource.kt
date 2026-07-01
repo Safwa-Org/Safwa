@@ -2,6 +2,7 @@ package com.tasneem.network.datasource.product
 
 import com.tasneem.network.dto.ProductDetailsDto
 import com.tasneem.network.dto.ProductDto
+import com.tasneem.network.dto.CategoryDto
 
 interface ProductRemoteDataSource {
 
@@ -10,4 +11,8 @@ interface ProductRemoteDataSource {
     suspend fun searchProducts(query: String, first: Int): List<ProductDto>
 
     suspend fun getProductDetailsByHandle(handle: String): ProductDetailsDto
+
+    suspend fun getCategories(first: Int = 100): List<CategoryDto>
+
+    suspend fun getCollectionProducts(handle: String, first: Int = 20): List<ProductDto>
 }
