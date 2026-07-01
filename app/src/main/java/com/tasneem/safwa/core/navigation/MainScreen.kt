@@ -12,10 +12,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.tasneem.safwa.features.home.presentation.view.HomeScreen
 import com.tasneem.safwa.features.home.presentation.view.component.HomeBottomBar
-import com.tasneem.safwa.features.profile.presentation.view.languageandcurrency.LanguageAndCurrencyScreen
-import com.tasneem.safwa.features.profile.presentation.view.orderhistory.OrderHistoryScreen
-import com.tasneem.safwa.features.profile.presentation.view.profile.ProfileScreen
-import com.tasneem.safwa.features.profile.presentation.view.savedaddresses.SavedAddressesScreen
+import com.tasneem.safwa.features.settings.profile.presentation.view.ProfileScreen
 import com.tasneem.safwa.features.search.presentation.SearchScreen
 import com.tasneem.safwa.features.wishlist.presentation.WishlistScreen
 
