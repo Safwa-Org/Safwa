@@ -1,15 +1,16 @@
 package com.tasneem.safwa.core.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.tasneem.safwa.core.domain.model.AuthState
+import com.tasneem.safwa.core.presentation.mainactivity.viewmodel.MainViewModel
 import com.tasneem.safwa.features.auth.presentation.login.view.LoginScreen
 import com.tasneem.safwa.features.auth.presentation.register.view.RegisterScreen
 import com.tasneem.safwa.features.cart.presentation.view.CartScreen
@@ -25,36 +26,28 @@ import com.tasneem.safwa.features.wishlist.presentation.WishlistScreen
 @Composable
 fun SafwaNavHost(
     navController: NavHostController = rememberNavController(),
-    appViewModel: AppViewModel = hiltViewModel(),
+    mainViewModel: MainViewModel = hiltViewModel()
 ) {
-    val authState by appViewModel.authState.collectAsState()
+    val authState by mainViewModel.authState.collectAsState()
     val isAuthenticated = authState is AuthState.Authenticated
+    val appStartDestination by mainViewModel.startDestination.collectAsStateWithLifecycle()
+
+    val navStartRoute: Any = when (appStartDestination) {
+        StartDestination.Home -> ScreenRoute.Home
+        StartDestination.Onboarding -> ScreenRoute.Onboarding
+        StartDestination.Loading -> return
+    }
 
     NavHost(
         navController = navController,
-        startDestination = ScreenRoute.Splash,
+        startDestination = navStartRoute,
     ) {
-
-        composable<ScreenRoute.Splash> {
-            LaunchedEffect(authState) {
-                when (authState) {
-                    is AuthState.Authenticated -> navController.navigate(ScreenRoute.Home) {
-                        popUpTo(ScreenRoute.Splash) { inclusive = true }
-                    }
-
-                    is AuthState.Unauthenticated -> navController.navigate(ScreenRoute.Onboarding) {
-                        popUpTo(ScreenRoute.Splash) { inclusive = true }
-                    }
-
-                    AuthState.Loading -> Unit
-                }
-            }
-        }
 
         composable<ScreenRoute.Onboarding> {
             OnboardingScreen(
                 onFinish = {
-                    navController.navigate(ScreenRoute.Login) {
+                    mainViewModel.markOnboardingCompleted()
+                    navController.navigate(ScreenRoute.Home) {
                         popUpTo(ScreenRoute.Onboarding) { inclusive = true }
                     }
                 }

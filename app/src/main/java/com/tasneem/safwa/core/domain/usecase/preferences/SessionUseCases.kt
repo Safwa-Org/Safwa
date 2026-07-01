@@ -26,4 +26,5 @@ class UpdateAppPreferencesUseCase @Inject constructor(private val repo: SessionP
     suspend fun updateTheme(isDark: Boolean) = repo.updateTheme(isDark)
     suspend fun updateLanguage(lang: String) = repo.updateLanguage(lang)
     suspend fun updateCurrency(currency: String) = repo.updateCurrency(currency)
+    suspend fun setOnboardingCompleted(completed: Boolean) = repo.setOnboardingCompleted(completed)
 }
