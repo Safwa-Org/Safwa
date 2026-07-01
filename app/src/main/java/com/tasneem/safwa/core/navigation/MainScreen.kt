@@ -31,6 +31,8 @@ fun MainScreen(
     onNavigateToSavedAddresses: () -> Unit = {},
     onNavigateToLanguageAndCurrency: () -> Unit = {},
     onNavigateToLogin: () -> Unit = {},
+    onNavigateToCategories: () -> Unit = {},
+    onNavigateToCategoryProducts: (String) -> Unit = {},
     onNavigateToSignIn: () -> Unit = {},
     onNavigateToCreateAccount: () -> Unit = {},
 ) {
@@ -52,7 +54,9 @@ fun MainScreen(
             when (selectedTab) {
                 0 -> HomeScreen(
                     onNavigateToProductDetails = onNavigateToProductDetails,
-                    onNavigateToCart = onNavigateToCart
+                    onNavigateToCart = onNavigateToCart,
+                    onNavigateToCategories = onNavigateToCategories,
+                    onNavigateToCategoryProducts = onNavigateToCategoryProducts
                 )
 
                 1 -> SearchScreen(

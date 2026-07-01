@@ -14,6 +14,8 @@ import com.tasneem.safwa.core.presentation.mainactivity.viewmodel.MainViewModel
 import com.tasneem.safwa.features.auth.presentation.login.view.LoginScreen
 import com.tasneem.safwa.features.auth.presentation.register.view.RegisterScreen
 import com.tasneem.safwa.features.cart.presentation.view.CartScreen
+import com.tasneem.safwa.features.category.presentation.categories.CategoriesScreen
+import com.tasneem.safwa.features.category.presentation.category_products.CategoryProductsScreen
 import com.tasneem.safwa.features.onboarding.OnboardingScreen
 import com.tasneem.safwa.features.payment.presentation.view.PaymentScreen
 import com.tasneem.safwa.features.productdetails.presentation.view.ProductDetailsScreen
@@ -119,6 +121,12 @@ fun SafwaNavHost(
                         popUpTo(navController.graph.id) { inclusive = true }
                     }
                 },
+                onNavigateToCategories = {
+                    navController.navigate(ScreenRoute.Categories)
+                },
+                onNavigateToCategoryProducts = { categoryName ->
+                    navController.navigate(ScreenRoute.CategoryProducts(categoryName))
+                },
                 onNavigateToSignIn = {
                     navController.navigate(ScreenRoute.Login)
                 },
@@ -199,6 +207,24 @@ fun SafwaNavHost(
             LanguageAndCurrencyScreen(
                 // Assuming you add an onNavigateBack callback to this screen
                 // onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable<ScreenRoute.Categories> {
+            CategoriesScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onCategoryClicked = { categoryName ->
+                    navController.navigate(ScreenRoute.CategoryProducts(categoryName))
+                }
+            )
+        }
+
+        composable<ScreenRoute.CategoryProducts> { backStackEntry ->
+            CategoryProductsScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToProductDetails = { handle ->
+                    navController.navigate(ScreenRoute.ProductDetails(handle))
+                }
             )
         }
     }
