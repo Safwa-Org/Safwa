@@ -3,12 +3,10 @@ package com.tasneem.safwa.features.auth.presentation.login.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tasneem.safwa.R
-import com.tasneem.safwa.core.util.Resource
 import com.tasneem.safwa.core.domain.model.User
+import com.tasneem.safwa.core.util.Resource
 import com.tasneem.safwa.features.auth.domain.usecase.GoogleLoginUseCase
-import com.tasneem.safwa.features.auth.domain.usecase.GuestLoginUseCase
 import com.tasneem.safwa.features.auth.domain.usecase.LoginUseCase
-import com.tasneem.safwa.features.auth.domain.usecase.SyncUserSessionUseCase
 import com.tasneem.safwa.features.auth.presentation.login.state.LoginEvent
 import com.tasneem.safwa.features.auth.presentation.login.state.LoginSideEffect
 import com.tasneem.safwa.features.auth.presentation.login.state.LoginState
@@ -27,7 +25,6 @@ import javax.inject.Inject
 class LoginViewModel @Inject constructor(
     private val loginUseCase: LoginUseCase,
     private val googleLoginUseCase: GoogleLoginUseCase,
-    private val guestLoginUseCase: GuestLoginUseCase,
     private val syncWishlistUseCase: SyncWishlistUseCase,
 ) : ViewModel() {
 
@@ -36,8 +33,6 @@ class LoginViewModel @Inject constructor(
 
     private val _sideEffect = Channel<LoginSideEffect>()
     val sideEffect = _sideEffect.receiveAsFlow()
-
-
 
     fun onEvent(event: LoginEvent) {
         when (event) {
@@ -53,15 +48,21 @@ class LoginViewModel @Inject constructor(
                     )
                 }
             }
+
             LoginEvent.LoginClicked -> executeLogin()
-            LoginEvent.GoogleLoginClicked -> {  }
+            LoginEvent.GoogleLoginClicked -> {}
             LoginEvent.SignUpClicked -> {
                 viewModelScope.launch { _sideEffect.send(LoginSideEffect.NavigateToSignUp) }
             }
+
             LoginEvent.ForgotPasswordClicked -> {
                 viewModelScope.launch { _sideEffect.send(LoginSideEffect.NavigateToForgotPassword) }
             }
-            LoginEvent.GuestClicked -> executeGuestLogin()
+
+            LoginEvent.GuestClicked -> {
+                viewModelScope.launch { _sideEffect.send(LoginSideEffect.NavigateToHome) }
+            }
+
             is LoginEvent.ShowError -> {
                 _state.update { it.copy(generalErrorMessage = event.message) }
             }
@@ -70,7 +71,6 @@ class LoginViewModel @Inject constructor(
 
     private fun executeLogin() {
         val currentState = _state.value
-
         _state.update {
             it.copy(
                 emailErrorResId = null,
@@ -80,12 +80,12 @@ class LoginViewModel @Inject constructor(
                 isLoading = true
             )
         }
-
         viewModelScope.launch {
             val result = loginUseCase(currentState.email, currentState.password)
             handleAuthResult(result)
         }
     }
+
     fun handleGoogleLogin(idToken: String) {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
@@ -94,48 +94,30 @@ class LoginViewModel @Inject constructor(
         }
     }
 
-    private fun executeGuestLogin() {
-        viewModelScope.launch {
-            _state.update { it.copy(isLoading = true) }
-            val result = guestLoginUseCase()
-            if (result is Resource.Success) {
-                _state.update { it.copy(isGuest = true, isLoading = false) }
-                _sideEffect.send(LoginSideEffect.NavigateToHome)
-            } else {
-                _state.update {
-                    it.copy(
-                        isLoading = false,
-                        generalErrorResId = R.string.failed_guest
-                    )
-                }
-            }
-        }
-    }
-
     private suspend fun handleAuthResult(result: Resource<User>) {
         _state.update { it.copy(isLoading = false) }
         when (result) {
             is Resource.Success -> {
-                val user = result.data
-                if (user != null) {
-                    _state.update { it.copy(isGuest = user.isGuest) }
-                }
                 syncWishlistUseCase()
                 _sideEffect.send(LoginSideEffect.NavigateToHome)
             }
+
             is Resource.Error -> {
                 val message = result.message ?: ""
                 when {
                     message == "error_email_empty" -> {
                         _state.update { it.copy(emailErrorResId = R.string.error_email_empty) }
                     }
+
                     message == "error_password_empty" -> {
                         _state.update { it.copy(passwordErrorResId = R.string.error_password_empty) }
                     }
+
                     message.contains("email", ignoreCase = true) ||
                             message.contains("password", ignoreCase = true) -> {
                         _state.update { it.copy(emailErrorResId = R.string.error_invalid_or_password) }
                     }
+
                     message.contains("verify", ignoreCase = true) -> {
                         _state.update {
                             it.copy(
@@ -144,6 +126,7 @@ class LoginViewModel @Inject constructor(
                             )
                         }
                     }
+
                     else -> {
                         _state.update {
                             it.copy(
@@ -154,7 +137,8 @@ class LoginViewModel @Inject constructor(
                     }
                 }
             }
-            is Resource.Loading -> { }
+
+            is Resource.Loading -> {}
         }
     }
 }

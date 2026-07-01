@@ -7,6 +7,8 @@ import com.tasneem.safwa.features.home.presentation.state.GreetingType
 import com.tasneem.safwa.features.home.presentation.state.HomeEffect
 import com.tasneem.safwa.features.home.presentation.state.HomeEvent
 import com.tasneem.safwa.features.home.presentation.state.HomeState
+import com.tasneem.safwa.features.category.domain.model.Category
+import com.tasneem.safwa.features.core.domain.usecase.GetCategoriesUseCase
 import com.tasneem.safwa.features.core.domain.usecase.GetWishlistUseCase
 import com.tasneem.safwa.features.core.domain.usecase.ToggleFavoriteUseCase
 import com.tasneem.safwa.features.wishlist.presentation.WishlistMockData
@@ -24,7 +26,8 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val toggleFavoriteUseCase: ToggleFavoriteUseCase,
-    private val getWishlistUseCase: GetWishlistUseCase
+    private val getWishlistUseCase: GetWishlistUseCase,
+    private val getCategoriesUseCase: GetCategoriesUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(HomeState())
@@ -36,6 +39,20 @@ class HomeViewModel @Inject constructor(
     init {
         onEvent(HomeEvent.LoadHome)
         observeWishlist()
+        loadCategories()
+    }
+
+    private fun loadCategories() {
+        viewModelScope.launch {
+            getCategoriesUseCase().collect { result ->
+                if (result is Resource.Success) {
+                    val categoriesFromApi = result.data
+                    val allCategory = Category(id = "all", title = "All", handle = "all", imageUrl = null)
+                    val categories = listOf(allCategory) + categoriesFromApi
+                    _state.update { it.copy(categories = categories, selectedCategory = allCategory) }
+                }
+            }
+        }
     }
 
     private fun observeWishlist() {
@@ -53,8 +70,6 @@ class HomeViewModel @Inject constructor(
             is HomeEvent.LoadHome -> {
                 _state.update { it.copy(isLoading = true) }
                 val mockProducts = WishlistMockData.products
-                val categories = WishlistMockData.defaultCategories +
-                        mockProducts.map { it.productType }.distinct().sorted()
                 val brands = mockProducts.map { it.vendor }.distinct().sorted()
 
                 _state.update {
@@ -64,23 +79,17 @@ class HomeViewModel @Inject constructor(
                         greeting = getGreeting(),
                         products = mockProducts,
                         filteredProducts = mockProducts,
-                        categories = categories,
+                        // categories updated via loadCategories()
                         brands = brands
                     )
                 }
             }
 
             is HomeEvent.CategorySelected -> {
-                _state.update { currentState ->
-                    val filtered = if (event.category == "All") {
-                        currentState.products
-                    } else {
-                        currentState.products.filter { it.productType == event.category }
+                viewModelScope.launch {
+                    if (event.category.handle != "all") {
+                        _effect.send(HomeEffect.NavigateToCategoryProducts(event.category.handle))
                     }
-                    currentState.copy(
-                        selectedCategory = event.category,
-                        filteredProducts = filtered
-                    )
                 }
             }
 
@@ -92,7 +101,7 @@ class HomeViewModel @Inject constructor(
 
             is HomeEvent.ProductClicked -> {
                 viewModelScope.launch {
-                    _effect.send(HomeEffect.NavigateToProductDetails(event.product.id))
+                    _effect.send(HomeEffect.NavigateToProductDetails(event.product.handle))
                 }
             }
 
@@ -109,6 +118,9 @@ class HomeViewModel @Inject constructor(
             }
 
             is HomeEvent.ViewAllCategories -> {
+                viewModelScope.launch {
+                    _effect.send(HomeEffect.NavigateToCategories)
+                }
             }
 
             is HomeEvent.SeeAllBestSellers -> {

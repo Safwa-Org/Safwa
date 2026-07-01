@@ -42,6 +42,9 @@ sealed class ScreenRoute {
     object Checkout : ScreenRoute()
 
     @Serializable
+    object Payment : ScreenRoute()
+
+    @Serializable
     object OrderConfirmation : ScreenRoute()
 
     @Serializable
@@ -58,4 +61,10 @@ sealed class ScreenRoute {
 
     @Serializable
     object Language : ScreenRoute()
+
+    @Serializable
+    object Categories : ScreenRoute()
+
+    @Serializable
+    data class CategoryProducts(val categoryName: String) : ScreenRoute()
 }

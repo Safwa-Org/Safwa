@@ -33,7 +33,7 @@ import com.tasneem.safwa.features.settings.profile.presentation.view.component.P
 import com.tasneem.safwa.features.settings.profile.presentation.view.component.SettingsSwitchItem
 import androidx.compose.foundation.clickable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.tasneem.safwa.features.settings.profile.presentation.state.ProfileEffect
 import com.tasneem.safwa.features.settings.profile.presentation.state.ProfileEvent

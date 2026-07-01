@@ -1,12 +1,16 @@
 package com.tasneem.safwa.features.auth.data.repository
 
 import com.tasneem.safwa.core.data.mapper.toDomain
+import com.tasneem.safwa.core.domain.model.AuthState
 import com.tasneem.safwa.core.util.Resource
 import com.tasneem.safwa.features.auth.data.datasource.auth.FirebaseAuthDataSource
 import com.tasneem.safwa.features.auth.data.datasource.firestore.FirestoreDataSource
 import com.tasneem.safwa.core.data.model.UserEntity
 import com.tasneem.safwa.core.domain.model.User
 import com.tasneem.safwa.features.auth.domain.repository.AuthRepository
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class AuthRepositoryImpl @Inject constructor(
@@ -178,6 +182,31 @@ class AuthRepositoryImpl @Inject constructor(
             Resource.Error(e.localizedMessage ?: "Failed to get user")
         }
     }
+
+    override fun observeAuthState(): Flow<AuthState> = authDataSource.observeAuthState()
+        .map { isSignedIn ->
+            if (!isSignedIn) {
+                AuthState.Unauthenticated
+            } else {
+                val uid = authDataSource.getCurrentUserId()
+                    ?: return@map AuthState.Unauthenticated
+                val email = authDataSource.getCurrentUserEmail()
+
+                if (email != null && !authDataSource.isEmailVerified()) {
+                    authDataSource.signOut()
+                    return@map AuthState.Unauthenticated
+                }
+
+                val userEntity = firestoreDataSource.getUser(uid)
+                if (userEntity != null) {
+                    AuthState.Authenticated(userEntity.toDomain())
+                } else {
+                    authDataSource.signOut()
+                    AuthState.Unauthenticated
+                }
+            }
+        }
+        .catch { emit(AuthState.Unauthenticated) }
 
     private fun handleAuthException(e: Exception): Resource<User> {
         return when (e) {

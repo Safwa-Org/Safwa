@@ -22,7 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.tasneem.safwa.R
 import com.tasneem.safwa.core.theme.SafwaTheme
@@ -44,7 +44,9 @@ import com.tasneem.safwa.features.wishlist.presentation.components.ProductCard
 fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
     onNavigateToProductDetails: (String) -> Unit = {},
-    onNavigateToCart: () -> Unit = {}
+    onNavigateToCart: () -> Unit = {},
+    onNavigateToCategories: () -> Unit = {},
+    onNavigateToCategoryProducts: (String) -> Unit = {}
 ) {
     val uiState by viewModel.state.collectAsStateWithLifecycle()
 
@@ -53,7 +55,9 @@ fun HomeScreen(
             when (effect) {
                 HomeEffect.NavigateToSearch -> {}
                 HomeEffect.NavigateToCart -> onNavigateToCart()
-                is HomeEffect.NavigateToProductDetails -> onNavigateToProductDetails(effect.productId)
+                HomeEffect.NavigateToCategories -> onNavigateToCategories()
+                is HomeEffect.NavigateToCategoryProducts -> onNavigateToCategoryProducts(effect.categoryName)
+                is HomeEffect.NavigateToProductDetails -> onNavigateToProductDetails(effect.handle)
                 is HomeEffect.NavigateToBrand -> {}
             }
         }
@@ -140,7 +144,10 @@ fun HomeContent(
                             CategoriesRow(
                                 categories = state.categories,
                                 selectedCategory = state.selectedCategory,
-                                onCategorySelected = { onEvent(HomeEvent.CategorySelected(it)) }
+                                onCategorySelected = { category ->
+                                    onEvent(HomeEvent.CategorySelected(category))
+                                },
+                                modifier = Modifier.padding(vertical = 16.dp)
                             )
                         }
 
@@ -226,7 +233,12 @@ private fun HomeContentPreview() {
                 greeting = GreetingType.EVENING,
                 products = sampleProducts,
                 filteredProducts = sampleProducts,
-                categories = listOf("All", "Fragrance", "Leather", "Watches"),
+                categories = listOf(
+                    com.tasneem.safwa.features.category.domain.model.Category("1", "All", "all", null),
+                    com.tasneem.safwa.features.category.domain.model.Category("2", "Fragrance", "fragrance", null),
+                    com.tasneem.safwa.features.category.domain.model.Category("3", "Leather", "leather", null)
+                ),
+                selectedCategory = com.tasneem.safwa.features.category.domain.model.Category("1", "All", "all", null),
                 brands = listOf("Maison", "Atelier", "Noir")
             ),
             onEvent = {}

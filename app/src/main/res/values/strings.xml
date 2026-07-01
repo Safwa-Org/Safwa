@@ -168,4 +168,27 @@
     <string name="err_empty_name">Recipient name cannot be empty</string>
     <string name="err_invalid_mobile">Please enter a valid mobile number (min 9 digits)</string>
     <string name="err_empty_street">Street address field is required</string>
+    <string name="auth_gate_wishlist_title">Save your favorites</string>
+    <string name="auth_gate_wishlist_desc">Sign in to keep track of the pieces you love and access them anytime.</string>
+    <string name="auth_gate_cart_title">Your bag awaits</string>
+    <string name="auth_gate_cart_desc">Sign in to view your bag and complete your purchase.</string>
+    <string name="auth_gate_profile_title">Your personal space</string>
+    <string name="auth_gate_profile_desc">Sign in to manage your orders, addresses, and preferences.</string>
+    <string name="payment_methods">Payment methods</string>
+    <string name="select_payment_method">Select Payment Method</string>
+    <string name="cash_on_delivery">Cash on Delivery</string>
+    <string name="by_visa">By Visa</string>
+    <string name="add_new_card">Add new card</string>
+    <string name="card_number">Card Number</string>
+    <string name="month_mm">Month (MM)</string>
+    <string name="year_yyyy">Year (YYYY)</string>
+    <string name="cvv">CVV</string>
+    <string name="save_card">Save Card</string>
+    <string name="default_caps">DEFAULT</string>
+    <string name="cardholder">Cardholder</string>
+    <string name="expires">Expires</string>
+    <string name="payment_successful">Payment successful!</string>
+    <string name="add_new_card_clicked">Add new card clicked</string>
+    <string name="go_to_category">Go to category</string>
+    <string name="no_products_found">No products found in this category.</string>
 </resources>

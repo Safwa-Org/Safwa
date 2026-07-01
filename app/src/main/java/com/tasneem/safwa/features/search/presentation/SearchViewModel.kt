@@ -6,15 +6,19 @@ import com.tasneem.safwa.core.util.Resource
 import com.tasneem.safwa.features.core.domain.usecase.ToggleFavoriteUseCase
 import com.tasneem.safwa.features.core.domain.usecase.GetWishlistUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import android.util.Log
 import com.tasneem.safwa.features.search.domain.usecase.SearchProductsUseCase
+import com.tasneem.safwa.features.core.domain.usecase.GetCategoriesUseCase
+import com.tasneem.safwa.features.category.domain.model.Category
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -22,20 +26,38 @@ import kotlin.time.Duration.Companion.milliseconds
 class SearchViewModel @Inject constructor(
     private val toggleFavoriteUseCase: ToggleFavoriteUseCase,
     private val getWishlistUseCase: GetWishlistUseCase,
-    private val searchProductsUseCase: SearchProductsUseCase
+    private val searchProductsUseCase: SearchProductsUseCase,
+    private val getCategoriesUseCase: GetCategoriesUseCase
 ) : ViewModel() {
     private val _state = MutableStateFlow(SearchState())
     val state: StateFlow<SearchState> = _state.asStateFlow()
+
+    private val _effect = Channel<SearchEffect>()
+    val effect = _effect.receiveAsFlow()
+
     private var searchJob: Job? = null
 
     init {
         _state.update { it.copy(
-            categories = listOf("All", "T-shirts", "Pants", "Shoes", "Accessories"),
             isLoading = false
         ) }
         
         observeWishlist()
+        loadCategories()
         performSearch("")
+    }
+
+    private fun loadCategories() {
+        viewModelScope.launch {
+            getCategoriesUseCase().collect { result ->
+                if (result is Resource.Success) {
+                    val categoriesFromApi = result.data
+                    val allCategory = Category(id = "all", title = "All", handle = "all", imageUrl = null)
+                    val categories = listOf(allCategory) + categoriesFromApi
+                    _state.update { it.copy(categories = categories, selectedCategory = allCategory) }
+                }
+            }
+        }
     }
 
     private fun observeWishlist() {
@@ -72,6 +94,9 @@ class SearchViewModel @Inject constructor(
                 }
             }
             is SearchIntent.ProductClicked -> {
+                viewModelScope.launch {
+                    _effect.send(SearchEffect.NavigateToProductDetails(intent.product.handle))
+                }
             }
             is SearchIntent.ExecuteSearch -> {
                 searchJob?.cancel()
@@ -117,7 +142,7 @@ class SearchViewModel @Inject constructor(
         _state.update { currentState ->
             val category = currentState.selectedCategory
             val filtered = currentState.products.filter { product ->
-                if (category == "All") true else product.productType == category
+                if (category?.handle == "all") true else product.productType == category?.handle
             }
             currentState.copy(filteredProducts = filtered)
         }

@@ -25,13 +25,16 @@ class SaveUserSessionUseCase @Inject constructor(private val repo: SessionPrefer
 class LogoutUseCase @Inject constructor(private val repo: SessionPreferencesRepository) {
     suspend operator fun invoke() = repo.clearSession()
 }
+
 class GetAppPreferencesUseCase @Inject constructor(private val repo: SessionPreferencesRepository) {
     operator fun invoke(): Flow<AppPreferences> = repo.appPreferences
 }
+
 class UpdateAppPreferencesUseCase @Inject constructor(private val repo: SessionPreferencesRepository) {
     suspend fun updateTheme(isDark: Boolean) = repo.updateTheme(isDark)
     suspend fun updateLanguage(lang: String) = repo.updateLanguage(lang)
     suspend fun updateCurrency(currency: String) = repo.updateCurrency(currency)
+    suspend fun setOnboardingCompleted(completed: Boolean) = repo.setOnboardingCompleted(completed)
 }
 class GetSavedAddressesUseCase @Inject constructor(
     private val repo: SessionPreferencesRepository

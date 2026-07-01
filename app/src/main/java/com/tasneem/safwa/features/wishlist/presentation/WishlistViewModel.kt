@@ -5,10 +5,14 @@ import androidx.lifecycle.viewModelScope
 import com.tasneem.safwa.core.util.Resource
 import com.tasneem.safwa.features.core.domain.usecase.GetWishlistUseCase
 import com.tasneem.safwa.features.core.domain.usecase.ToggleFavoriteUseCase
+import com.tasneem.safwa.features.core.domain.usecase.GetCategoriesUseCase
+import com.tasneem.safwa.features.category.domain.model.Category
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -16,14 +20,32 @@ import javax.inject.Inject
 @HiltViewModel
 class WishlistViewModel @Inject constructor(
     private val getWishlistUseCase: GetWishlistUseCase,
-    private val toggleFavoriteUseCase: ToggleFavoriteUseCase
+    private val toggleFavoriteUseCase: ToggleFavoriteUseCase,
+    private val getCategoriesUseCase: GetCategoriesUseCase
 ) : ViewModel() {
     private val _state = MutableStateFlow(WishlistState())
     val state: StateFlow<WishlistState> = _state.asStateFlow()
 
+    private val _effect = Channel<WishlistEffect>()
+    val effect = _effect.receiveAsFlow()
+
     init {
         onIntent(WishlistIntent.LoadWishlist)
         observeWishlist()
+        loadCategories()
+    }
+
+    private fun loadCategories() {
+        viewModelScope.launch {
+            getCategoriesUseCase().collect { result ->
+                if (result is Resource.Success) {
+                    val categoriesFromApi = result.data
+                    val allCategory = Category(id = "all", title = "All", handle = "all", imageUrl = null)
+                    val categories = listOf(allCategory) + categoriesFromApi
+                    _state.update { it.copy(categories = categories, selectedCategory = allCategory) }
+                }
+            }
+        }
     }
 
     private fun observeWishlist() {
@@ -33,13 +55,12 @@ class WishlistViewModel @Inject constructor(
                     is Resource.Success -> {
                         val products = result.data
                         _state.update { currentState ->
-                            val defaultCategories = listOf("All", "Fragrances", "Skincare")
-                            val categories = (defaultCategories + products.map { it.productType }).distinct().sorted()
-                            val selectedCategory = if (categories.contains(currentState.selectedCategory)) currentState.selectedCategory else "All"
-                            val filteredProducts = if (selectedCategory == "All") {
+                            val categories = currentState.categories
+                            val selectedCategory = currentState.selectedCategory ?: Category(id = "all", title = "All", handle = "all", imageUrl = null)
+                            val filteredProducts = if (selectedCategory.handle == "all") {
                                 products
                             } else {
-                                products.filter { it.productType == selectedCategory }
+                                products.filter { it.productType == selectedCategory.handle }
                             }
                             
                             currentState.copy(
@@ -77,10 +98,10 @@ class WishlistViewModel @Inject constructor(
             }
             is WishlistIntent.FilterSelected -> {
                 _state.update { currentState ->
-                    val newFiltered = if (intent.category == "All") {
+                    val newFiltered = if (intent.category.handle == "all") {
                         currentState.products
                     } else {
-                        currentState.products.filter { it.productType == intent.category }
+                        currentState.products.filter { it.productType == intent.category.handle }
                     }
                     currentState.copy(
                         selectedCategory = intent.category,
@@ -89,7 +110,9 @@ class WishlistViewModel @Inject constructor(
                 }
             }
             is WishlistIntent.ProductClicked -> {
-                // Usually handled by side effects or UI directly
+                viewModelScope.launch {
+                    _effect.send(WishlistEffect.NavigateToProductDetails(intent.product.handle))
+                }
             }
         }
     }
