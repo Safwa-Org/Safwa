@@ -21,11 +21,12 @@ fun SafwaTopAppBar(
     title: String,
     modifier: Modifier = Modifier,
     onBackClick: (() -> Unit)? = null,
-    onCartClick: (() -> Unit)? = null
+    onCartClick: (() -> Unit)? = null,
+    windowInsets: WindowInsets = WindowInsets(0, 0, 0, 0)
 ) {
     CenterAlignedTopAppBar(
         modifier = modifier,
-        windowInsets = WindowInsets(0, 0, 0, 0),
+        windowInsets = windowInsets,
         title = {
             Text(
                 text = title,
