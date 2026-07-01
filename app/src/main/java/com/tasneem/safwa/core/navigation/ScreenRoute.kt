@@ -33,7 +33,7 @@ sealed class ScreenRoute {
     object Profile : ScreenRoute()
 
     @Serializable
-    object ProductDetails : ScreenRoute()
+    data class ProductDetails(val handle: String) : ScreenRoute()
 
     @Serializable
     object Cart : ScreenRoute()

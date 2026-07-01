@@ -100,6 +100,17 @@
     <string name="editorial_headline">Quiet luxury,\nsealed in glass.</string>
     <string name="search_icon_content_desc">Search</string>
     <string name="cart_icon_content_desc">Cart</string>
+    <string name="something_went_wrong">Something went wrong</string>
+    <string name="out_of_stock">Out of Stock</string>
+
+    <string name="error_no_internet">No internet connection</string>
+    <string name="error_no_internet_desc">Check your connection and try again.</string>
+    <string name="error_network">Connection failed</string>
+    <string name="error_network_desc">We couldn\'t reach the server. Please try again.</string>
+    <string name="error_not_found">Product not found</string>
+    <string name="error_not_found_desc">This product may no longer be available.</string>
+    <string name="error_generic_desc">An unexpected error occurred. Please try again.</string>
+    <string name="retry">Try again</string>
     <string name="elite">ELITE</string>
     <string name="orderscapital">ORDERS</string>
     <string name="wishlistcapital">WISHLIST</string>

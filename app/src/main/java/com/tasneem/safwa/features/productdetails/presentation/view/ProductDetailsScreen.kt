@@ -1,33 +1,37 @@
 package com.tasneem.safwa.features.productdetails.presentation.view
 
+import android.content.Intent
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.ui.res.stringResource
+import com.tasneem.safwa.R
+import com.tasneem.safwa.core.presentation.model.UiError
 import com.tasneem.safwa.core.theme.SafwaTheme
+import com.tasneem.safwa.features.core.presentation.component.ErrorContentWithRetry
 import com.tasneem.safwa.features.productdetails.presentation.state.ProductDetailsEffect
 import com.tasneem.safwa.features.productdetails.presentation.state.ProductDetailsEvent
 import com.tasneem.safwa.features.productdetails.presentation.state.ProductDetailsState
-import com.tasneem.safwa.features.productdetails.presentation.state.mapper.ProductUiModel
+import com.tasneem.safwa.features.productdetails.presentation.state.mapper.ProductDetailsUiModel
+import com.tasneem.safwa.features.productdetails.presentation.state.mapper.VariantOptionGroup
+import com.tasneem.safwa.features.productdetails.presentation.state.mapper.VariantOptionValue
 import com.tasneem.safwa.features.productdetails.presentation.view.component.ProductDescriptionSection
 import com.tasneem.safwa.features.productdetails.presentation.view.component.ProductImageHeader
 import com.tasneem.safwa.features.productdetails.presentation.view.component.ProductInfoSection
@@ -41,20 +45,31 @@ fun ProductDetailsScreen(
 ) {
     val uiState by viewModel.state.collectAsStateWithLifecycle()
     val snackBarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
 
     LaunchedEffect(Unit) {
         viewModel.effect.collect { effect ->
             when (effect) {
-                ProductDetailsEffect.NavigateBack -> onNavigateBack
+                ProductDetailsEffect.NavigateBack -> onNavigateBack()
                 is ProductDetailsEffect.ShowSnackBar -> {
                     snackBarHostState.showSnackbar(effect.message)
+                }
+
+                is ProductDetailsEffect.ShareProduct -> {
+                    val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                        type = "text/plain"
+                        putExtra(Intent.EXTRA_SUBJECT, effect.title)
+                        putExtra(Intent.EXTRA_TEXT, "${effect.title}\n${effect.url}")
+                    }
+                    context.startActivity(Intent.createChooser(shareIntent, null))
                 }
             }
         }
     }
+
     ProductDetailsContent(
         state = uiState,
-        onEvent = viewModel::onEvent
+        onEvent = viewModel::onEvent,
     )
 }
 
@@ -62,39 +77,46 @@ fun ProductDetailsScreen(
 fun ProductDetailsContent(
     state: ProductDetailsState,
     onEvent: (ProductDetailsEvent) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
+    val product = state.product
     Scaffold(
         bottomBar = {
-            state.product?.let { product ->
+            if (product != null) {
                 StickyBottomActionBar(
-                    priceFormatted = product.priceFormatted,
-                    onAddToCart = { onEvent(ProductDetailsEvent.AddToCartClicked) }
+                    priceFormatted = state.selectedVariantPrice ?: product.priceFormatted,
+                    isAvailable = state.isSelectedVariantAvailable,
+                    onAddToCart = { onEvent(ProductDetailsEvent.AddToCartClicked) },
                 )
             }
         },
-        modifier = modifier
+        modifier = modifier,
     ) { innerPadding ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
+                .padding(innerPadding),
         ) {
             when {
                 state.isLoading -> {
                     CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
                 }
 
-                state.errorMessage != null -> {
-                    Text(text = state.errorMessage, modifier = Modifier.align(Alignment.Center))
+                state.error != null -> {
+                    ErrorContentWithRetry(
+                        title = stringResource(state.error.titleRes),
+                        description = stringResource(state.error.descriptionRes),
+                        onRetry = { onEvent(ProductDetailsEvent.RetryClicked) },
+                        onBack = { onEvent(ProductDetailsEvent.BackClicked) },
+                        modifier = Modifier.align(Alignment.Center),
+                    )
                 }
 
-                state.product != null -> {
-                    val product = state.product
+                product != null -> {
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
-                            .verticalScroll(rememberScrollState())
+                            .verticalScroll(rememberScrollState()),
                     ) {
                         ProductImageHeader(
                             productImages = product.imageUrls,
@@ -103,25 +125,25 @@ fun ProductDetailsContent(
                             isWishlisted = state.isWishlisted,
                             onBack = { onEvent(ProductDetailsEvent.BackClicked) },
                             onWishlistToggle = { onEvent(ProductDetailsEvent.ToggleWishlist) },
-                            onShare = { onEvent(ProductDetailsEvent.ShareClicked) }
+                            onShare = { onEvent(ProductDetailsEvent.ShareClicked) },
                         )
 
                         ProductInfoSection(
-                            title = product.title,
                             vendor = product.vendor,
-                            rating = product.rating,
-                            reviewCount = product.reviewCount,
+                            productType = product.productType,
+                            title = product.title,
                             priceFormatted = product.priceFormatted,
-                            sizes = product.sizes,
-                            selectedSize = state.selectedSize,
-                            onSizeSelected = { size -> onEvent(ProductDetailsEvent.SizeSelected(size)) }
+                            priceRangeFormatted = product.priceRangeFormatted,
+                            variantOptions = product.variantOptions,
+                            selectedOptions = state.selectedOptions,
+                            onOptionSelected = { name, value ->
+                                onEvent(ProductDetailsEvent.OptionSelected(name, value))
+                            },
                         )
 
-                        ProductDescriptionSection(
-                            description = product.description,
-                        )
-
-                        Spacer(modifier = Modifier.height(24.dp))
+                        if (product.description.isNotEmpty()) {
+                            ProductDescriptionSection(description = product.description)
+                        }
                     }
                 }
             }
@@ -129,11 +151,7 @@ fun ProductDetailsContent(
     }
 }
 
-@Preview(
-    name = "Light",
-    showBackground = true,
-    showSystemUi = true
-)
+@Preview(name = "Light", showBackground = true, showSystemUi = true)
 @Preview(
     name = "Dark",
     uiMode = Configuration.UI_MODE_NIGHT_YES,
@@ -147,27 +165,65 @@ private fun ProductDetailsContentPreview() {
             state = ProductDetailsState(
                 isLoading = false,
                 isWishlisted = true,
-                selectedSize = "M",
-                product = ProductUiModel(
+                selectedOptions = mapOf("Size" to "M", "Color" to "Black"),
+                selectedVariantPrice = "USD 149.99",
+                isSelectedVariantAvailable = true,
+                product = ProductDetailsUiModel(
                     id = "1",
                     title = "Nike Air Max 270",
                     vendor = "Nike",
-                    description = "The Nike Air Max 270 delivers visible cushioning under every step. Designed for everyday comfort, it features a lightweight upper and responsive Air unit for all-day wear.",
-                    priceFormatted = "$149.99",
+                    productType = "Running Shoes",
+                    description = "The Nike Air Max 270 delivers visible cushioning under every step.",
+                    priceFormatted = "USD 149.99",
+                    priceRangeFormatted = "USD 149.99 – 189.99",
                     imageUrls = listOf(
-                        "https://picsum.photos/600/600?1",
                         "https://picsum.photos/600/600?1",
                         "https://picsum.photos/600/600?2",
                     ),
-                    imageLabels = listOf(
-                        "Front view",
-                        "Side view",
-                        "Back view"
-                    ),
+                    imageLabels = listOf("Front view", "Side view"),
                     rating = 4.8f,
                     reviewCount = 236,
-                    sizes = listOf("S", "M", "L", "XL")
+                    variantOptions = listOf(
+                        VariantOptionGroup(
+                            "Size", listOf(
+                                VariantOptionValue("S", true),
+                                VariantOptionValue("M", true),
+                                VariantOptionValue("L", false),
+                                VariantOptionValue("XL", true),
+                            )
+                        ),
+                        VariantOptionGroup(
+                            "Color", listOf(
+                                VariantOptionValue("Black", true),
+                                VariantOptionValue("White", false),
+                            )
+                        )
+                    ),
+                    variants = emptyList(),
                 )
+            ),
+            onEvent = {}
+        )
+    }
+}
+
+@Preview(name = "Error — Light", showBackground = true, showSystemUi = true)
+@Preview(
+    name = "Error — Dark",
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
+    showBackground = true,
+    showSystemUi = true
+)
+@Composable
+private fun ProductDetailsErrorPreview() {
+    SafwaTheme {
+        ProductDetailsContent(
+            state = ProductDetailsState(
+                isLoading = false,
+                error = UiError(
+                    titleRes = R.string.error_no_internet,
+                    descriptionRes = R.string.error_no_internet_desc,
+                ),
             ),
             onEvent = {}
         )
