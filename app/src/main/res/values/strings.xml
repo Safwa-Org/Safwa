@@ -116,7 +116,7 @@
     <string name="promo_code">Promo code</string>
     <string name="apply">Apply</string>
     <string name="subtotal">Subtotal</string>
-    <string name="vat_label">VAT (15%%)</string>
+    <string name="vat_label">VAT (15%)</string>
     <string name="promo_discount_label">Promo · %1$s</string>
     <string name="total">Total</string>
     <string name="proceed_to_checkout">Proceed to checkout</string>
