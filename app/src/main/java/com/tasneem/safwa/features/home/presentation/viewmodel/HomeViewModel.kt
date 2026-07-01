@@ -101,7 +101,7 @@ class HomeViewModel @Inject constructor(
 
             is HomeEvent.ProductClicked -> {
                 viewModelScope.launch {
-                    _effect.send(HomeEffect.NavigateToProductDetails(event.product.id))
+                    _effect.send(HomeEffect.NavigateToProductDetails(event.product.handle))
                 }
             }
 

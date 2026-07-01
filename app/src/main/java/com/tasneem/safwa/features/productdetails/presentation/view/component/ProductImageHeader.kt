@@ -95,7 +95,7 @@ fun ProductImageHeader(
                     onClick = onWishlistToggle,
                     imageVector = if (isWishlisted) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                     contentDescription = stringResource(R.string.wishlist),
-                    iconTint = if (isWishlisted) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
+                    iconTint = if (isWishlisted) MaterialTheme.colorScheme.primary else Color.Gray
                 )
             }
         }

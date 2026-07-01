@@ -8,9 +8,11 @@ import com.tasneem.safwa.features.core.domain.usecase.ToggleFavoriteUseCase
 import com.tasneem.safwa.features.core.domain.usecase.GetCategoriesUseCase
 import com.tasneem.safwa.features.category.domain.model.Category
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -23,6 +25,9 @@ class WishlistViewModel @Inject constructor(
 ) : ViewModel() {
     private val _state = MutableStateFlow(WishlistState())
     val state: StateFlow<WishlistState> = _state.asStateFlow()
+
+    private val _effect = Channel<WishlistEffect>()
+    val effect = _effect.receiveAsFlow()
 
     init {
         onIntent(WishlistIntent.LoadWishlist)
@@ -105,7 +110,9 @@ class WishlistViewModel @Inject constructor(
                 }
             }
             is WishlistIntent.ProductClicked -> {
-                // Usually handled by side effects or UI directly
+                viewModelScope.launch {
+                    _effect.send(WishlistEffect.NavigateToProductDetails(intent.product.handle))
+                }
             }
         }
     }

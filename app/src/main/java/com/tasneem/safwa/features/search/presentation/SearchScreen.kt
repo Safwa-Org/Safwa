@@ -21,6 +21,7 @@ import com.tasneem.safwa.features.search.presentation.components.SearchInput
 import com.tasneem.safwa.features.wishlist.presentation.components.CategoriesRow
 import com.tasneem.safwa.features.wishlist.presentation.components.ProductCard
 
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -28,11 +29,20 @@ import androidx.hilt.navigation.compose.hiltViewModel
 @Composable
 fun SearchScreen(
     modifier: Modifier = Modifier,
+    onNavigateToProductDetails: (String) -> Unit = {},
     viewModel: SearchViewModel = hiltViewModel()
-
 ) {
     val state by viewModel.state.collectAsState()
-    
+
+    LaunchedEffect(Unit) {
+        viewModel.effect.collect { effect ->
+            when (effect) {
+                is SearchEffect.NavigateToProductDetails ->
+                    onNavigateToProductDetails(effect.handle)
+            }
+        }
+    }
+
     SearchContent(
         state = state,
         onIntent = viewModel::onIntent,

@@ -1,41 +1,55 @@
 package com.tasneem.safwa.core.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.tasneem.safwa.core.domain.model.AuthState
+import com.tasneem.safwa.core.presentation.mainactivity.viewmodel.MainViewModel
 import com.tasneem.safwa.features.auth.presentation.login.view.LoginScreen
-import com.tasneem.safwa.features.payment.presentation.view.PaymentScreen
 import com.tasneem.safwa.features.auth.presentation.register.view.RegisterScreen
-import com.tasneem.safwa.features.wishlist.presentation.WishlistScreen
+import com.tasneem.safwa.features.cart.presentation.view.CartScreen
+import com.tasneem.safwa.features.category.presentation.categories.CategoriesScreen
+import com.tasneem.safwa.features.category.presentation.category_products.CategoryProductsScreen
 import com.tasneem.safwa.features.onboarding.OnboardingScreen
+import com.tasneem.safwa.features.payment.presentation.view.PaymentScreen
 import com.tasneem.safwa.features.productdetails.presentation.view.ProductDetailsScreen
 import com.tasneem.safwa.features.search.presentation.SearchScreen
 import com.tasneem.safwa.features.settings.languageandcurrency.presentation.presentation.LanguageAndCurrencyScreen
 import com.tasneem.safwa.features.settings.orderhistory.presentation.view.OrderHistoryScreen
 import com.tasneem.safwa.features.settings.savedaddresses.presentation.view.SavedAddressesScreen
-import com.tasneem.safwa.features.cart.presentation.view.CartScreen
-import com.tasneem.safwa.features.category.presentation.categories.CategoriesScreen
-import com.tasneem.safwa.features.category.presentation.category_products.CategoryProductsScreen
+import com.tasneem.safwa.features.wishlist.presentation.WishlistScreen
 
 @Composable
 fun SafwaNavHost(
     navController: NavHostController = rememberNavController(),
+    mainViewModel: MainViewModel = hiltViewModel()
 ) {
+    val authState by mainViewModel.authState.collectAsState()
+    val isAuthenticated = authState is AuthState.Authenticated
+    val appStartDestination by mainViewModel.startDestination.collectAsStateWithLifecycle()
+
+    val navStartRoute: Any = when (appStartDestination) {
+        StartDestination.Home -> ScreenRoute.Home
+        StartDestination.Onboarding -> ScreenRoute.Onboarding
+        StartDestination.Loading -> return
+    }
+
     NavHost(
         navController = navController,
-        startDestination = ScreenRoute.Onboarding
+        startDestination = navStartRoute,
     ) {
-
-        composable<ScreenRoute.Splash> {
-            // Splash implementation
-        }
 
         composable<ScreenRoute.Onboarding> {
             OnboardingScreen(
                 onFinish = {
-                    navController.navigate(ScreenRoute.Login) {
+                    mainViewModel.markOnboardingCompleted()
+                    navController.navigate(ScreenRoute.Home) {
                         popUpTo(ScreenRoute.Onboarding) { inclusive = true }
                     }
                 }
@@ -45,8 +59,11 @@ fun SafwaNavHost(
         composable<ScreenRoute.Login> {
             LoginScreen(
                 onNavigateToHome = {
-                    navController.navigate(ScreenRoute.Home) {
-                        popUpTo(ScreenRoute.Login) { inclusive = true }
+                    val popped = navController.popBackStack(ScreenRoute.Home, inclusive = false)
+                    if (!popped) {
+                        navController.navigate(ScreenRoute.Home) {
+                            popUpTo(0) { inclusive = true }
+                        }
                     }
                 },
                 onNavigateToSignUp = {
@@ -66,8 +83,11 @@ fun SafwaNavHost(
                     }
                 },
                 onNavigateToHome = {
-                    navController.navigate(ScreenRoute.Home) {
-                        popUpTo(ScreenRoute.Register) { inclusive = true }
+                    val popped = navController.popBackStack(ScreenRoute.Home, inclusive = false)
+                    if (!popped) {
+                        navController.navigate(ScreenRoute.Home) {
+                            popUpTo(0) { inclusive = true }
+                        }
                     }
                 }
             )
@@ -79,8 +99,9 @@ fun SafwaNavHost(
 
         composable<ScreenRoute.Home> {
             MainScreen(
-                onNavigateToProductDetails = {
-                    // navController.navigate(ScreenRoute.ProductDetails)
+                isAuthenticated = isAuthenticated,
+                onNavigateToProductDetails = { handle ->
+                    navController.navigate(ScreenRoute.ProductDetails(handle))
                 },
                 onNavigateToCart = {
                     navController.navigate(ScreenRoute.Cart)
@@ -105,7 +126,13 @@ fun SafwaNavHost(
                 },
                 onNavigateToCategoryProducts = { categoryName ->
                     navController.navigate(ScreenRoute.CategoryProducts(categoryName))
-                }
+                },
+                onNavigateToSignIn = {
+                    navController.navigate(ScreenRoute.Login)
+                },
+                onNavigateToCreateAccount = {
+                    navController.navigate(ScreenRoute.Register)
+                },
             )
         }
 

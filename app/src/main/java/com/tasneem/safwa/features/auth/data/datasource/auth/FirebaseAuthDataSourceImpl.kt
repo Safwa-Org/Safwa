@@ -3,6 +3,9 @@ package com.tasneem.safwa.features.auth.data.datasource.auth
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
@@ -43,5 +46,13 @@ class FirebaseAuthDataSourceImpl @Inject constructor(
 
     override fun isEmailVerified(): Boolean {
         return firebaseAuth.currentUser?.isEmailVerified ?: false
+    }
+
+    override fun observeAuthState(): Flow<Boolean> = callbackFlow {
+        val listener = FirebaseAuth.AuthStateListener { auth ->
+            trySend(auth.currentUser != null)
+        }
+        firebaseAuth.addAuthStateListener(listener)
+        awaitClose { firebaseAuth.removeAuthStateListener(listener) }
     }
 }
