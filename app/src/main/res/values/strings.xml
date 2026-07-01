@@ -111,4 +111,18 @@
     <string name="error_not_found_desc">This product may no longer be available.</string>
     <string name="error_generic_desc">An unexpected error occurred. Please try again.</string>
     <string name="retry">Try again</string>
+    <string name="your_bag">Your bag</string>
+    <string name="your_bag_count">Your bag · %1$d</string>
+    <string name="promo_code">Promo code</string>
+    <string name="apply">Apply</string>
+    <string name="subtotal">Subtotal</string>
+    <string name="vat_label">VAT (15%)</string>
+    <string name="promo_discount_label">Promo · %1$s</string>
+    <string name="total">Total</string>
+    <string name="proceed_to_checkout">Proceed to checkout</string>
+    <string name="empty_cart">Your bag is empty</string>
+    <string name="empty_cart_desc">Looks like you haven\'t added anything yet. Start exploring!</string>
+    <string name="remove_item">Remove item</string>
+    <string name="decrease_quantity">Decrease quantity</string>
+    <string name="increase_quantity">Increase quantity</string>
 </resources>

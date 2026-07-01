@@ -20,6 +20,7 @@ import com.tasneem.safwa.features.wishlist.presentation.WishlistScreen
 import com.tasneem.safwa.features.onboarding.OnboardingScreen
 import com.tasneem.safwa.features.productdetails.presentation.view.ProductDetailsScreen
 import com.tasneem.safwa.features.search.presentation.SearchScreen
+import com.tasneem.safwa.features.cart.presentation.view.CartScreen
 import com.tasneem.safwa.features.wishlist.presentation.WishlistScreen
 
 @Composable
@@ -81,7 +82,7 @@ fun SafwaNavHost(
         composable<ScreenRoute.Home> {
             MainScreen(
                 onNavigateToProductDetails = {
-                    navController.navigate(ScreenRoute.ProductDetails)
+                    // navController.navigate(ScreenRoute.ProductDetails)
                 },
                 onNavigateToCart = {
                     navController.navigate(ScreenRoute.Cart)
@@ -107,6 +108,10 @@ fun SafwaNavHost(
         }
 
         composable<ScreenRoute.Cart> {
+            CartScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToCheckout = { navController.navigate(ScreenRoute.Checkout) }
+            )
         }
 
         composable<ScreenRoute.Checkout> {
