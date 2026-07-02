@@ -189,5 +189,19 @@
     <string name="add_new_card_clicked">Add new card clicked</string>
     <string name="go_to_category">Go to category</string>
     <string name="no_products_found">No products found in this category.</string>
+    <string name="checkout_title">Checkout</string>
+    <string name="checkout_delivery_step">1</string>
+    <string name="checkout_delivery_title">Delivery</string>
+    <string name="checkout_change_action">Change</string>
+    <string name="checkout_payment_step">2</string>
+    <string name="checkout_payment_title">Payment</string>
+    <string name="checkout_summary_step">3</string>
+    <string name="checkout_summary_title">Summary</string>
+    <string name="checkout_subtotal">Subtotal</string>
+    <string name="checkout_shipping">Shipping</string>
+    <string name="checkout_shipping_free">Free</string>
+    <string name="checkout_vat">VAT (15%)</string>
+    <string name="checkout_total">Total</string>
+    <string name="checkout_place_order_format">Place order • %s</string>
     <string name="required">Required</string>
 </resources>

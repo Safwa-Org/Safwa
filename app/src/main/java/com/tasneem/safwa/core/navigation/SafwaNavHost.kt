@@ -16,6 +16,7 @@ import com.tasneem.safwa.features.auth.presentation.register.view.RegisterScreen
 import com.tasneem.safwa.features.cart.presentation.view.CartScreen
 import com.tasneem.safwa.features.category.presentation.categories.CategoriesScreen
 import com.tasneem.safwa.features.category.presentation.category_products.CategoryProductsScreen
+import com.tasneem.safwa.features.checkout.presentation.view.CheckoutScreen
 import com.tasneem.safwa.features.onboarding.OnboardingScreen
 import com.tasneem.safwa.features.payment.presentation.view.PaymentScreen
 import com.tasneem.safwa.features.productdetails.presentation.view.ProductDetailsScreen
@@ -163,7 +164,11 @@ fun SafwaNavHost(
         }
 
         composable<ScreenRoute.Checkout> {
-            // Checkout implementation
+            CheckoutScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToSavedAddresses = { navController.navigate(ScreenRoute.SavedAddresses) },
+                onNavigateToPayment = { navController.navigate(ScreenRoute.Payment) },
+            )
         }
 
         composable<ScreenRoute.Payment> {
