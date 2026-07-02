@@ -14576,3 +14576,24 @@ schema {
   mutation: Mutation
 }
 
+type CheckoutUserError {
+  message: String!
+}
+type Payment {
+  id: ID!
+  ready: Boolean!
+}
+type CheckoutCompleteWithTokenizedPaymentV3Payload {
+  payment: Payment
+  checkoutUserErrors: [CheckoutUserError!]!
+}
+input TokenizedPaymentInputV3 {
+  paymentAmount: MoneyInput!
+  idempotencyKey: String!
+  billingAddress: MailingAddressInput!
+  type: String!
+  paymentSessionId: String
+}
+extend type Mutation {
+  checkoutCompleteWithTokenizedPaymentV3(checkoutId: ID!, paymentInput: TokenizedPaymentInputV3!): CheckoutCompleteWithTokenizedPaymentV3Payload
+}

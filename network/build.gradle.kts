@@ -52,7 +52,7 @@ apollo {
 }
 
 dependencies {
-    implementation(libs.apollo.runtime)
+    api(libs.apollo.runtime)
     implementation(libs.apollo.normalized.cache.sqlite)
     implementation(libs.androidx.core.ktx)
     implementation(libs.hilt.android)

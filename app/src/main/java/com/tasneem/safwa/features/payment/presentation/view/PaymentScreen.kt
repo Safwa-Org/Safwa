@@ -202,6 +202,7 @@ fun PaymentContent(
     
     if (state.showAddCardDialog) {
         AddCardDialog(
+            isLoading = state.isLoading,
             onDismiss = { onEvent(PaymentEvent.ToggleAddCardDialog(false)) },
             onSave = { number, firstName, lastName, month, year, cvv ->
                 onEvent(PaymentEvent.SaveNewCard(number, firstName, lastName, month, year, cvv))
