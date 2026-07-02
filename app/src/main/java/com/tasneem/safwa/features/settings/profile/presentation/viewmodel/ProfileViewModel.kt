@@ -38,6 +38,7 @@ class ProfileViewModel @Inject constructor(
             is ProfileEvent.LoadProfile -> {
                 _state.update { it.copy(isLoading = true) }
 
+                // 1. Collect User Details
                 viewModelScope.launch {
                     preferencesUseCases.getUserSession().collect { user ->
                         if (user != null) {
@@ -48,13 +49,28 @@ class ProfileViewModel @Inject constructor(
                                     lastName = user.lastName,
                                     email = user.email ?: "",
                                     photoUrl = user.photoUrl,
-                                    isElite = true, // Replace with real logic if needed
-                                    ordersCount = 12, // Dummy until Orders UseCase is implemented
-                                    wishlistCount = 8, // Dummy until Wishlist UseCase is implemented
+                                    isElite = true,
+                                    ordersCount = 12,
+                                    wishlistCount = 8,
                                     savedAddressesCount = user.addresses.size,
                                     points = 2400
                                 )
                             }
+                        }
+                    }
+                }
+
+                // 2. Collect Settings/Preferences (Language, Currency, Dark Mode)
+                viewModelScope.launch {
+                    // NOTE: Replace `getAppPreferences()` with the exact name
+                    // of the use case/flow inside your PreferencesUseCases class.
+                    preferencesUseCases.getAppPreferences().collect { prefs ->
+                        _state.update {
+                            it.copy(
+                                language = prefs.languageCode ?: "English", // Map "en"/"ar" to full names here if needed
+                                currency = prefs.currencyCode ?: "USD",
+                                isDarkMode = prefs.isDarkMode
+                            )
                         }
                     }
                 }
@@ -88,10 +104,7 @@ class ProfileViewModel @Inject constructor(
             is ProfileEvent.LogoutClicked -> {
                 viewModelScope.launch {
                     _state.update { it.copy(isLoading = true) }
-
-                    // Securely process Logout: Revokes Firebase token and purges DataStore
                     logoutUseCase()
-
                     _state.update { it.copy(isLoading = false) }
                     _effect.send(ProfileEffect.NavigateToLogin)
                 }

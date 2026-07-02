@@ -3,6 +3,9 @@ package com.tasneem.network.di
 import com.apollographql.apollo.ApolloClient
 import com.tasneem.network.datasource.cart.CartRemoteDataSource
 import com.tasneem.network.datasource.cart.CartRemoteDataSourceImpl
+import com.tasneem.network.datasource.country.CountriesApi
+import com.tasneem.network.datasource.country.CountryRemoteDataSource
+import com.tasneem.network.datasource.country.CountryRemoteDataSourceImpl
 import com.tasneem.network.datasource.product.ProductRemoteDataSource
 import com.tasneem.network.datasource.product.ProductRemoteDataSourceImpl
 import com.tasneem.network.datasource.payment.PaymentRemoteDataSource
@@ -39,6 +42,16 @@ object NetworkModule {
             .build()
             .create(ShopifyDepositApi::class.java)
     }
+
+    @Provides
+    @Singleton
+    fun provideCountriesApi(): CountriesApi {
+        return Retrofit.Builder()
+            .baseUrl(BuildConfig.COUNTRIES_BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(CountriesApi::class.java)
+    }
 }
 
 @Module
@@ -59,4 +72,9 @@ abstract class DataSourceModule {
     abstract fun bindPaymentRemoteDatasource(
         impl: PaymentRemoteDataSourceImpl
     ): PaymentRemoteDataSource
+
+    @Binds
+    abstract fun bindCountryRemoteDataSource(
+        impl: CountryRemoteDataSourceImpl
+    ): CountryRemoteDataSource
 }
