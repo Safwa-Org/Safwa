@@ -7,4 +7,5 @@ interface CartRemoteDataSource {
     suspend fun addToCart(cartId: String, variantId: String, quantity: Int)
     suspend fun getCart(cartId: String): CartDto
     suspend fun removeFromCart(cartId: String, lineIds: List<String>): String
+    suspend fun updateCartLine(cartId: String, lineId: String, quantity: Int): String
 }

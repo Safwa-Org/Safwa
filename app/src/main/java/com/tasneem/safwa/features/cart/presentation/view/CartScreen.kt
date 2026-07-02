@@ -44,6 +44,7 @@ import com.tasneem.safwa.features.cart.presentation.view.component.OrderSummaryS
 import com.tasneem.safwa.features.cart.presentation.view.component.PromoCodeSection
 import com.tasneem.safwa.features.cart.presentation.viewmodel.CartViewModel
 import com.tasneem.safwa.features.settings.savedaddresses.presentation.view.ConfirmDeleteDialog
+import kotlinx.coroutines.launch
 
 @Composable
 fun CartScreen(
@@ -61,7 +62,9 @@ fun CartScreen(
                 CartEffect.NavigateToCheckout -> onNavigateToCheckout()
                 CartEffect.NavigateToWishlist -> {}
                 is CartEffect.ShowSnackBar -> {
-                    snackBarHostState.showSnackbar(effect.message)
+                    launch {
+                        snackBarHostState.showSnackbar(effect.message)
+                    }
                 }
             }
         }
@@ -150,9 +153,11 @@ fun CartContent(
                             CartItemCard(
                                 item = item,
                                 isRemoving = state.removingItemIds.contains(item.id),
+                                isUpdating = state.updatingItemIds.contains(item.id),
                                 onIncreaseQuantity = { onEvent(CartEvent.IncreaseQuantity(item.id)) },
                                 onDecreaseQuantity = { onEvent(CartEvent.DecreaseQuantity(item.id)) },
-                                onRemoveItem = { onEvent(CartEvent.RemoveItemClicked(item.id)) }
+                                onRemoveItem = { onEvent(CartEvent.RemoveItemClicked(item.id)) },
+                                onApplyUpdate = { onEvent(CartEvent.ApplyQuantityUpdate(item.id)) }
                             )
                         }
 

@@ -9,6 +9,7 @@ import com.tasneem.safwa.features.cart.presentation.state.CartItem
 import com.tasneem.safwa.features.cart.presentation.state.CartState
 import com.tasneem.safwa.features.cart.domain.usecase.GetCartUseCase
 import com.tasneem.safwa.features.cart.domain.usecase.RemoveFromCartUseCase
+import com.tasneem.safwa.features.cart.domain.usecase.UpdateCartLineUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,8 +22,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class CartViewModel @Inject constructor(
-    private val getCartUseCase: com.tasneem.safwa.features.cart.domain.usecase.GetCartUseCase,
-    private val removeFromCartUseCase: com.tasneem.safwa.features.cart.domain.usecase.RemoveFromCartUseCase
+    private val getCartUseCase: GetCartUseCase,
+    private val removeFromCartUseCase: RemoveFromCartUseCase,
+    private val updateCartLineUseCase: UpdateCartLineUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(CartState())
@@ -97,6 +99,42 @@ class CartViewModel @Inject constructor(
                 }
             }
 
+            is CartEvent.ApplyQuantityUpdate -> {
+                val itemToUpdate = _state.value.items.find { it.id == event.itemId } ?: return
+                if (itemToUpdate.quantity == itemToUpdate.originalQuantity) return
+                
+                val difference = itemToUpdate.quantity - itemToUpdate.originalQuantity
+                _state.update { it.copy(updatingItemIds = it.updatingItemIds + event.itemId) }
+                
+                viewModelScope.launch {
+                    val result = updateCartLineUseCase(itemToUpdate.id, itemToUpdate.quantity, difference)
+                    if (result is Resource.Success) {
+                        _state.update { currentState ->
+                            currentState.copy(
+                                updatingItemIds = currentState.updatingItemIds - event.itemId,
+                                items = currentState.items.map { item ->
+                                    if (item.id == event.itemId) item.copy(originalQuantity = item.quantity)
+                                    else item
+                                }
+                            )
+                        }
+                        _effect.send(CartEffect.ShowSnackBar("Quantity updated successfully"))
+                    } else {
+                        _state.update { currentState ->
+                            currentState.copy(
+                                updatingItemIds = currentState.updatingItemIds - event.itemId,
+                                items = currentState.items.map { item ->
+                                    if (item.id == event.itemId) item.copy(quantity = item.originalQuantity)
+                                    else item
+                                },
+                                errorMessage = (result as? Resource.Error)?.message ?: "Failed to update item"
+                            )
+                        }
+                        _effect.send(CartEffect.ShowSnackBar("Failed to update quantity"))
+                    }
+                }
+            }
+
             is CartEvent.RemoveItemClicked -> {
                 val item = _state.value.items.find { it.id == event.itemId }
                 _state.update { it.copy(itemPendingRemoval = item) }
@@ -125,6 +163,7 @@ class CartViewModel @Inject constructor(
                                 items = currentState.items.filter { it.id != itemToRemove.id }
                             )
                         }
+                        _effect.send(CartEffect.ShowSnackBar("Item removed successfully"))
                     } else {
                         _state.update {
                             it.copy(

@@ -6,8 +6,11 @@ import com.tasneem.network.exception.safeApiCall
 import com.tasneem.safwa.network.AddToCartMutation
 import com.tasneem.safwa.network.CreateCartMutation
 import com.tasneem.safwa.network.GetCartQuery
+import com.tasneem.safwa.network.RemoveFromCartMutation
+import com.tasneem.safwa.network.UpdateCartLineMutation
 import com.tasneem.safwa.network.type.CartInput
 import com.tasneem.safwa.network.type.CartLineInput
+import com.tasneem.safwa.network.type.CartLineUpdateInput
 import javax.inject.Inject
 
 class CartRemoteDataSourceImpl @Inject constructor(
@@ -82,7 +85,7 @@ class CartRemoteDataSourceImpl @Inject constructor(
     override suspend fun removeFromCart(cartId: String, lineIds: List<String>): String {
         return safeApiCall(
             apiCall = {
-                apolloClient.mutation(com.tasneem.safwa.network.RemoveFromCartMutation(cartId, lineIds)).execute()
+                apolloClient.mutation(RemoveFromCartMutation(cartId, lineIds)).execute()
             },
             mapper = { data ->
                 val userErrors = data.cartLinesRemove?.userErrors
@@ -90,6 +93,27 @@ class CartRemoteDataSourceImpl @Inject constructor(
                     throw Exception(userErrors.first().message)
                 }
                 data.cartLinesRemove?.cart?.cost?.totalAmount?.amount?.toString() ?: "0.0"
+            }
+        )
+    }
+
+    override suspend fun updateCartLine(cartId: String, lineId: String, quantity: Int): String {
+        return safeApiCall(
+            apiCall = {
+                val lines = listOf(
+                    CartLineUpdateInput(
+                        id = lineId,
+                        quantity = Optional.present(quantity)
+                    )
+                )
+                apolloClient.mutation(UpdateCartLineMutation(cartId, lines)).execute()
+            },
+            mapper = { data ->
+                val userErrors = data.cartLinesUpdate?.userErrors
+                if (!userErrors.isNullOrEmpty()) {
+                    throw Exception(userErrors.first().message)
+                }
+                data.cartLinesUpdate?.cart?.cost?.totalAmount?.amount?.toString() ?: "0.0"
             }
         )
     }

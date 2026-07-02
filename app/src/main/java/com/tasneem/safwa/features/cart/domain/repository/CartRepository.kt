@@ -11,4 +11,5 @@ interface CartRepository {
     suspend fun addToCart(cartId: String, variantId: String, quantity: Int): Resource<Unit>
     suspend fun getCart(cartId: String): Resource<Cart>
     suspend fun removeFromCart(cartId: String, lineIds: List<String>, removedQuantity: Int): Resource<String>
+    suspend fun updateCartLine(cartId: String, lineId: String, quantity: Int, difference: Int): Resource<String>
 }

@@ -55,4 +55,13 @@ class CartRepositoryImpl @Inject constructor(
             Resource.Error(e.localizedMessage ?: "Failed to remove item from cart")
         }
     }
+    override suspend fun updateCartLine(cartId: String, lineId: String, quantity: Int, difference: Int): Resource<String> {
+        return try {
+            val totalAmount = remoteDataSource.updateCartLine(cartId, lineId, quantity)
+            _cartItemCount.value += difference
+            Resource.Success(totalAmount)
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Failed to update cart line")
+        }
+    }
 }

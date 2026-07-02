@@ -9,7 +9,8 @@ data class CartItem(
     val price: Double,
     val currency: String,
     val quantity: Int,
-    val imageUrl: String
+    val imageUrl: String,
+    val originalQuantity: Int = quantity
 )
 
 data class CartState(
@@ -19,6 +20,7 @@ data class CartState(
     val appliedPromoCode: String? = null,
     val promoDiscount: Double = 0.0,
     val removingItemIds: Set<String> = emptySet(),
+    val updatingItemIds: Set<String> = emptySet(),
     val itemPendingRemoval: CartItem? = null,
     val errorMessage: String? = null
 ) {
