@@ -45,4 +45,14 @@ class CartRepositoryImpl @Inject constructor(
             Resource.Error(e.localizedMessage ?: "Failed to fetch cart")
         }
     }
+
+    override suspend fun removeFromCart(cartId: String, lineIds: List<String>, removedQuantity: Int): Resource<String> {
+        return try {
+            val totalAmount = remoteDataSource.removeFromCart(cartId, lineIds)
+            _cartItemCount.value -= removedQuantity
+            Resource.Success(totalAmount)
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Failed to remove item from cart")
+        }
+    }
 }

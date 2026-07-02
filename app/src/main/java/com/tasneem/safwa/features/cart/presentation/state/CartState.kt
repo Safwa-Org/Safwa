@@ -18,6 +18,8 @@ data class CartState(
     val promoCode: String = "",
     val appliedPromoCode: String? = null,
     val promoDiscount: Double = 0.0,
+    val removingItemIds: Set<String> = emptySet(),
+    val itemPendingRemoval: CartItem? = null,
     val errorMessage: String? = null
 ) {
     val totalItemCount: Int

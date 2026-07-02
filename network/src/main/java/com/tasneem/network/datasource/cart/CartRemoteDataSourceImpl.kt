@@ -78,4 +78,19 @@ class CartRemoteDataSourceImpl @Inject constructor(
             }
         )
     }
+
+    override suspend fun removeFromCart(cartId: String, lineIds: List<String>): String {
+        return safeApiCall(
+            apiCall = {
+                apolloClient.mutation(com.tasneem.safwa.network.RemoveFromCartMutation(cartId, lineIds)).execute()
+            },
+            mapper = { data ->
+                val userErrors = data.cartLinesRemove?.userErrors
+                if (!userErrors.isNullOrEmpty()) {
+                    throw Exception(userErrors.first().message)
+                }
+                data.cartLinesRemove?.cart?.cost?.totalAmount?.amount?.toString() ?: "0.0"
+            }
+        )
+    }
 }

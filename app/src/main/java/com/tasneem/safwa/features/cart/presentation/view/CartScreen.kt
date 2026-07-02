@@ -43,6 +43,7 @@ import com.tasneem.safwa.features.cart.presentation.view.component.CartItemCard
 import com.tasneem.safwa.features.cart.presentation.view.component.OrderSummarySection
 import com.tasneem.safwa.features.cart.presentation.view.component.PromoCodeSection
 import com.tasneem.safwa.features.cart.presentation.viewmodel.CartViewModel
+import com.tasneem.safwa.features.settings.savedaddresses.presentation.view.ConfirmDeleteDialog
 
 @Composable
 fun CartScreen(
@@ -148,9 +149,10 @@ fun CartContent(
                         state.items.forEach { item ->
                             CartItemCard(
                                 item = item,
+                                isRemoving = state.removingItemIds.contains(item.id),
                                 onIncreaseQuantity = { onEvent(CartEvent.IncreaseQuantity(item.id)) },
                                 onDecreaseQuantity = { onEvent(CartEvent.DecreaseQuantity(item.id)) },
-                                onRemoveItem = { onEvent(CartEvent.RemoveItem(item.id)) }
+                                onRemoveItem = { onEvent(CartEvent.RemoveItemClicked(item.id)) }
                             )
                         }
 
@@ -177,6 +179,15 @@ fun CartContent(
                     }
                 }
             }
+        }
+        
+        if (state.itemPendingRemoval != null) {
+            ConfirmDeleteDialog(
+                title = stringResource(id = R.string.remove_item),
+                message = stringResource(id = R.string.confirm_remove_item),
+                onConfirm = { onEvent(CartEvent.ConfirmRemoveItem) },
+                onDismiss = { onEvent(CartEvent.CancelRemoveItem) }
+            )
         }
     }
 }

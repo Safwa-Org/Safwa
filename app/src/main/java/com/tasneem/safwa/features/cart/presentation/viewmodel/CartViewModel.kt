@@ -7,6 +7,8 @@ import com.tasneem.safwa.features.cart.presentation.state.CartEffect
 import com.tasneem.safwa.features.cart.presentation.state.CartEvent
 import com.tasneem.safwa.features.cart.presentation.state.CartItem
 import com.tasneem.safwa.features.cart.presentation.state.CartState
+import com.tasneem.safwa.features.cart.domain.usecase.GetCartUseCase
+import com.tasneem.safwa.features.cart.domain.usecase.RemoveFromCartUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,7 +21,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class CartViewModel @Inject constructor(
-    private val getCartUseCase: com.tasneem.safwa.features.cart.domain.usecase.GetCartUseCase
+    private val getCartUseCase: com.tasneem.safwa.features.cart.domain.usecase.GetCartUseCase,
+    private val removeFromCartUseCase: com.tasneem.safwa.features.cart.domain.usecase.RemoveFromCartUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(CartState())
@@ -94,11 +97,43 @@ class CartViewModel @Inject constructor(
                 }
             }
 
-            is CartEvent.RemoveItem -> {
-                _state.update { currentState ->
-                    currentState.copy(
-                        items = currentState.items.filter { it.id != event.itemId }
-                    )
+            is CartEvent.RemoveItemClicked -> {
+                val item = _state.value.items.find { it.id == event.itemId }
+                _state.update { it.copy(itemPendingRemoval = item) }
+            }
+
+            is CartEvent.CancelRemoveItem -> {
+                _state.update { it.copy(itemPendingRemoval = null) }
+            }
+
+            is CartEvent.ConfirmRemoveItem -> {
+                val itemToRemove = _state.value.itemPendingRemoval ?: return
+                
+                _state.update {
+                    it.copy(
+                        itemPendingRemoval = null,
+                        removingItemIds = it.removingItemIds + itemToRemove.id
+                    ) 
+                }
+                
+                viewModelScope.launch {
+                    val result = removeFromCartUseCase(itemToRemove.id, itemToRemove.quantity)
+                    if (result is Resource.Success) {
+                        _state.update { currentState ->
+                            currentState.copy(
+                                removingItemIds = currentState.removingItemIds - itemToRemove.id,
+                                items = currentState.items.filter { it.id != itemToRemove.id }
+                            )
+                        }
+                    } else {
+                        _state.update {
+                            it.copy(
+                                removingItemIds = it.removingItemIds - itemToRemove.id,
+                                errorMessage = (result as? Resource.Error)?.message ?: "Failed to remove item"
+                            )
+                        }
+                        _effect.send(CartEffect.ShowSnackBar("Failed to remove item"))
+                    }
                 }
             }
 

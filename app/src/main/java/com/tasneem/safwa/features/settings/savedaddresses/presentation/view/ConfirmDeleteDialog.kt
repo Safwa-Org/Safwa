@@ -27,6 +27,8 @@ import com.tasneem.safwa.core.shared_component.SafwaLogo
 
 @Composable
 fun ConfirmDeleteDialog(
+    title: String = stringResource(R.string.delete_address),
+    message: String = stringResource(R.string.confirm_delete_address),
     onConfirm: () -> Unit,
     onDismiss: () -> Unit
 ) {
@@ -47,7 +49,7 @@ fun ConfirmDeleteDialog(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
-                    text = stringResource(R.string.delete_address), // Replace with stringResource if desired
+                    text = title,
                     style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                     color = MaterialTheme.colorScheme.onSurface
                 )
@@ -55,7 +57,7 @@ fun ConfirmDeleteDialog(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
-                    text = stringResource(R.string.confirm_delete_address),
+                    text = message,
                     textAlign = TextAlign.Center,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
