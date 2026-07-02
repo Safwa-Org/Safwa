@@ -1,5 +1,7 @@
 package com.tasneem.safwa.features.payment.presentation.state
 
+import com.tasneem.safwa.features.payment.domain.model.PaymentMethodType
+
 sealed interface PaymentEvent {
     data object BackClicked : PaymentEvent
     data class MethodSelected(val method: PaymentMethodType) : PaymentEvent

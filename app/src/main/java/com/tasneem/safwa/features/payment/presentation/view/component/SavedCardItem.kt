@@ -25,7 +25,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tasneem.safwa.R
-import com.tasneem.safwa.features.payment.presentation.state.SavedCard
+import com.tasneem.safwa.features.payment.domain.model.SavedCard
 
 @Composable
 fun SavedCardItem(
