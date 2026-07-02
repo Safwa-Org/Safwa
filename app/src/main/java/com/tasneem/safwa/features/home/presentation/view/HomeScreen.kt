@@ -106,7 +106,7 @@ fun HomeContent(
                         item(span = { GridItemSpan(2) }) {
                             HomeTopBar(
                                 onCartClick = { onEvent(HomeEvent.CartClicked) },
-                                cartItemCount = 2
+                                cartItemCount = state.cartItemCount
                             )
                         }
 

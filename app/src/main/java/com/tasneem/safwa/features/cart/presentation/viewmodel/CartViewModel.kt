@@ -2,6 +2,7 @@ package com.tasneem.safwa.features.cart.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.tasneem.safwa.core.util.Resource
 import com.tasneem.safwa.features.cart.presentation.state.CartEffect
 import com.tasneem.safwa.features.cart.presentation.state.CartEvent
 import com.tasneem.safwa.features.cart.presentation.state.CartItem
@@ -17,7 +18,9 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class CartViewModel @Inject constructor() : ViewModel() {
+class CartViewModel @Inject constructor(
+    private val getCartUseCase: com.tasneem.safwa.features.cart.domain.usecase.GetCartUseCase
+) : ViewModel() {
 
     private val _state = MutableStateFlow(CartState())
     val state: StateFlow<CartState> = _state.asStateFlow()
@@ -32,36 +35,38 @@ class CartViewModel @Inject constructor() : ViewModel() {
     fun onEvent(event: CartEvent) {
         when (event) {
             is CartEvent.LoadCart -> {
-                _state.update { it.copy(isLoading = true) }
-                val mockItems = listOf(
-                    CartItem(
-                        id = "cart_1",
-                        productId = "1",
-                        title = "Nuit d'Or EDP",
-                        variant = "50 ml",
-                        vendor = "MAISON",
-                        price = 480.0,
-                        currency = "SAR",
-                        quantity = 1,
-                        imageUrl = "https://images.unsplash.com/photo-1541643600914-78b084683601"
-                    ),
-                    CartItem(
-                        id = "cart_2",
-                        productId = "2",
-                        title = "Vermilion Bifold",
-                        variant = "Saddle",
-                        vendor = "ATELIER",
-                        price = 320.0,
-                        currency = "SAR",
-                        quantity = 2,
-                        imageUrl = "https://images.unsplash.com/photo-1627123424574-724758594e93"
-                    )
-                )
-                _state.update {
-                    it.copy(
-                        isLoading = false,
-                        items = mockItems
-                    )
+                _state.update { it.copy(isLoading = true, errorMessage = null) }
+                viewModelScope.launch {
+                    val result = getCartUseCase()
+                    if (result is Resource.Success) {
+                        val cart = result.data
+                        val cartItems = cart.lines.map { line ->
+                            CartItem(
+                                id = line.id,
+                                productId = line.productId,
+                                title = line.productTitle,
+                                variant = line.variantTitle,
+                                vendor = line.vendor,
+                                price = line.price.toDoubleOrNull() ?: 0.0,
+                                currency = line.currency,
+                                quantity = line.quantity,
+                                imageUrl = line.imageUrl
+                            )
+                        }
+                        _state.update {
+                            it.copy(
+                                isLoading = false,
+                                items = cartItems
+                            )
+                        }
+                    } else {
+                        _state.update {
+                            it.copy(
+                                isLoading = false,
+                                errorMessage = (result as? com.tasneem.safwa.core.util.Resource.Error)?.message ?: "Failed to load cart"
+                            )
+                        }
+                    }
                 }
             }
 

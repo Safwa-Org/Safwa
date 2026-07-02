@@ -18,5 +18,6 @@ data class HomeState(
     val categories: List<Category> = emptyList(),
     val selectedCategory: Category? = null,
     val brands: List<String> = emptyList(),
+    val cartItemCount: Int = 0,
     val errorMessage: String? = null
 )

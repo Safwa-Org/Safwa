@@ -1,6 +1,9 @@
 package com.tasneem.network.datasource.cart
 
+import com.tasneem.network.dto.CartDto
+
 interface CartRemoteDataSource {
     suspend fun createCart(variantId: String, quantity: Int): String
     suspend fun addToCart(cartId: String, variantId: String, quantity: Int)
+    suspend fun getCart(cartId: String): CartDto
 }

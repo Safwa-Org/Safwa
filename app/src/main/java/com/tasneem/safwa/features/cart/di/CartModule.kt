@@ -12,6 +12,7 @@ import dagger.hilt.components.SingletonComponent
 abstract class CartModule {
 
     @Binds
+    @javax.inject.Singleton
     abstract fun bindCartRepository(
         impl: CartRepositoryImpl
     ): CartRepository

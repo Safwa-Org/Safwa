@@ -1,9 +1,11 @@
 package com.tasneem.network.datasource.cart
 import com.apollographql.apollo.ApolloClient
 import com.apollographql.apollo.api.Optional
+import com.tasneem.network.dto.CartDto
 import com.tasneem.network.exception.safeApiCall
 import com.tasneem.safwa.network.AddToCartMutation
 import com.tasneem.safwa.network.CreateCartMutation
+import com.tasneem.safwa.network.GetCartQuery
 import com.tasneem.safwa.network.type.CartInput
 import com.tasneem.safwa.network.type.CartLineInput
 import javax.inject.Inject
@@ -56,6 +58,22 @@ class CartRemoteDataSourceImpl @Inject constructor(
                 
                 if (!userErrors.isNullOrEmpty()) {
                     throw Exception(userErrors.first().message)
+                }
+            }
+        )
+    }
+
+    override suspend fun getCart(cartId: String): CartDto {
+        return safeApiCall(
+            apiCall = {
+                apolloClient.query(GetCartQuery(cartId)).execute()
+            },
+            mapper = { data ->
+                val cart = data.cart
+                if (cart != null) {
+                    com.tasneem.network.mapper.CartMapper().map(cart)
+                } else {
+                    throw Exception("Cart not found")
                 }
             }
         )

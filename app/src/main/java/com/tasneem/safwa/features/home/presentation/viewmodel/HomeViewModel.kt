@@ -3,6 +3,8 @@ package com.tasneem.safwa.features.home.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tasneem.safwa.core.util.Resource
+import com.tasneem.safwa.features.cart.domain.repository.CartRepository
+import com.tasneem.safwa.features.cart.domain.usecase.GetCartUseCase
 import com.tasneem.safwa.features.home.domain.usecase.GetProductsUseCase
 import com.tasneem.safwa.features.home.presentation.state.GreetingType
 import com.tasneem.safwa.features.home.presentation.state.HomeEffect
@@ -28,7 +30,9 @@ class HomeViewModel @Inject constructor(
     private val getProductsUseCase: GetProductsUseCase,
     private val toggleFavoriteUseCase: ToggleFavoriteUseCase,
     private val getWishlistUseCase: GetWishlistUseCase,
-    private val getCategoriesUseCase: GetCategoriesUseCase
+    private val getCategoriesUseCase: GetCategoriesUseCase,
+    private val getCartUseCase: GetCartUseCase,
+    private val cartRepository: CartRepository
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(HomeState())
@@ -42,6 +46,8 @@ class HomeViewModel @Inject constructor(
         loadProducts()
         observeWishlist()
         loadCategories()
+        observeCartCount()
+        loadCartCount()
     }
 
     private fun loadProducts() {
@@ -94,6 +100,20 @@ class HomeViewModel @Inject constructor(
                     _state.update { it.copy(favoriteProductIds = result.data.map { p -> p.id }.toSet()) }
                 }
             }
+        }
+    }
+
+    private fun observeCartCount() {
+        viewModelScope.launch {
+            cartRepository.cartItemCount.collect { count ->
+                _state.update { it.copy(cartItemCount = count) }
+            }
+        }
+    }
+
+    private fun loadCartCount() {
+        viewModelScope.launch {
+            getCartUseCase()
         }
     }
 
