@@ -158,7 +158,7 @@ fun SafwaNavHost(
             // Cart implementation
             CartScreen(
                 onNavigateBack = { navController.popBackStack() },
-                onNavigateToCheckout = { navController.navigate(ScreenRoute.Payment) }
+                onNavigateToCheckout = { navController.navigate(ScreenRoute.Checkout) }
             )
         }
 
