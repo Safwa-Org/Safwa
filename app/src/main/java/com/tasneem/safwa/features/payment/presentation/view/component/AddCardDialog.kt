@@ -23,8 +23,12 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.tasneem.safwa.R
 
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.CircularProgressIndicator
+
 @Composable
 fun AddCardDialog(
+    isLoading: Boolean = false,
     onDismiss: () -> Unit,
     onSave: (String, String, String, String, String, String) -> Unit
 ) {
@@ -34,6 +38,15 @@ fun AddCardDialog(
     var month by remember { mutableStateOf("") }
     var year by remember { mutableStateOf("") }
     var cvv by remember { mutableStateOf("") }
+    var showErrors by remember { mutableStateOf(false) }
+
+    val isNumberValid = number.length == 16 && number.all { it.isDigit() }
+    val isFirstNameValid = firstName.isNotBlank()
+    val isLastNameValid = lastName.isNotBlank()
+    val isMonthValid = month.toIntOrNull() in 1..12
+    val isYearValid = year.length == 4 && (year.toIntOrNull() ?: 0) >= 2026
+    val isCvvValid = cvv.length in 3..4 && cvv.all { it.isDigit() }
+    val isFormValid = isNumberValid && isFirstNameValid && isLastNameValid && isMonthValid && isYearValid && isCvvValid
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -47,63 +60,96 @@ fun AddCardDialog(
             ) {
                 OutlinedTextField(
                     value = number,
-                    onValueChange = { number = it },
+                    onValueChange = { number = it.take(16) },
                     label = { Text(stringResource(R.string.card_number)) },
                     modifier = Modifier.fillMaxWidth(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    enabled = !isLoading,
+                    isError = showErrors && !isNumberValid,
+                    supportingText = if (showErrors && !isNumberValid) { { Text("Must be 16 digits") } } else null
                 )
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedTextField(
                         value = firstName,
                         onValueChange = { firstName = it },
                         label = { Text(stringResource(R.string.first_name)) },
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
+                        enabled = !isLoading,
+                        isError = showErrors && !isFirstNameValid,
+                        supportingText = if (showErrors && !isFirstNameValid) { { Text(stringResource(R.string.required)) } } else null
                     )
                     OutlinedTextField(
                         value = lastName,
                         onValueChange = { lastName = it },
                         label = { Text(stringResource(R.string.last_name)) },
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
+                        enabled = !isLoading,
+                        isError = showErrors && !isLastNameValid,
+                        supportingText = if (showErrors && !isLastNameValid) { { Text(stringResource(R.string.required)) } } else null
                     )
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedTextField(
                         value = month,
-                        onValueChange = { month = it },
+                        onValueChange = { month = it.take(2) },
                         label = { Text(stringResource(R.string.month_mm)) },
                         modifier = Modifier.weight(1f),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        enabled = !isLoading,
+                        isError = showErrors && !isMonthValid,
+                        supportingText = if (showErrors && !isMonthValid) { { Text("01-12") } } else null
                     )
                     OutlinedTextField(
                         value = year,
-                        onValueChange = { year = it },
+                        onValueChange = { year = it.take(4) },
                         label = { Text(stringResource(R.string.year_yyyy)) },
                         modifier = Modifier.weight(1f),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        enabled = !isLoading,
+                        isError = showErrors && !isYearValid,
+                        supportingText = if (showErrors && !isYearValid) { { Text("Min 2026") } } else null
                     )
                 }
                 OutlinedTextField(
                     value = cvv,
-                    onValueChange = { cvv = it },
+                    onValueChange = { cvv = it.take(4) },
                     label = { Text(stringResource(R.string.cvv)) },
                     modifier = Modifier.fillMaxWidth(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    enabled = !isLoading,
+                    isError = showErrors && !isCvvValid,
+                    supportingText = if (showErrors && !isCvvValid) { { Text("3 or 4 digits") } } else null
                 )
             }
         },
         confirmButton = {
             TextButton(
                 onClick = {
-                    if (number.isNotBlank() && firstName.isNotBlank() && lastName.isNotBlank() && month.isNotBlank() && year.isNotBlank() && cvv.isNotBlank()) {
-                        onSave(number, firstName, lastName, month, year, cvv)
+                    if (!isLoading) {
+                        if (isFormValid) {
+                            onSave(number, firstName, lastName, month, year, cvv)
+                        } else {
+                            showErrors = true
+                        }
                     }
-                }
+                },
+                enabled = !isLoading
             ) {
-                Text(stringResource(R.string.save_card))
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(16.dp),
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Text(stringResource(R.string.save_card))
+                }
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
+            TextButton(
+                onClick = onDismiss,
+                enabled = !isLoading
+            ) {
                 Text(stringResource(R.string.cancel))
             }
         }

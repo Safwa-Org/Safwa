@@ -3,11 +3,15 @@ package com.tasneem.safwa.features.payment.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tasneem.safwa.R
+import com.tasneem.safwa.features.payment.domain.model.CardDetails
+import com.tasneem.safwa.features.payment.domain.model.PaymentDetails
+import com.tasneem.safwa.features.payment.domain.model.PaymentMethodType
+import com.tasneem.safwa.features.payment.domain.usecase.GetSavedCardsUseCase
+import com.tasneem.safwa.features.payment.domain.usecase.ProcessPaymentUseCase
+import com.tasneem.safwa.features.payment.domain.usecase.SaveCardUseCase
 import com.tasneem.safwa.features.payment.presentation.state.PaymentEffect
 import com.tasneem.safwa.features.payment.presentation.state.PaymentEvent
 import com.tasneem.safwa.features.payment.presentation.state.PaymentState
-import com.tasneem.safwa.features.payment.presentation.state.PaymentMethodType
-import com.tasneem.safwa.features.payment.presentation.state.SavedCard
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,10 +21,13 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import kotlin.time.Duration.Companion.milliseconds
 
 @HiltViewModel
-class PaymentViewModel @Inject constructor() : ViewModel() {
+class PaymentViewModel @Inject constructor(
+    private val getSavedCardsUseCase: GetSavedCardsUseCase,
+    private val saveCardUseCase: SaveCardUseCase,
+    private val processPaymentUseCase: ProcessPaymentUseCase
+) : ViewModel() {
 
     private val _state = MutableStateFlow(PaymentState())
     val state: StateFlow<PaymentState> = _state.asStateFlow()
@@ -33,14 +40,16 @@ class PaymentViewModel @Inject constructor() : ViewModel() {
     }
 
     private fun loadData() {
-        val dummyCards = listOf(
-            SavedCard("1", "Visa", "4242", "Aisha Al-Marri", "08/28", true),
-            SavedCard("2", "Mada", "1187", "Aisha Al-Marri", "11/27", false)
-        )
-        _state.update { 
-            it.copy(
-                savedCards = dummyCards
-            )
+        viewModelScope.launch {
+            _state.update { it.copy(isLoading = true) }
+            getSavedCardsUseCase().collect { cards ->
+                _state.update { 
+                    it.copy(
+                        savedCards = cards,
+                        isLoading = false
+                    )
+                }
+            }
         }
     }
 
@@ -66,31 +75,66 @@ class PaymentViewModel @Inject constructor() : ViewModel() {
                 _state.update { it.copy(showAddCardDialog = event.show) }
             }
             is PaymentEvent.SaveNewCard -> {
-                _state.update { currentState ->
-                    val newCard = SavedCard(
-                        id = System.currentTimeMillis().toString(),
-                        type = "Visa",
-                        last4 = event.number.takeLast(4),
-                        cardholderName = "${event.firstName} ${event.lastName}",
-                        expiryDate = "${event.month}/${event.year.takeLast(2)}",
-                        isDefault = false
+                viewModelScope.launch {
+                    _state.update { it.copy(isLoading = true) }
+                    val cardDetails = CardDetails(
+                        number = event.number,
+                        firstName = event.firstName,
+                        lastName = event.lastName,
+                        month = event.month,
+                        year = event.year,
+                        verificationValue = event.verificationValue
                     )
-                    currentState.copy(
-                        savedCards = currentState.savedCards + newCard,
-                        showAddCardDialog = false,
-                        selectedCardId = newCard.id
-                    )
+                    saveCardUseCase(cardDetails).collect { result ->
+                        result.onSuccess { savedCard ->
+                            _state.update { currentState ->
+                                currentState.copy(
+                                    savedCards = currentState.savedCards + savedCard,
+                                    showAddCardDialog = false,
+                                    selectedCardId = savedCard.id,
+                                    isLoading = false
+                                )
+                            }
+                        }.onFailure {
+                            _state.update { currentState ->
+                                currentState.copy(
+                                    isLoading = false,
+                                    errorMessage = it.message
+                                )
+                            }
+                        }
+                    }
                 }
             }
             is PaymentEvent.ContinueClicked -> {
-                val currentMethod = _state.value.selectedMethod
-                if (currentMethod == PaymentMethodType.CASH_ON_DELIVERY || (currentMethod == PaymentMethodType.VISA && _state.value.selectedCardId != null)) {
-                    _state.update { it.copy(isLoading = true) }
+                val currentMethod = _state.value.selectedMethod ?: return
+                
+                if (currentMethod == PaymentMethodType.CASH_ON_DELIVERY || 
+                    (currentMethod == PaymentMethodType.VISA && _state.value.selectedCardId != null)) {
+                    
                     viewModelScope.launch {
-                        kotlinx.coroutines.delay(2000.milliseconds)
-                        _state.update { it.copy(isLoading = false, isSuccess = true) }
-                        _effect.send(PaymentEffect.ShowSnackBar(R.string.payment_successful))
-                        _effect.send(PaymentEffect.NavigateToHome)
+                        _state.update { it.copy(isLoading = true) }
+                        
+                        val paymentDetails = PaymentDetails(
+                            method = currentMethod,
+                            cardId = _state.value.selectedCardId
+                        )
+                        
+                        // Using a dummy orderId for now
+                        processPaymentUseCase("ORDER_12345", paymentDetails).collect { result ->
+                            result.onSuccess {
+                                _state.update { it.copy(isLoading = false, isSuccess = true) }
+                                _effect.send(PaymentEffect.ShowSnackBar(R.string.payment_successful))
+                                _effect.send(PaymentEffect.NavigateToHome)
+                            }.onFailure { error ->
+                                _state.update { 
+                                    it.copy(
+                                        isLoading = false, 
+                                        errorMessage = error.message
+                                    ) 
+                                }
+                            }
+                        }
                     }
                 }
             }

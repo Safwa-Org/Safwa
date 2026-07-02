@@ -44,16 +44,6 @@ fun SafwaTopAppBar(
                 }
             }
         },
-        actions = {
-            if (onCartClick != null) {
-                IconButton(onClick = onCartClick) {
-                    Icon(
-                        imageVector = Icons.Outlined.ShoppingCart,
-                        contentDescription = "View Cart"
-                    )
-                }
-            }
-        },
         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
             containerColor = MaterialTheme.colorScheme.background
         )
