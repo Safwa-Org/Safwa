@@ -27,6 +27,8 @@ interface AuthRepository {
 
     suspend fun sendVerificationEmail(): Resource<Unit>
     suspend fun isEmailVerified(): Boolean
+    
+    suspend fun updateCartId(cartId: String): Resource<Unit>
 
     fun observeAuthState(): Flow<AuthState>
 }

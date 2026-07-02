@@ -1,0 +1,63 @@
+package com.tasneem.network.datasource.cart
+import com.apollographql.apollo.ApolloClient
+import com.apollographql.apollo.api.Optional
+import com.tasneem.network.exception.safeApiCall
+import com.tasneem.safwa.network.AddToCartMutation
+import com.tasneem.safwa.network.CreateCartMutation
+import com.tasneem.safwa.network.type.CartInput
+import com.tasneem.safwa.network.type.CartLineInput
+import javax.inject.Inject
+
+class CartRemoteDataSourceImpl @Inject constructor(
+    private val apolloClient: ApolloClient
+) : CartRemoteDataSource {
+
+    override suspend fun createCart(variantId: String, quantity: Int): String {
+        return safeApiCall(
+            apiCall = {
+                val input = CartInput(
+                    lines = Optional.present(
+                        listOf(
+                            CartLineInput(
+                                merchandiseId = variantId,
+                                quantity = Optional.present(quantity)
+                            )
+                        )
+                    )
+                )
+                apolloClient.mutation(CreateCartMutation(input = input)).execute()
+            },
+            mapper = { data ->
+                val cart = data.cartCreate?.cart
+                val userErrors = data.cartCreate?.userErrors
+                
+                if (!userErrors.isNullOrEmpty()) {
+                    throw Exception(userErrors.first().message)
+                }
+                
+                cart?.id ?: throw Exception("Failed to create cart, ID is null")
+            }
+        )
+    }
+
+    override suspend fun addToCart(cartId: String, variantId: String, quantity: Int) {
+        safeApiCall(
+            apiCall = {
+                val lines = listOf(
+                    CartLineInput(
+                        merchandiseId = variantId,
+                        quantity = Optional.present(quantity)
+                    )
+                )
+                apolloClient.mutation(AddToCartMutation(cartId, lines)).execute()
+            },
+            mapper = { data ->
+                val userErrors = data.cartLinesAdd?.userErrors
+                
+                if (!userErrors.isNullOrEmpty()) {
+                    throw Exception(userErrors.first().message)
+                }
+            }
+        )
+    }
+}

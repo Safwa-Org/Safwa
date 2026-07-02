@@ -10,6 +10,7 @@ data class UserEntity(
     val phone: String? = null,
     val photoUrl: String? = null,
     val isGuest: Boolean = false,
+    val cartId: String = "",
     val addresses: List<AddressEntity> = emptyList(),
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis()

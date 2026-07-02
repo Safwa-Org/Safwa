@@ -183,6 +183,16 @@ class AuthRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun updateCartId(cartId: String): Resource<Unit> {
+        return try {
+            val uid = authDataSource.getCurrentUserId() ?: return Resource.Error("User not logged in")
+            firestoreDataSource.updateUser(uid, mapOf("cartId" to cartId))
+            Resource.Success(Unit)
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Failed to update cart ID")
+        }
+    }
+
     override fun observeAuthState(): Flow<AuthState> = authDataSource.observeAuthState()
         .map { isSignedIn ->
             if (!isSignedIn) {

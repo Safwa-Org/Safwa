@@ -10,5 +10,6 @@ data class ProductDetailsState(
     val selectedVariantPrice: String? = null,
     val isSelectedVariantAvailable: Boolean = true,
     val isWishlisted: Boolean = false,
+    val isAddingToCart: Boolean = false,
     val error: UiError? = null,
 )

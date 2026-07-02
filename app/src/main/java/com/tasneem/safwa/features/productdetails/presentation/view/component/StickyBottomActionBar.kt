@@ -18,6 +18,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -40,6 +41,7 @@ fun StickyBottomActionBar(
     onAddToCart: () -> Unit,
     modifier: Modifier = Modifier,
     isAvailable: Boolean = true,
+    isAddingToCart: Boolean = false,
 ) {
     Surface(
         modifier = modifier
@@ -57,7 +59,7 @@ fun StickyBottomActionBar(
         ) {
             IconButton(
                 onClick = onAddToCart,
-                enabled = isAvailable,
+                enabled = isAvailable && !isAddingToCart,
                 modifier = Modifier
                     .size(width = 44.dp, height = 56.dp)
                     .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(36.dp))
@@ -71,7 +73,7 @@ fun StickyBottomActionBar(
 
             Button(
                 onClick = onAddToCart,
-                enabled = isAvailable,
+                enabled = isAvailable && !isAddingToCart,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.primary
                 ),
@@ -80,24 +82,32 @@ fun StickyBottomActionBar(
                     .weight(1f)
                     .height(56.dp)
             ) {
-                Row(
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.ShoppingCart,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onPrimary
+                if (isAddingToCart) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        strokeWidth = 2.dp
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = if (isAvailable)
-                            stringResource(R.string.add_to_cart_format, priceFormatted)
-                        else
-                            stringResource(R.string.out_of_stock),
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
+                } else {
+                    Row(
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.ShoppingCart,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = if (isAvailable)
+                                stringResource(R.string.add_to_cart_format, priceFormatted)
+                            else
+                                stringResource(R.string.out_of_stock),
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
                 }
             }
         }

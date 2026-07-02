@@ -1,6 +1,8 @@
 package com.tasneem.network.di
 
 import com.apollographql.apollo.ApolloClient
+import com.tasneem.network.datasource.cart.CartRemoteDataSource
+import com.tasneem.network.datasource.cart.CartRemoteDataSourceImpl
 import com.tasneem.network.datasource.product.ProductRemoteDataSource
 import com.tasneem.network.datasource.product.ProductRemoteDataSourceImpl
 import com.tasneem.safwa.network.BuildConfig
@@ -32,4 +34,9 @@ abstract class DataSourceModule {
     abstract fun bindProductRemoteDatasource(
         impl: ProductRemoteDataSourceImpl
     ): ProductRemoteDataSource
+    
+    @Binds
+    abstract fun bindCartRemoteDataSource(
+        impl: CartRemoteDataSourceImpl
+    ): CartRemoteDataSource
 }

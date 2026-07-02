@@ -10,6 +10,7 @@ import com.tasneem.safwa.core.navigation.ScreenRoute
 import com.tasneem.safwa.core.presentation.mapper.toUiError
 import com.tasneem.safwa.core.presentation.model.UiError
 import com.tasneem.safwa.core.util.Resource
+import com.tasneem.safwa.features.cart.domain.usecase.AddToCartUseCase
 import com.tasneem.safwa.features.core.domain.usecase.GetWishlistUseCase
 import com.tasneem.safwa.features.core.domain.usecase.ToggleFavoriteUseCase
 import com.tasneem.safwa.features.productdetails.domain.mapper.toProduct
@@ -35,6 +36,7 @@ class ProductDetailsViewModel @Inject constructor(
     private val getProductDetailsUseCase: GetProductDetailsUseCase,
     private val getWishlistUseCase: GetWishlistUseCase,
     private val toggleFavoriteUseCase: ToggleFavoriteUseCase,
+    private val addToCartUseCase: AddToCartUseCase,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
@@ -108,7 +110,27 @@ class ProductDetailsViewModel @Inject constructor(
             }
 
             is ProductDetailsEvent.ShareClicked -> onShare()
-            is ProductDetailsEvent.AddToCartClicked -> { TODO("implement add to cart")
+            is ProductDetailsEvent.AddToCartClicked -> onAddToCart()
+        }
+    }
+
+    private fun onAddToCart() {
+        val product = loadedProduct ?: return
+        val matchedVariant = findMatchingVariant(product, _state.value.selectedOptions) ?: return
+        
+        viewModelScope.launch {
+            _state.update { it.copy(isAddingToCart = true) }
+            val result = addToCartUseCase(matchedVariant.id)
+            _state.update { it.copy(isAddingToCart = false) }
+            
+            when (result) {
+                is Resource.Success -> {
+                    _effect.send(ProductDetailsEffect.ShowSnackBar("Added to cart successfully"))
+                }
+                is Resource.Error -> {
+                    _effect.send(ProductDetailsEffect.ShowSnackBar(result.message ?: "Failed to add to cart"))
+                }
+                else -> Unit
             }
         }
     }
