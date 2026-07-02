@@ -2,8 +2,8 @@ package com.tasneem.safwa.features.payment.data.repository
 
 import com.tasneem.safwa.features.payment.data.datasource.local.SavedCardDao
 import com.tasneem.safwa.features.payment.data.datasource.local.toEntity
-import com.tasneem.safwa.features.payment.data.model.PaymentRequestDto
-import com.tasneem.safwa.features.payment.data.source.PaymentRemoteDataSource
+import com.tasneem.network.dto.PaymentRequestDto
+import com.tasneem.network.datasource.payment.PaymentRemoteDataSource
 import com.tasneem.safwa.features.payment.domain.model.CardDetails
 import com.tasneem.safwa.features.payment.domain.model.PaymentDetails
 import com.tasneem.safwa.features.payment.domain.model.SavedCard
@@ -26,8 +26,8 @@ class PaymentRepositoryImpl @Inject constructor(
 
     override fun saveNewCard(cardDetails: CardDetails): Flow<Result<SavedCard>> = flow {
         try {
-            val request = com.tasneem.safwa.features.payment.data.source.DepositRequest(
-                creditCard = com.tasneem.safwa.features.payment.data.source.DepositCreditCard(
+            val request = com.tasneem.network.datasource.payment.DepositRequest(
+                creditCard = com.tasneem.network.datasource.payment.DepositCreditCard(
                     number = cardDetails.number.replace(" ", ""),
                     firstName = cardDetails.firstName,
                     lastName = cardDetails.lastName,
@@ -46,7 +46,6 @@ class PaymentRepositoryImpl @Inject constructor(
                     expiryDate = "${cardDetails.month}/${cardDetails.year.takeLast(2)}",
                     isDefault = false
                 )
-                // Persist the new card in the database
                 savedCardDao.insertCard(newCard.toEntity())
                 emit(Result.success(newCard))
             } else {

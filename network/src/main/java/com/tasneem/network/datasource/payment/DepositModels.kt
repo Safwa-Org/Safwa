@@ -1,4 +1,4 @@
-package com.tasneem.safwa.features.payment.data.source
+package com.tasneem.network.datasource.payment
 
 import com.google.gson.annotations.SerializedName
 

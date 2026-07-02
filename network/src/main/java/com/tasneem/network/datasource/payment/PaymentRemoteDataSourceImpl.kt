@@ -1,4 +1,4 @@
-package com.tasneem.safwa.features.payment.data.source
+package com.tasneem.network.datasource.payment
 
 import com.apollographql.apollo.ApolloClient
 import com.apollographql.apollo.api.Optional
@@ -6,8 +6,8 @@ import com.tasneem.safwa.network.type.CurrencyCode
 import com.tasneem.safwa.network.type.MailingAddressInput
 import com.tasneem.safwa.network.type.MoneyInput
 import com.tasneem.safwa.network.type.TokenizedPaymentInputV3
-import com.tasneem.safwa.features.payment.data.model.PaymentRequestDto
-import com.tasneem.safwa.features.payment.data.model.PaymentResponseDto
+import com.tasneem.network.dto.PaymentRequestDto
+import com.tasneem.network.dto.PaymentResponseDto
 import com.tasneem.safwa.network.CheckoutCompleteWithTokenizedPaymentV3Mutation
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -82,7 +82,6 @@ class PaymentRemoteDataSourceImpl @Inject constructor(
     override suspend fun addCard(request: DepositRequest): String {
         return withContext(Dispatchers.IO) {
             try {
-                // Ensure card ends in correct length for log
                 val safeLast4 = if (request.creditCard.number.length >= 4) request.creditCard.number.takeLast(4) else "****"
                 android.util.Log.d("PaymentRemoteDataSource", "Starting addCard (deposit session) for card ending in $safeLast4")
 

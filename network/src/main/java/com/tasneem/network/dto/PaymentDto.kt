@@ -1,4 +1,4 @@
-package com.tasneem.safwa.features.payment.data.model
+package com.tasneem.network.dto
 
 data class PaymentRequestDto(
     val orderId: String,

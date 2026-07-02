@@ -52,9 +52,11 @@ apollo {
 }
 
 dependencies {
-    api(libs.apollo.runtime)
+    implementation(libs.apollo.runtime)
     implementation(libs.apollo.normalized.cache.sqlite)
     implementation(libs.androidx.core.ktx)
     implementation(libs.hilt.android)
+    implementation(libs.retrofit.core)
+    implementation(libs.retrofit.converter.gson)
     ksp(libs.hilt.android.compiler)
 }
