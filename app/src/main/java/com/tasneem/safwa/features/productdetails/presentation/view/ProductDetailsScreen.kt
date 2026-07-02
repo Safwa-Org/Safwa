@@ -10,6 +10,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -37,6 +38,7 @@ import com.tasneem.safwa.features.productdetails.presentation.view.component.Pro
 import com.tasneem.safwa.features.productdetails.presentation.view.component.ProductInfoSection
 import com.tasneem.safwa.features.productdetails.presentation.view.component.StickyBottomActionBar
 import com.tasneem.safwa.features.productdetails.presentation.viewmodel.ProductDetailsViewModel
+import kotlinx.coroutines.launch
 
 @Composable
 fun ProductDetailsScreen(
@@ -52,7 +54,9 @@ fun ProductDetailsScreen(
             when (effect) {
                 ProductDetailsEffect.NavigateBack -> onNavigateBack()
                 is ProductDetailsEffect.ShowSnackBar -> {
-                    snackBarHostState.showSnackbar(effect.message)
+                    launch {
+                        snackBarHostState.showSnackbar(effect.message)
+                    }
                 }
 
                 is ProductDetailsEffect.ShareProduct -> {
@@ -70,6 +74,7 @@ fun ProductDetailsScreen(
     ProductDetailsContent(
         state = uiState,
         onEvent = viewModel::onEvent,
+        snackBarHostState = snackBarHostState,
     )
 }
 
@@ -78,14 +83,17 @@ fun ProductDetailsContent(
     state: ProductDetailsState,
     onEvent: (ProductDetailsEvent) -> Unit,
     modifier: Modifier = Modifier,
+    snackBarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
     val product = state.product
     Scaffold(
+        snackbarHost = {SnackbarHost(snackBarHostState) },
         bottomBar = {
             if (product != null) {
                 StickyBottomActionBar(
                     priceFormatted = state.selectedVariantPrice ?: product.priceFormatted,
                     isAvailable = state.isSelectedVariantAvailable,
+                    isAddingToCart = state.isAddingToCart,
                     onAddToCart = { onEvent(ProductDetailsEvent.AddToCartClicked) },
                 )
             }

@@ -5,6 +5,8 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,8 +17,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -41,6 +46,9 @@ fun CartItemCard(
     onIncreaseQuantity: () -> Unit,
     onDecreaseQuantity: () -> Unit,
     onRemoveItem: () -> Unit,
+    onApplyUpdate: () -> Unit,
+    isRemoving: Boolean = false,
+    isUpdating: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -105,64 +113,110 @@ fun CartItemCard(
                 )
             }
 
-            Row(
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
-                    .border(
-                        width = 1.dp,
-                        color = MaterialTheme.colorScheme.outline,
-                        shape = RoundedCornerShape(24.dp)
-                    )
-                    .padding(horizontal = 4.dp),
-                verticalAlignment = Alignment.CenterVertically
+                    .padding(top = 24.dp)
+                    .width(IntrinsicSize.Max)
             ) {
-
-                IconButton(
-                    onClick = onDecreaseQuantity,
-                    modifier = Modifier.size(32.dp)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(
+                            width = 1.dp,
+                            color = MaterialTheme.colorScheme.outline,
+                            shape = RoundedCornerShape(24.dp)
+                        )
+                        .padding(horizontal = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Remove,
-                        contentDescription = stringResource(R.string.decrease_quantity),
-                        modifier = Modifier.size(16.dp),
-                        tint = MaterialTheme.colorScheme.onBackground
+
+                    IconButton(
+                        onClick = onDecreaseQuantity,
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Remove,
+                            contentDescription = stringResource(R.string.decrease_quantity),
+                            modifier = Modifier.size(16.dp),
+                            tint = MaterialTheme.colorScheme.onBackground
+                        )
+                    }
+
+                    Text(
+                        text = item.quantity.toString(),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onBackground,
+                        modifier = Modifier.padding(horizontal = 4.dp)
                     )
+
+                    IconButton(
+                        onClick = onIncreaseQuantity,
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = stringResource(R.string.increase_quantity),
+                            modifier = Modifier.size(16.dp),
+                            tint = MaterialTheme.colorScheme.onBackground
+                        )
+                    }
                 }
 
-                Text(
-                    text = item.quantity.toString(),
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onBackground,
-                    modifier = Modifier.padding(horizontal = 4.dp)
-                )
-
-                IconButton(
-                    onClick = onIncreaseQuantity,
-                    modifier = Modifier.size(32.dp)
+                Spacer(modifier = Modifier.height(6.dp))
+                
+                val isChanged = item.quantity != item.originalQuantity
+                
+                Button(
+                    onClick = onApplyUpdate,
+                    enabled = isChanged && !isUpdating,
+                    shape = RoundedCornerShape(12.dp),
+                    contentPadding = PaddingValues(0.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(28.dp)
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = stringResource(R.string.increase_quantity),
-                        modifier = Modifier.size(16.dp),
-                        tint = MaterialTheme.colorScheme.onBackground
-                    )
+                    if (isUpdating) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(14.dp),
+                            strokeWidth = 2.dp,
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
+                    } else {
+                        Text(
+                            text = stringResource(id = R.string.apply),
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
             }
         }
 
         IconButton(
             onClick = onRemoveItem,
+            enabled = !isRemoving,
             modifier = Modifier
                 .align(Alignment.TopEnd)
                 .padding(8.dp)
                 .size(24.dp)
         ) {
-            Icon(
-                imageVector = Icons.Default.Close,
-                contentDescription = stringResource(R.string.remove_item),
-                modifier = Modifier.size(16.dp),
-                tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
-            )
+            if (isRemoving) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(16.dp),
+                    strokeWidth = 2.dp,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            } else {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = stringResource(R.string.remove_item),
+                    modifier = Modifier.size(16.dp),
+                    tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
+                )
+            }
         }
     }
 }
@@ -181,11 +235,13 @@ private fun CartItemCardPreview() {
                 price = 480.0,
                 currency = "SAR",
                 quantity = 1,
-                imageUrl = ""
+                imageUrl = "",
+                originalQuantity = 1
             ),
             onIncreaseQuantity = {},
             onDecreaseQuantity = {},
-            onRemoveItem = {}
+            onRemoveItem = {},
+            onApplyUpdate = {}
         )
     }
 }

@@ -88,6 +88,8 @@
     <string name="good_afternoon">Good afternoon</string>
     <string name="good_evening">Good evening</string>
     <string name="home_headline">Curated for your\nrefined taste.</string>
+    <string name="remove_item">Remove Item</string>
+    <string name="confirm_remove_item">Are you sure you want to remove this item from your bag?</string>
     <string name="categories">Categories</string>
     <string name="view_all">View all</string>
     <string name="best_sellers">Best sellers</string>
@@ -162,7 +164,6 @@
     <string name="proceed_to_checkout">Proceed to checkout</string>
     <string name="empty_cart">Your bag is empty</string>
     <string name="empty_cart_desc">Looks like you haven\'t added anything yet. Start exploring!</string>
-    <string name="remove_item">Remove item</string>
     <string name="decrease_quantity">Decrease quantity</string>
     <string name="increase_quantity">Increase quantity</string>
     <string name="auth_gate_wishlist_title">Save your favorites</string>

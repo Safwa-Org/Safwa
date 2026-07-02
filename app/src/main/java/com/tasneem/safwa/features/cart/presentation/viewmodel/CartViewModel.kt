@@ -2,10 +2,14 @@ package com.tasneem.safwa.features.cart.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.tasneem.safwa.core.util.Resource
 import com.tasneem.safwa.features.cart.presentation.state.CartEffect
 import com.tasneem.safwa.features.cart.presentation.state.CartEvent
 import com.tasneem.safwa.features.cart.presentation.state.CartItem
 import com.tasneem.safwa.features.cart.presentation.state.CartState
+import com.tasneem.safwa.features.cart.domain.usecase.GetCartUseCase
+import com.tasneem.safwa.features.cart.domain.usecase.RemoveFromCartUseCase
+import com.tasneem.safwa.features.cart.domain.usecase.UpdateCartLineUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,7 +21,11 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class CartViewModel @Inject constructor() : ViewModel() {
+class CartViewModel @Inject constructor(
+    private val getCartUseCase: GetCartUseCase,
+    private val removeFromCartUseCase: RemoveFromCartUseCase,
+    private val updateCartLineUseCase: UpdateCartLineUseCase
+) : ViewModel() {
 
     private val _state = MutableStateFlow(CartState())
     val state: StateFlow<CartState> = _state.asStateFlow()
@@ -32,36 +40,38 @@ class CartViewModel @Inject constructor() : ViewModel() {
     fun onEvent(event: CartEvent) {
         when (event) {
             is CartEvent.LoadCart -> {
-                _state.update { it.copy(isLoading = true) }
-                val mockItems = listOf(
-                    CartItem(
-                        id = "cart_1",
-                        productId = "1",
-                        title = "Nuit d'Or EDP",
-                        variant = "50 ml",
-                        vendor = "MAISON",
-                        price = 480.0,
-                        currency = "SAR",
-                        quantity = 1,
-                        imageUrl = "https://images.unsplash.com/photo-1541643600914-78b084683601"
-                    ),
-                    CartItem(
-                        id = "cart_2",
-                        productId = "2",
-                        title = "Vermilion Bifold",
-                        variant = "Saddle",
-                        vendor = "ATELIER",
-                        price = 320.0,
-                        currency = "SAR",
-                        quantity = 2,
-                        imageUrl = "https://images.unsplash.com/photo-1627123424574-724758594e93"
-                    )
-                )
-                _state.update {
-                    it.copy(
-                        isLoading = false,
-                        items = mockItems
-                    )
+                _state.update { it.copy(isLoading = true, errorMessage = null) }
+                viewModelScope.launch {
+                    val result = getCartUseCase()
+                    if (result is Resource.Success) {
+                        val cart = result.data
+                        val cartItems = cart.lines.map { line ->
+                            CartItem(
+                                id = line.id,
+                                productId = line.productId,
+                                title = line.productTitle,
+                                variant = line.variantTitle,
+                                vendor = line.vendor,
+                                price = line.price.toDoubleOrNull() ?: 0.0,
+                                currency = line.currency,
+                                quantity = line.quantity,
+                                imageUrl = line.imageUrl
+                            )
+                        }
+                        _state.update {
+                            it.copy(
+                                isLoading = false,
+                                items = cartItems
+                            )
+                        }
+                    } else {
+                        _state.update {
+                            it.copy(
+                                isLoading = false,
+                                errorMessage = (result as? com.tasneem.safwa.core.util.Resource.Error)?.message ?: "Failed to load cart"
+                            )
+                        }
+                    }
                 }
             }
 
@@ -89,11 +99,80 @@ class CartViewModel @Inject constructor() : ViewModel() {
                 }
             }
 
-            is CartEvent.RemoveItem -> {
-                _state.update { currentState ->
-                    currentState.copy(
-                        items = currentState.items.filter { it.id != event.itemId }
-                    )
+            is CartEvent.ApplyQuantityUpdate -> {
+                val itemToUpdate = _state.value.items.find { it.id == event.itemId } ?: return
+                if (itemToUpdate.quantity == itemToUpdate.originalQuantity) return
+                
+                val difference = itemToUpdate.quantity - itemToUpdate.originalQuantity
+                _state.update { it.copy(updatingItemIds = it.updatingItemIds + event.itemId) }
+                
+                viewModelScope.launch {
+                    val result = updateCartLineUseCase(itemToUpdate.id, itemToUpdate.quantity, difference)
+                    if (result is Resource.Success) {
+                        _state.update { currentState ->
+                            currentState.copy(
+                                updatingItemIds = currentState.updatingItemIds - event.itemId,
+                                items = currentState.items.map { item ->
+                                    if (item.id == event.itemId) item.copy(originalQuantity = item.quantity)
+                                    else item
+                                }
+                            )
+                        }
+                        _effect.send(CartEffect.ShowSnackBar("Quantity updated successfully"))
+                    } else {
+                        _state.update { currentState ->
+                            currentState.copy(
+                                updatingItemIds = currentState.updatingItemIds - event.itemId,
+                                items = currentState.items.map { item ->
+                                    if (item.id == event.itemId) item.copy(quantity = item.originalQuantity)
+                                    else item
+                                },
+                                errorMessage = (result as? Resource.Error)?.message ?: "Failed to update item"
+                            )
+                        }
+                        _effect.send(CartEffect.ShowSnackBar("Failed to update quantity"))
+                    }
+                }
+            }
+
+            is CartEvent.RemoveItemClicked -> {
+                val item = _state.value.items.find { it.id == event.itemId }
+                _state.update { it.copy(itemPendingRemoval = item) }
+            }
+
+            is CartEvent.CancelRemoveItem -> {
+                _state.update { it.copy(itemPendingRemoval = null) }
+            }
+
+            is CartEvent.ConfirmRemoveItem -> {
+                val itemToRemove = _state.value.itemPendingRemoval ?: return
+                
+                _state.update {
+                    it.copy(
+                        itemPendingRemoval = null,
+                        removingItemIds = it.removingItemIds + itemToRemove.id
+                    ) 
+                }
+                
+                viewModelScope.launch {
+                    val result = removeFromCartUseCase(itemToRemove.id, itemToRemove.quantity)
+                    if (result is Resource.Success) {
+                        _state.update { currentState ->
+                            currentState.copy(
+                                removingItemIds = currentState.removingItemIds - itemToRemove.id,
+                                items = currentState.items.filter { it.id != itemToRemove.id }
+                            )
+                        }
+                        _effect.send(CartEffect.ShowSnackBar("Item removed successfully"))
+                    } else {
+                        _state.update {
+                            it.copy(
+                                removingItemIds = it.removingItemIds - itemToRemove.id,
+                                errorMessage = (result as? Resource.Error)?.message ?: "Failed to remove item"
+                            )
+                        }
+                        _effect.send(CartEffect.ShowSnackBar("Failed to remove item"))
+                    }
                 }
             }
 
