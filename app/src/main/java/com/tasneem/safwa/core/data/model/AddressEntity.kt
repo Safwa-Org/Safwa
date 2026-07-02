@@ -6,7 +6,6 @@ import kotlinx.serialization.Serializable
 data class AddressEntity(
     val id: String = "",
     val label: String = "",
-    val isDefault: Boolean = false,
     val recipientName: String = "",
     val street: String = "",
     val cityAndZip: String = "",

@@ -166,6 +166,9 @@
     <string name="empty_cart_desc">Looks like you haven\'t added anything yet. Start exploring!</string>
     <string name="decrease_quantity">Decrease quantity</string>
     <string name="increase_quantity">Increase quantity</string>
+    <string name="err_empty_name">Recipient name cannot be empty</string>
+    <string name="err_invalid_mobile">Please enter a valid mobile number (min 9 digits)</string>
+    <string name="err_empty_street">Street address field is required</string>
     <string name="auth_gate_wishlist_title">Save your favorites</string>
     <string name="auth_gate_wishlist_desc">Sign in to keep track of the pieces you love and access them anytime.</string>
     <string name="auth_gate_cart_title">Your bag awaits</string>

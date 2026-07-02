@@ -1,4 +1,4 @@
-package com.tasneem.safwa.features.settings.languageandcurrency.presentation.presentation
+package com.tasneem.safwa.features.settings.languageandcurrency.presentation.view
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box

@@ -1,13 +1,15 @@
-package com.tasneem.safwa.features.settings.languageandcurrency.presentation.presentation
+package com.tasneem.safwa.features.settings.languageandcurrency.presentation.view
 
-import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -18,33 +20,41 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.tasneem.safwa.R
 import com.tasneem.safwa.core.shared_component.SafwaTopAppBar
-import com.tasneem.safwa.core.theme.SafwaTheme
 import com.tasneem.safwa.features.settings.core.presentation.view.components.SectionTitle
 import com.tasneem.safwa.features.settings.core.presentation.view.components.SettingsDivider
 import com.tasneem.safwa.features.settings.core.presentation.view.components.SettingsGroupCard
+import com.tasneem.safwa.features.settings.languageandcurrency.presentation.state.LanguageAndCurrencyEffect
+import com.tasneem.safwa.features.settings.languageandcurrency.presentation.state.LanguageAndCurrencyEvent
+import com.tasneem.safwa.features.settings.languageandcurrency.presentation.state.LanguageAndCurrencyState
+import com.tasneem.safwa.features.settings.languageandcurrency.presentation.viewmodel.LanguageAndCurrencyViewModel
 
 data class AppLanguage(val code: String, val title: String, val subtitle: String)
 data class AppCurrency(val code: String, val name: String, val flag: String)
 
 @Composable
 fun LanguageAndCurrencyScreen(
-    // viewModel: ProfileViewModel = hiltViewModel(),
-    // onNavigateBack: () -> Unit = {}
+    viewModel: LanguageAndCurrencyViewModel = hiltViewModel(),
+    onNavigateBack: () -> Unit = {}
 ) {
-    // State will eventually come from ViewModel
-    var selectedLanguageCode by remember { mutableStateOf("en") }
-    var selectedCurrencyCode by remember { mutableStateOf("SAR") }
+    val uiState by viewModel.state.collectAsStateWithLifecycle()
+
+    LaunchedEffect(Unit) {
+        viewModel.effect.collect { effect ->
+            when (effect) {
+                is LanguageAndCurrencyEffect.NavigateBack -> onNavigateBack()
+            }
+        }
+    }
 
     val languages = listOf(
         AppLanguage("en", "English", "United Kingdom"),
@@ -52,7 +62,7 @@ fun LanguageAndCurrencyScreen(
     )
 
     val dummyCurrencies = listOf(
-        AppCurrency("EGP", "Egyptian Pound", "🇪🇬") ,
+        AppCurrency("EGP", "Egyptian Pound", "🇪🇬"),
         AppCurrency("SAR", "Saudi Riyal", "🇸🇦"),
         AppCurrency("AED", "Emirati Dirham", "🇦🇪"),
         AppCurrency("QAR", "Qatari Riyal", "🇶🇦"),
@@ -60,44 +70,41 @@ fun LanguageAndCurrencyScreen(
     )
 
     LanguageAndCurrencyContent(
-        selectedLanguageCode = selectedLanguageCode,
-        selectedCurrencyCode = selectedCurrencyCode,
+        state = uiState,
         languages = languages,
         currencies = dummyCurrencies,
-        onLanguageSelected = { selectedLanguageCode = it },
-        onCurrencySelected = { selectedCurrencyCode = it },
-        onSavePreferences = { /* TODO */ }
+        onEvent = viewModel::onEvent
     )
 }
 
 @Composable
 fun LanguageAndCurrencyContent(
-    selectedLanguageCode: String,
-    selectedCurrencyCode: String,
+    state: LanguageAndCurrencyState,
     languages: List<AppLanguage>,
     currencies: List<AppCurrency>,
-    onLanguageSelected: (String) -> Unit,
-    onCurrencySelected: (String) -> Unit,
-    onSavePreferences: () -> Unit,
+    onEvent: (LanguageAndCurrencyEvent) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val scrollState = rememberScrollState()
 
-    // Using Scaffold to easily stick the "Save preferences" button to the bottom
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
             SafwaTopAppBar(
                 title = stringResource(R.string.langandcurrency),
+                onBackClick = { onEvent(LanguageAndCurrencyEvent.BackClicked) },
+                windowInsets = WindowInsets.systemBars
             )
         },
         bottomBar = {
             Surface(
-                modifier = Modifier.shadow(elevation = 8.dp),
+                modifier = Modifier
+                    .shadow(elevation = 8.dp)
+                    .padding(bottom = WindowInsets.systemBars.asPaddingValues().calculateBottomPadding()),
                 color = MaterialTheme.colorScheme.background
             ) {
                 Button(
-                    onClick = onSavePreferences,
+                    onClick = { onEvent(LanguageAndCurrencyEvent.SavePreferencesClicked) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 20.dp, vertical = 16.dp)
@@ -109,8 +116,7 @@ fun LanguageAndCurrencyContent(
                     )
                 ) {
                     Text(
-                        // Placeholder string resource
-                        text = stringResource(R.string.save_preferences),
+                        text = stringResource(R.string.save_preferences), // Use your actual string resource
                         style = MaterialTheme.typography.titleMedium
                     )
                 }
@@ -125,17 +131,16 @@ fun LanguageAndCurrencyContent(
                 .verticalScroll(scrollState)
                 .padding(horizontal = 20.dp, vertical = 16.dp)
         ) {
-
             // --- APP LANGUAGE SECTION ---
-            SectionTitle(title = stringResource(R.string.app_language)) // Placeholder
+            SectionTitle(title = stringResource(R.string.app_language))
             Spacer(modifier = Modifier.height(16.dp))
             SettingsGroupCard {
                 languages.forEachIndexed { index, language ->
                     RadioSettingsItem(
                         title = language.title,
                         subtitle = language.subtitle,
-                        selected = language.code == selectedLanguageCode,
-                        onClick = { onLanguageSelected(language.code) },
+                        selected = language.code == state.selectedLanguageCode,
+                        onClick = { onEvent(LanguageAndCurrencyEvent.LanguageSelected(language.code)) },
                         leadingIcon = { LanguageIcon(code = language.code) }
                     )
                     if (index < languages.lastIndex) {
@@ -147,15 +152,15 @@ fun LanguageAndCurrencyContent(
             Spacer(modifier = Modifier.height(32.dp))
 
             // --- CURRENCY SECTION ---
-            SectionTitle(title = stringResource(R.string.currency)) // Placeholder
+            SectionTitle(title = stringResource(R.string.currency))
             Spacer(modifier = Modifier.height(16.dp))
             SettingsGroupCard {
                 currencies.forEachIndexed { index, currency ->
                     RadioSettingsItem(
                         title = currency.name,
                         subtitle = "${currency.code} · ${currency.name}",
-                        selected = currency.code == selectedCurrencyCode,
-                        onClick = { onCurrencySelected(currency.code) },
+                        selected = currency.code == state.selectedCurrencyCode,
+                        onClick = { onEvent(LanguageAndCurrencyEvent.CurrencySelected(currency.code)) },
                         leadingIcon = { FlagIcon(flagEmoji = currency.flag) }
                     )
                     if (index < currencies.lastIndex) {
@@ -163,17 +168,7 @@ fun LanguageAndCurrencyContent(
                     }
                 }
             }
-
             Spacer(modifier = Modifier.height(32.dp))
         }
-    }
-}
-
-@Preview(name = "Light", showBackground = true)
-@Preview(name = "Dark", uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true)
-@Composable
-private fun LanguageAndCurrencyScreenPreview() {
-    SafwaTheme {
-        LanguageAndCurrencyScreen()
     }
 }

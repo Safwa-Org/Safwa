@@ -1,6 +1,7 @@
 package com.tasneem.safwa.core.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -20,7 +21,7 @@ import com.tasneem.safwa.features.onboarding.OnboardingScreen
 import com.tasneem.safwa.features.payment.presentation.view.PaymentScreen
 import com.tasneem.safwa.features.productdetails.presentation.view.ProductDetailsScreen
 import com.tasneem.safwa.features.search.presentation.SearchScreen
-import com.tasneem.safwa.features.settings.languageandcurrency.presentation.presentation.LanguageAndCurrencyScreen
+import com.tasneem.safwa.features.settings.languageandcurrency.presentation.view.LanguageAndCurrencyScreen
 import com.tasneem.safwa.features.settings.orderhistory.presentation.view.OrderHistoryScreen
 import com.tasneem.safwa.features.settings.savedaddresses.presentation.view.SavedAddressesScreen
 import com.tasneem.safwa.features.wishlist.presentation.WishlistScreen
@@ -190,8 +191,7 @@ fun SafwaNavHost(
 
         composable<ScreenRoute.SavedAddresses> {
             SavedAddressesScreen(
-                // Assuming you add an onNavigateBack callback to this screen
-                // onNavigateBack = { navController.popBackStack() }
+                 onNavigateBack = { navController.popBackStack() }
             )
         }
 
@@ -205,8 +205,7 @@ fun SafwaNavHost(
 
         composable<ScreenRoute.Language> {
             LanguageAndCurrencyScreen(
-                // Assuming you add an onNavigateBack callback to this screen
-                // onNavigateBack = { navController.popBackStack() }
+                 onNavigateBack = { navController.popBackStack() }
             )
         }
 
