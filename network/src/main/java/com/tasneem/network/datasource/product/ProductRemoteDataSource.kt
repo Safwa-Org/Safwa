@@ -6,7 +6,7 @@ import com.tasneem.network.dto.CategoryDto
 
 interface ProductRemoteDataSource {
 
-    suspend fun getProducts(page: Int): List<ProductDto>
+    suspend fun getProducts(first: Int, after: String? = null, sortKey: String? = null): List<ProductDto>
 
     suspend fun searchProducts(query: String, first: Int): List<ProductDto>
 

@@ -3,6 +3,7 @@ package com.tasneem.safwa.features.home.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tasneem.safwa.core.util.Resource
+import com.tasneem.safwa.features.home.domain.usecase.GetProductsUseCase
 import com.tasneem.safwa.features.home.presentation.state.GreetingType
 import com.tasneem.safwa.features.home.presentation.state.HomeEffect
 import com.tasneem.safwa.features.home.presentation.state.HomeEvent
@@ -11,7 +12,6 @@ import com.tasneem.safwa.features.category.domain.model.Category
 import com.tasneem.safwa.features.core.domain.usecase.GetCategoriesUseCase
 import com.tasneem.safwa.features.core.domain.usecase.GetWishlistUseCase
 import com.tasneem.safwa.features.core.domain.usecase.ToggleFavoriteUseCase
-import com.tasneem.safwa.features.wishlist.presentation.WishlistMockData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,6 +25,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
+    private val getProductsUseCase: GetProductsUseCase,
     private val toggleFavoriteUseCase: ToggleFavoriteUseCase,
     private val getWishlistUseCase: GetWishlistUseCase,
     private val getCategoriesUseCase: GetCategoriesUseCase
@@ -37,19 +38,50 @@ class HomeViewModel @Inject constructor(
     val effect = _effect.receiveAsFlow()
 
     init {
-        onEvent(HomeEvent.LoadHome)
+        _state.update { it.copy(userName = "Ashraf", greeting = getGreeting()) }
+        loadProducts()
         observeWishlist()
         loadCategories()
+    }
+
+    private fun loadProducts() {
+        viewModelScope.launch {
+            getProductsUseCase().collect { result ->
+                when (result) {
+                    is Resource.Loading -> {
+                        _state.update { it.copy(isLoading = true, errorMessage = null) }
+                    }
+                    is Resource.Success -> {
+                        val products = result.data
+                        val brands = products.map { it.vendor }.distinct().sorted()
+                        _state.update {
+                            it.copy(
+                                isLoading = false,
+                                products = products,
+                                filteredProducts = products,
+                                brands = brands,
+                                errorMessage = null
+                            )
+                        }
+                    }
+                    is Resource.Error -> {
+                        _state.update {
+                            it.copy(
+                                isLoading = false,
+                                errorMessage = result.message
+                            )
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private fun loadCategories() {
         viewModelScope.launch {
             getCategoriesUseCase().collect { result ->
                 if (result is Resource.Success) {
-                    val categoriesFromApi = result.data
-                    val allCategory = Category(id = "all", title = "All", handle = "all", imageUrl = null)
-                    val categories = listOf(allCategory) + categoriesFromApi
-                    _state.update { it.copy(categories = categories, selectedCategory = allCategory) }
+                    _state.update { it.copy(categories = result.data, selectedCategory = null) }
                 }
             }
         }
@@ -68,28 +100,12 @@ class HomeViewModel @Inject constructor(
     fun onEvent(event: HomeEvent) {
         when (event) {
             is HomeEvent.LoadHome -> {
-                _state.update { it.copy(isLoading = true) }
-                val mockProducts = WishlistMockData.products
-                val brands = mockProducts.map { it.vendor }.distinct().sorted()
-
-                _state.update {
-                    it.copy(
-                        isLoading = false,
-                        userName = "Ashraf",
-                        greeting = getGreeting(),
-                        products = mockProducts,
-                        filteredProducts = mockProducts,
-                        // categories updated via loadCategories()
-                        brands = brands
-                    )
-                }
+                loadProducts()
             }
 
             is HomeEvent.CategorySelected -> {
                 viewModelScope.launch {
-                    if (event.category.handle != "all") {
-                        _effect.send(HomeEffect.NavigateToCategoryProducts(event.category.handle))
-                    }
+                    _effect.send(HomeEffect.NavigateToCategoryProducts(event.category.handle))
                 }
             }
 
@@ -143,3 +159,4 @@ class HomeViewModel @Inject constructor(
         }
     }
 }
+

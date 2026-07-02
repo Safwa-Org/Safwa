@@ -19,8 +19,8 @@ import com.tasneem.safwa.core.theme.SafwaTheme
 @Composable
 fun SectionHeader(
     title: String,
-    actionText: String,
-    onActionClick: () -> Unit,
+    actionText: String? = null,
+    onActionClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -37,13 +37,15 @@ fun SectionHeader(
             fontFamily = FontFamily.Serif,
             color = MaterialTheme.colorScheme.onBackground
         )
-        Text(
-            text = actionText,
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.Medium,
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.clickable { onActionClick() }
-        )
+        if (actionText != null && onActionClick != null) {
+            Text(
+                text = actionText,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.clickable { onActionClick() }
+            )
+        }
     }
 }
 
