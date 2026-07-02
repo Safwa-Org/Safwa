@@ -189,4 +189,5 @@
     <string name="add_new_card_clicked">Add new card clicked</string>
     <string name="go_to_category">Go to category</string>
     <string name="no_products_found">No products found in this category.</string>
+    <string name="required">Required</string>
 </resources>

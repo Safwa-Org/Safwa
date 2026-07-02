@@ -1,20 +1,7 @@
 package com.tasneem.safwa.features.payment.presentation.state
 
-enum class PaymentMethodType {
-    CASH_ON_DELIVERY,
-    VISA
-}
-
-data class SavedCard(
-    val id: String,
-    val type: String,
-    val last4: String,
-    val cardholderName: String,
-    val expiryDate: String,
-    val isDefault: Boolean
-)
-
-
+import com.tasneem.safwa.features.payment.domain.model.PaymentMethodType
+import com.tasneem.safwa.features.payment.domain.model.SavedCard
 
 data class PaymentState(
     val isLoading: Boolean = false,

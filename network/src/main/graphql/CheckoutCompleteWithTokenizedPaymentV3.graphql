@@ -1,0 +1,11 @@
+mutation checkoutCompleteWithTokenizedPaymentV3($checkoutId: ID!, $paymentInput: TokenizedPaymentInputV3!) {
+  checkoutCompleteWithTokenizedPaymentV3(checkoutId: $checkoutId, paymentInput: $paymentInput) {
+    payment {
+      id
+      ready
+    }
+    checkoutUserErrors {
+      message
+    }
+  }
+}

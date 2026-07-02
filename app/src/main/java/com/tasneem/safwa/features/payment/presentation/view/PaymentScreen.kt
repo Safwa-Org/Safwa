@@ -52,9 +52,9 @@ import com.tasneem.safwa.core.shared_component.SafwaTopAppBar
 import com.tasneem.safwa.core.theme.SafwaTheme
 import com.tasneem.safwa.features.payment.presentation.state.PaymentEffect
 import com.tasneem.safwa.features.payment.presentation.state.PaymentEvent
-import com.tasneem.safwa.features.payment.presentation.state.PaymentMethodType
+import com.tasneem.safwa.features.payment.domain.model.PaymentMethodType
 import com.tasneem.safwa.features.payment.presentation.state.PaymentState
-import com.tasneem.safwa.features.payment.presentation.state.SavedCard
+import com.tasneem.safwa.features.payment.domain.model.SavedCard
 import com.tasneem.safwa.features.payment.presentation.view.component.AddCardDialog
 import com.tasneem.safwa.features.payment.presentation.view.component.PaymentOptionCard
 import com.tasneem.safwa.features.payment.presentation.view.component.SavedCardItem
@@ -202,6 +202,7 @@ fun PaymentContent(
     
     if (state.showAddCardDialog) {
         AddCardDialog(
+            isLoading = state.isLoading,
             onDismiss = { onEvent(PaymentEvent.ToggleAddCardDialog(false)) },
             onSave = { number, firstName, lastName, month, year, cvv ->
                 onEvent(PaymentEvent.SaveNewCard(number, firstName, lastName, month, year, cvv))
