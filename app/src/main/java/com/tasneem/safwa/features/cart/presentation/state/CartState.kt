@@ -13,28 +13,30 @@ data class CartItem(
     val originalQuantity: Int = quantity
 )
 
+data class AppliedDiscountCode(
+    val code: String,
+    val applicable: Boolean
+)
+
 data class CartState(
     val isLoading: Boolean = false,
     val items: List<CartItem> = emptyList(),
     val promoCode: String = "",
-    val appliedPromoCode: String? = null,
-    val promoDiscount: Double = 0.0,
+    val appliedDiscountCodes: List<AppliedDiscountCode> = emptyList(),
+    val promoCodeError: String? = null,
+    val isApplyingPromoCode: Boolean = false,
+    val shippingAmount: Double? = null,
+    val subtotalAmount: Double = 0.0,
+    val totalAmount: Double = 0.0,
+    val currency: String = "SAR",
     val removingItemIds: Set<String> = emptySet(),
     val updatingItemIds: Set<String> = emptySet(),
     val itemPendingRemoval: CartItem? = null,
+    val promoCodePendingRemoval: String? = null,
     val errorMessage: String? = null
 ) {
     val totalItemCount: Int
         get() = items.sumOf { it.quantity }
-
-    val subtotal: Double
-        get() = items.sumOf { it.price * it.quantity }
-
-    val vat: Double
-        get() = subtotal * 0.15
-
-    val total: Double
-        get() = subtotal + vat - promoDiscount
 
     val isEmpty: Boolean
         get() = items.isEmpty()

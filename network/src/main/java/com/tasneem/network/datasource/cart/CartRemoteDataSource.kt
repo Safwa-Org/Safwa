@@ -1,5 +1,6 @@
 package com.tasneem.network.datasource.cart
 
+import com.tasneem.network.dto.ApplyDiscountResultDto
 import com.tasneem.network.dto.CartDto
 
 interface CartRemoteDataSource {
@@ -8,4 +9,5 @@ interface CartRemoteDataSource {
     suspend fun getCart(cartId: String): CartDto
     suspend fun removeFromCart(cartId: String, lineIds: List<String>): String
     suspend fun updateCartLine(cartId: String, lineId: String, quantity: Int): String
+    suspend fun applyDiscountCode(cartId: String, discountCodes: List<String>): ApplyDiscountResultDto
 }

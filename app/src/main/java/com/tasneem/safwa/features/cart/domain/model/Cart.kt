@@ -6,6 +6,8 @@ data class Cart(
     val subtotalAmount: String,
     val totalAmount: String,
     val currency: String,
+    val shippingAmount: String?,
+    val discountCodes: List<DiscountCode> = emptyList(),
     val lines: List<CartLine>
 )
 
@@ -22,4 +24,9 @@ data class CartLine(
     val totalLinePrice: String,
     val currency: String,
     val quantity: Int
+)
+
+data class DiscountCode(
+    val code: String,
+    val applicable: Boolean
 )

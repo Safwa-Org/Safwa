@@ -10,6 +10,9 @@ sealed interface CartEvent {
     data object CancelRemoveItem : CartEvent
     data class PromoCodeChanged(val code: String) : CartEvent
     data object ApplyPromoCode : CartEvent
+    data class RemovePromoCode(val code: String) : CartEvent
+    data object ConfirmRemovePromoCode : CartEvent
+    data object CancelRemovePromoCode : CartEvent
     data object ProceedToCheckout : CartEvent
     data object BackClicked : CartEvent
     data object WishlistClicked : CartEvent

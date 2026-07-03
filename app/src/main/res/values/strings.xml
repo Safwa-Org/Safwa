@@ -90,6 +90,8 @@
     <string name="home_headline">Curated for your\nrefined taste.</string>
     <string name="remove_item">Remove Item</string>
     <string name="confirm_remove_item">Are you sure you want to remove this item from your bag?</string>
+    <string name="remove_promo_code">Remove Promo Code</string>
+    <string name="confirm_remove_promo_code">Are you sure you want to remove this promo code?</string>
     <string name="categories">Categories</string>
     <string name="view_all">View all</string>
     <string name="best_sellers">Best sellers</string>
@@ -159,6 +161,11 @@
     <string name="your_bag">Your bag</string>
     <string name="your_bag_count">Your bag · %1$d</string>
     <string name="promo_code">Promo code</string>
+    <string name="discount_code_or_gift_card">Discount code or gift card</string>
+    <string name="shipping">Shipping</string>
+    <string name="free">FREE</string>
+    <string name="total_savings">TOTAL SAVINGS %1$s</string>
+    <string name="invalid_discount_code">Enter a valid discount code or gift card</string>
     <string name="apply">Apply</string>
     <string name="subtotal">Subtotal</string>
     <string name="vat_label">VAT (15%)</string>
