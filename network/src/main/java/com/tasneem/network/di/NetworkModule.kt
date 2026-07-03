@@ -59,4 +59,9 @@ abstract class DataSourceModule {
     abstract fun bindPaymentRemoteDatasource(
         impl: PaymentRemoteDataSourceImpl
     ): PaymentRemoteDataSource
+
+    @Binds
+    abstract fun bindOrderRemoteDataSource(
+        impl: com.tasneem.network.datasource.order.OrderRemoteDataSourceImpl
+    ): com.tasneem.network.datasource.order.OrderRemoteDataSource
 }
