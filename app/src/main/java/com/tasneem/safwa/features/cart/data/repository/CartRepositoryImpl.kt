@@ -2,6 +2,7 @@ package com.tasneem.safwa.features.cart.data.repository
 
 import com.tasneem.network.datasource.cart.CartRemoteDataSource
 import com.tasneem.safwa.core.util.Resource
+import com.tasneem.safwa.features.cart.domain.model.ApplyDiscountResult
 import com.tasneem.safwa.features.cart.domain.repository.CartRepository
 import com.tasneem.safwa.features.cart.data.mapper.toDomain
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -62,6 +63,15 @@ class CartRepositoryImpl @Inject constructor(
             Resource.Success(totalAmount)
         } catch (e: Exception) {
             Resource.Error(e.localizedMessage ?: "Failed to update cart line")
+        }
+    }
+
+    override suspend fun applyDiscountCode(cartId: String, discountCodes: List<String>): Resource<ApplyDiscountResult> {
+        return try {
+            val dto = remoteDataSource.applyDiscountCode(cartId, discountCodes)
+            Resource.Success(dto.toDomain())
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Failed to apply discount code")
         }
     }
 }

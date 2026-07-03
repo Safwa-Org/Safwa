@@ -6,27 +6,34 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.tasneem.safwa.R
 import com.tasneem.safwa.core.theme.SafwaTheme
+import com.tasneem.safwa.features.cart.presentation.state.AppliedDiscountCode
 
 @Composable
 fun OrderSummarySection(
     subtotal: Double,
-    vat: Double,
-    promoCode: String?,
-    promoDiscount: Double,
+    itemCount: Int,
+
+    appliedCodes: List<AppliedDiscountCode>,
     total: Double,
     currency: String,
     modifier: Modifier = Modifier
@@ -35,29 +42,36 @@ fun OrderSummarySection(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f))
+            .background(MaterialTheme.colorScheme.surface)
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         SummaryRow(
-            label = stringResource(id = R.string.subtotal),
-            value = "$currency ${subtotal.toInt()}",
+            label = stringResource(id = R.string.subtotal) + " · $itemCount items",
+            value = "$currency ${String.format("%.2f", subtotal)}",
             labelColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
         )
 
-        SummaryRow(
-            label = stringResource(id = R.string.vat_label),
-            value = "$currency ${vat.toInt()}",
-            labelColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
-        )
-
-        if (promoCode != null && promoDiscount > 0) {
-            SummaryRow(
-                label = stringResource(id = R.string.promo_discount_label, promoCode),
-                value = "– $currency ${promoDiscount.toInt()}",
-                labelColor = MaterialTheme.colorScheme.primary,
-                valueColor = MaterialTheme.colorScheme.primary
-            )
+        val validCodes = appliedCodes.filter { it.applicable }
+        if (validCodes.isNotEmpty()) {
+            validCodes.forEach { code ->
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Check,
+                        contentDescription = null,
+                        modifier = Modifier.size(14.dp),
+                        tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                    )
+                    Text(
+                        text = code.code.uppercase(),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                    )
+                }
+            }
         }
 
         HorizontalDivider(
@@ -67,21 +81,54 @@ fun OrderSummarySection(
 
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = stringResource(id = R.string.total),
                 style = MaterialTheme.typography.titleMedium,
-                fontFamily = FontFamily.Serif,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-            Text(
-                text = "$currency ${total.toInt()}",
-                style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                fontFamily = FontFamily.Serif,
                 color = MaterialTheme.colorScheme.onBackground
             )
+            Row(
+                verticalAlignment = Alignment.Bottom,
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Text(
+                    text = currency,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                    modifier = Modifier.padding(bottom = 2.dp)
+                )
+                Text(
+                    text = String.format("%.2f", total),
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+            }
+        }
+
+        val totalSavings = (subtotal - total).coerceAtLeast(0.0)
+        
+        if (totalSavings > 0) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Check,
+                    contentDescription = null,
+                    modifier = Modifier.size(14.dp),
+                    tint = MaterialTheme.colorScheme.onBackground
+                )
+                Text(
+                    text = stringResource(id = R.string.total_savings, "$currency ${String.format("%.2f", totalSavings)}").uppercase(),
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+            }
         }
     }
 }
@@ -116,12 +163,12 @@ private fun SummaryRow(
 private fun OrderSummarySectionPreview() {
     SafwaTheme {
         OrderSummarySection(
-            subtotal = 1120.0,
-            vat = 168.0,
-            promoCode = "ELITE10",
-            promoDiscount = 50.0,
-            total = 1238.0,
-            currency = "SAR",
+            subtotal = 6029.55,
+            itemCount = 9,
+
+            appliedCodes = listOf(AppliedDiscountCode("FREESHIPPING2026", true)),
+            total = 6029.55,
+            currency = "USD",
             modifier = Modifier.padding(16.dp)
         )
     }

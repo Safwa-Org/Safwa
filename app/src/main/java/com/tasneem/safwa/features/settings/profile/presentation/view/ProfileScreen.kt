@@ -103,14 +103,14 @@ fun ProfileContent(
         )
 
         Spacer(modifier = Modifier.height(24.dp))
-
+/*
         ProfileStatsRow(
             ordersCount = state.ordersCount.toString(),
             wishlistCount = state.wishlistCount.toString(),
             points = formattedPoints
         )
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(32.dp))*/
 
         SectionTitle(title = stringResource(R.string.accountcapital))
         Spacer(modifier = Modifier.height(16.dp))

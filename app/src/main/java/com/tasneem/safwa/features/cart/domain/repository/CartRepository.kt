@@ -1,6 +1,7 @@
 package com.tasneem.safwa.features.cart.domain.repository
 
 import com.tasneem.safwa.core.util.Resource
+import com.tasneem.safwa.features.cart.domain.model.ApplyDiscountResult
 import com.tasneem.safwa.features.cart.domain.model.Cart
 
 import kotlinx.coroutines.flow.StateFlow
@@ -12,4 +13,5 @@ interface CartRepository {
     suspend fun getCart(cartId: String): Resource<Cart>
     suspend fun removeFromCart(cartId: String, lineIds: List<String>, removedQuantity: Int): Resource<String>
     suspend fun updateCartLine(cartId: String, lineId: String, quantity: Int, difference: Int): Resource<String>
+    suspend fun applyDiscountCode(cartId: String, discountCodes: List<String>): Resource<ApplyDiscountResult>
 }

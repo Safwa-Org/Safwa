@@ -165,19 +165,23 @@ fun CartContent(
 
                         PromoCodeSection(
                             promoCode = state.promoCode,
+                            appliedCodes = state.appliedDiscountCodes,
+                            errorText = state.promoCodeError,
+                            isLoading = state.isApplyingPromoCode,
                             onPromoCodeChanged = { onEvent(CartEvent.PromoCodeChanged(it)) },
-                            onApplyClick = { onEvent(CartEvent.ApplyPromoCode) }
+                            onApplyClick = { onEvent(CartEvent.ApplyPromoCode) },
+                            onRemoveCodeClick = { onEvent(CartEvent.RemovePromoCode(it)) }
                         )
 
                         Spacer(modifier = Modifier.height(4.dp))
 
                         OrderSummarySection(
-                            subtotal = state.subtotal,
-                            vat = state.vat,
-                            promoCode = state.appliedPromoCode,
-                            promoDiscount = state.promoDiscount,
-                            total = state.total,
-                            currency = state.items.firstOrNull()?.currency ?: "SAR"
+                            subtotal = state.subtotalAmount,
+                            itemCount = state.totalItemCount,
+
+                            appliedCodes = state.appliedDiscountCodes,
+                            total = state.totalAmount,
+                            currency = state.currency
                         )
 
                         Spacer(modifier = Modifier.height(16.dp))
@@ -192,6 +196,15 @@ fun CartContent(
                 message = stringResource(id = R.string.confirm_remove_item),
                 onConfirm = { onEvent(CartEvent.ConfirmRemoveItem) },
                 onDismiss = { onEvent(CartEvent.CancelRemoveItem) }
+            )
+        }
+        
+        if (state.promoCodePendingRemoval != null) {
+            ConfirmDeleteDialog(
+                title = stringResource(id = R.string.remove_promo_code),
+                message = stringResource(id = R.string.confirm_remove_promo_code),
+                onConfirm = { onEvent(CartEvent.ConfirmRemovePromoCode) },
+                onDismiss = { onEvent(CartEvent.CancelRemovePromoCode) }
             )
         }
     }
@@ -213,8 +226,8 @@ private fun CartContentPreview() {
                     CartItem("1", "p1", "Nuit d'Or EDP", "50 ml", "MAISON", 480.0, "SAR", 1, ""),
                     CartItem("2", "p2", "Vermilion Bifold", "Saddle", "ATELIER", 320.0, "SAR", 2, "")
                 ),
-                appliedPromoCode = "ELITE10",
-                promoDiscount = 50.0
+                subtotalAmount = 1120.0,
+                totalAmount = 1120.0
             ),
             onEvent = {}
         )

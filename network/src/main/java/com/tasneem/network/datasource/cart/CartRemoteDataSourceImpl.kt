@@ -1,9 +1,12 @@
 package com.tasneem.network.datasource.cart
 import com.apollographql.apollo.ApolloClient
 import com.apollographql.apollo.api.Optional
+import com.tasneem.network.dto.ApplyDiscountResultDto
 import com.tasneem.network.dto.CartDto
+import com.tasneem.network.dto.DiscountCodeDto
 import com.tasneem.network.exception.safeApiCall
 import com.tasneem.safwa.network.AddToCartMutation
+import com.tasneem.safwa.network.ApplyDiscountCodeMutation
 import com.tasneem.safwa.network.CreateCartMutation
 import com.tasneem.safwa.network.GetCartQuery
 import com.tasneem.safwa.network.RemoveFromCartMutation
@@ -114,6 +117,35 @@ class CartRemoteDataSourceImpl @Inject constructor(
                     throw Exception(userErrors.first().message)
                 }
                 data.cartLinesUpdate?.cart?.cost?.totalAmount?.amount?.toString() ?: "0.0"
+            }
+        )
+    }
+
+    override suspend fun applyDiscountCode(cartId: String, discountCodes: List<String>): ApplyDiscountResultDto {
+        return safeApiCall(
+            apiCall = {
+                apolloClient.mutation(ApplyDiscountCodeMutation(cartId, discountCodes)).execute()
+            },
+            mapper = { data ->
+                val userErrors = data.cartDiscountCodesUpdate?.userErrors
+                if (!userErrors.isNullOrEmpty()) {
+                    throw Exception(userErrors.first().message)
+                }
+
+                val cart = data.cartDiscountCodesUpdate?.cart
+                    ?: throw Exception("Failed to apply discount code")
+
+                ApplyDiscountResultDto(
+                    discountCodes = cart.discountCodes.map { discount ->
+                        DiscountCodeDto(
+                            code = discount.code,
+                            applicable = discount.applicable
+                        )
+                    },
+                    subtotalAmount = cart.cost.subtotalAmount.amount.toString(),
+                    totalAmount = cart.cost.totalAmount.amount.toString(),
+                    currency = cart.cost.totalAmount.currencyCode.name
+                )
             }
         )
     }

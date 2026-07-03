@@ -2,6 +2,12 @@ query GetCart($cartId: ID!) {
   cart(id: $cartId) {
     id
     checkoutUrl
+    
+    discountCodes {
+      code
+      applicable
+    }
+
     lines(first: 100) {
       edges {
         node {
@@ -14,16 +20,9 @@ query GetCart($cartId: ID!) {
               title
 
               product {
-                id
                 title
-                handle
-                vendor
-
                 featuredImage {
                   url
-                  altText
-                  width
-                  height
                 }
               }
 
@@ -56,6 +55,21 @@ query GetCart($cartId: ID!) {
       totalAmount {
         amount
         currencyCode
+      }
+    }
+
+    deliveryGroups(first: 10) {
+      edges {
+        node {
+          deliveryOptions {
+            title
+            handle
+            estimatedCost {
+              amount
+              currencyCode
+            }
+          }
+        }
       }
     }
   }
