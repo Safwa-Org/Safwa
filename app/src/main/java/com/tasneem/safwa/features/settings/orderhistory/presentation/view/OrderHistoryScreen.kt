@@ -46,6 +46,8 @@ import androidx.compose.material3.CircularProgressIndicator
 @Composable
 fun OrderHistoryScreen(
     viewModel: OrderHistoryViewModel = hiltViewModel(),
+    onNavigateToOrderDetails: (String) -> Unit = {},
+    onNavigateBack: () -> Unit = {}
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -138,7 +140,11 @@ fun OrderHistoryScreen(
                     items(state.filteredOrders, key = { it.id }) { order ->
                         OrderCard(
                             order = order,
-                            onClick = { /* TODO: Navigate to Details */ }
+                            onClick = {
+                                val json = com.google.gson.Gson().toJson(order)
+                                val encodedJson = android.net.Uri.encode(json)
+                                onNavigateToOrderDetails(encodedJson)
+                            }
                         )
                     }
                 }

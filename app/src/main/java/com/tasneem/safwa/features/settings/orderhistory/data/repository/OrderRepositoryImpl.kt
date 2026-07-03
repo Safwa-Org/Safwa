@@ -35,15 +35,21 @@ class OrderRepositoryImpl @Inject constructor(
                     else -> OrderStatus.IN_TRANSIT
                 }
 
-                val date = node.processedAt.toString().take(10) 
+                val date = node.processedAt.toString().take(10)
                 
-                val images = node.lineItems.edges.mapNotNull { it.node.variant?.image?.url?.toString() }
+                val lineItems = node.lineItems.edges.map { edge ->
+                    com.tasneem.safwa.features.settings.orderhistory.domain.model.OrderLineItem(
+                        title = edge.node.title,
+                        quantity = edge.node.quantity,
+                        imageUrl = edge.node.variant?.image?.url?.toString()
+                    )
+                }
                 
                 OrderHistoryItem(
                     id = node.id,
                     orderNumber = node.orderNumber.toString(),
                     status = status,
-                    images = images,
+                    lineItems = lineItems,
                     itemCount = node.lineItems.edges.sumOf { it.node.quantity },
                     date = date,
                     totalPrice = "${node.currentTotalPrice.currencyCode} ${node.currentTotalPrice.amount}"

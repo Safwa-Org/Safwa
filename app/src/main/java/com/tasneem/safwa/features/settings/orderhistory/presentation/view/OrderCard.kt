@@ -83,7 +83,7 @@ fun OrderCard(
             ) {
                 // Images
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    if (order.images.isEmpty()) {
+                    if (order.lineItems.isEmpty()) {
                         Box(
                             modifier = Modifier
                                 .size(64.dp)
@@ -98,16 +98,33 @@ fun OrderCard(
                             )
                         }
                     } else {
-                        order.images.take(2).forEach { imageUrl ->
-                            AsyncImage(
-                                model = imageUrl,
-                                contentDescription = null,
-                                contentScale = ContentScale.Crop,
+                        val images = order.lineItems.mapNotNull { it.imageUrl }
+                        if (images.isEmpty()) {
+                            Box(
                                 modifier = Modifier
                                     .size(64.dp)
                                     .clip(RoundedCornerShape(16.dp))
-                                    .background(MaterialTheme.colorScheme.surfaceVariant)
-                            )
+                                    .background(MaterialTheme.colorScheme.surfaceVariant),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.Search,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        } else {
+                            images.take(2).forEach { imageUrl ->
+                                AsyncImage(
+                                    model = imageUrl,
+                                    contentDescription = null,
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier
+                                        .size(64.dp)
+                                        .clip(RoundedCornerShape(16.dp))
+                                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                                )
+                            }
                         }
                     }
                 }

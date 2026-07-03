@@ -4,11 +4,17 @@ enum class OrderStatus {
     ALL, IN_TRANSIT, DELIVERED, CANCELLED
 }
 
+data class OrderLineItem(
+    val title: String,
+    val quantity: Int,
+    val imageUrl: String?
+)
+
 data class OrderHistoryItem(
     val id: String,
     val orderNumber: String,
     val status: OrderStatus,
-    val images: List<String>,
+    val lineItems: List<OrderLineItem>,
     val itemCount: Int,
     val date: String,
     val totalPrice: String

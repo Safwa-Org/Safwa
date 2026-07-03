@@ -190,4 +190,8 @@
     <string name="go_to_category">Go to category</string>
     <string name="no_products_found">No products found in this category.</string>
     <string name="required">Required</string>
+    <string name="order_details">Order Details</string>
+    <string name="total_amount">Total Amount</string>
+    <string name="date_label">Date</string>
+    <string name="no_images_available">No images available</string>
 </resources>
