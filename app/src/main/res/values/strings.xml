@@ -100,6 +100,9 @@
     <string name="profile">Profile</string>
     <string name="edit_label">EDIT · %1$d</string>
     <string name="editorial_headline">Quiet luxury,\nsealed in glass.</string>
+    <string name="promo_code_label">PROMO CODE</string>
+    <string name="copy">COPY</string>
+    <string name="code_copied">Code copied!</string>
     <string name="search_icon_content_desc">Search</string>
     <string name="cart_icon_content_desc">Cart</string>
     <string name="something_went_wrong">Something went wrong</string>
