@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -42,24 +41,14 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.tasneem.safwa.features.settings.orderhistory.presentation.OrderHistoryViewModel
 import com.tasneem.safwa.features.settings.orderhistory.presentation.OrderHistoryIntent
-import com.tasneem.safwa.features.settings.orderhistory.domain.model.OrderStatus
-import com.tasneem.safwa.features.settings.orderhistory.domain.model.OrderHistoryItem
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.foundation.layout.Box
 
 @Composable
 fun OrderHistoryScreen(
     viewModel: OrderHistoryViewModel = hiltViewModel(),
-    // onNavigateBack: () -> Unit = {}
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
-    // Trigger load with a hardcoded token for now (mock flow)
-    androidx.compose.runtime.LaunchedEffect(Unit) {
-        if (state.orders.isEmpty() && !state.isLoading) {
-            viewModel.processIntent(OrderHistoryIntent.LoadOrders("mock_customer_access_token_or_insert_real_one_here"))
-        }
-    }
 
     var isSearchVisible by remember { mutableStateOf(false) }
 
@@ -68,17 +57,22 @@ fun OrderHistoryScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        // Custom Top Bar layout to support the search icon action
-        Row(
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(end = 12.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .padding(top = 16.dp)
         ) {
-            Box(modifier = Modifier.weight(1f)) {
-                SafwaTopAppBar(title = stringResource(R.string.order_history))
-            }
-            IconButton(onClick = { isSearchVisible = !isSearchVisible }) {
+            SafwaTopAppBar(
+                title = stringResource(R.string.order_history),
+                modifier = Modifier.fillMaxWidth()
+            )
+            
+            IconButton(
+                onClick = { isSearchVisible = !isSearchVisible },
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .padding(end = 12.dp)
+            ) {
                 Icon(
                     imageVector = Icons.Rounded.Search,
                     contentDescription = stringResource(R.string.search_orders)
@@ -86,7 +80,6 @@ fun OrderHistoryScreen(
             }
         }
 
-        // Animated Search Field
         AnimatedVisibility(
             visible = isSearchVisible,
             enter = expandVertically(),
@@ -110,7 +103,6 @@ fun OrderHistoryScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Filter Chips
         OrderFilterRow(
             selectedFilter = state.selectedFilter,
             onFilterSelected = { viewModel.processIntent(OrderHistoryIntent.FilterOrders(it)) }
@@ -118,18 +110,37 @@ fun OrderHistoryScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Order List
         Box(modifier = Modifier.fillMaxSize()) {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(start = 20.dp, end = 20.dp, bottom = 32.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                items(state.filteredOrders, key = { it.id }) { order ->
-                    OrderCard(
-                        order = order,
-                        onClick = { /* TODO: Navigate to Details */ }
+            if (!state.isLoading && state.filteredOrders.isEmpty()) {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "No orders found.",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.onBackground
                     )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Try adjusting your filters or search query.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(start = 20.dp, end = 20.dp, bottom = 32.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    items(state.filteredOrders, key = { it.id }) { order ->
+                        OrderCard(
+                            order = order,
+                            onClick = { /* TODO: Navigate to Details */ }
+                        )
+                    }
                 }
             }
 

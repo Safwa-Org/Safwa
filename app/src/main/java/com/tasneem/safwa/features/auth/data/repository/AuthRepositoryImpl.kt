@@ -13,9 +13,11 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
+import com.tasneem.network.datasource.auth.AuthRemoteDataSource
 class AuthRepositoryImpl @Inject constructor(
     private val authDataSource: FirebaseAuthDataSource,
     private val firestoreDataSource: FirestoreDataSource,
+    private val authRemoteDataSource: AuthRemoteDataSource
 ) : AuthRepository {
 
     override suspend fun register(
@@ -29,13 +31,22 @@ class AuthRepositoryImpl @Inject constructor(
             val authResult = authDataSource.signUpWithEmail(email, password)
             val uid = authResult.user?.uid ?: return Resource.Error("Registration failed: no user")
 
+            val shopifyResult = authRemoteDataSource.registerCustomer(email, password, firstName, lastName, phone)
+            if (shopifyResult.isFailure) {
+                // If Shopify registration fails, clean up Firebase user and return error
+                authDataSource.signOut()
+                return Resource.Error("Shopify registration failed: ${shopifyResult.exceptionOrNull()?.message}")
+            }
+            val shopifyToken = shopifyResult.getOrNull()
+
             val userEntity = UserEntity(
                 id = uid,
                 email = email,
                 firstName = firstName,
                 lastName = lastName,
                 phone = phone,
-                isGuest = false
+                isGuest = false,
+                customerAccessToken = shopifyToken
             )
 
             try {
@@ -65,13 +76,49 @@ class AuthRepositoryImpl @Inject constructor(
                 return Resource.Error("Please verify your email before logging in. A verification link was sent to your email.")
             }
 
+            var shopifyResult = authRemoteDataSource.loginCustomer(email, password)
+            if (shopifyResult.isFailure) {
+                val errorMsg = shopifyResult.exceptionOrNull()?.message ?: ""
+                if (errorMsg.contains("Unidentified customer", ignoreCase = true)) {
+                    val existingUser = firestoreDataSource.getUser(uid)
+                    if (existingUser != null) {
+                        val regResult = authRemoteDataSource.registerCustomer(
+                            email, password, existingUser.firstName, existingUser.lastName, existingUser.phone
+                        )
+                        if (regResult.isSuccess) {
+                            val token = regResult.getOrNull()
+                            if (token != null) {
+                                shopifyResult = Result.success(token)
+                            } else {
+                                authDataSource.signOut()
+                                return Resource.Error("Shopify login failed: Missing token after re-registration.")
+                            }
+                        } else {
+                            authDataSource.signOut()
+                            return Resource.Error("Shopify login failed: Account was deleted and could not be recreated. Reason: ${regResult.exceptionOrNull()?.message}")
+                        }
+                    } else {
+                        authDataSource.signOut()
+                        return Resource.Error("Shopify login failed: Unidentified customer.")
+                    }
+                } else {
+                    authDataSource.signOut()
+                    return Resource.Error("Shopify login failed: $errorMsg")
+                }
+            }
+            val shopifyToken = shopifyResult.getOrNull()
+
             var userEntity = firestoreDataSource.getUser(uid)
             if (userEntity == null) {
                 userEntity = UserEntity(
                     id = uid,
                     email = email,
-                    isGuest = false
+                    isGuest = false,
+                    customerAccessToken = shopifyToken
                 )
+                firestoreDataSource.saveUser(userEntity)
+            } else {
+                userEntity = userEntity.copy(customerAccessToken = shopifyToken)
                 firestoreDataSource.saveUser(userEntity)
             }
             Resource.Success(userEntity.toDomain())
@@ -97,20 +144,44 @@ class AuthRepositoryImpl @Inject constructor(
         return try {
             val authResult = authDataSource.signInWithGoogle(idToken)
             val uid = authResult.user?.uid ?: return Resource.Error("Google login failed")
+            
+            val email = authResult.user?.email ?: ""
+            val displayName = authResult.user?.displayName ?: ""
+            val firstName = displayName.split(" ").firstOrNull() ?: ""
+            val lastName = displayName.split(" ").drop(1).joinToString(" ")
+            
+            val shopifyPassword = uid.take(10) + "Safwa123!"
+
+            var shopifyResult = authRemoteDataSource.loginCustomer(email, shopifyPassword)
+            
+            if (shopifyResult.isFailure) {
+                shopifyResult = authRemoteDataSource.registerCustomer(email, shopifyPassword, firstName, lastName, null)
+                if (shopifyResult.isFailure) {
+                     authDataSource.signOut()
+                     val msg = shopifyResult.exceptionOrNull()?.message ?: ""
+                     if (msg.contains("Email has already been taken", ignoreCase = true)) {
+                         return Resource.Error("This email is already registered. Please login using Email and Password.")
+                     }
+                     return Resource.Error("Shopify Google registration failed: $msg")
+                }
+            }
+            
+            val shopifyToken = shopifyResult.getOrNull()
+
             var userEntity = firestoreDataSource.getUser(uid)
             if (userEntity == null) {
-                val email = authResult.user?.email ?: ""
-                val displayName = authResult.user?.displayName ?: ""
-                val firstName = displayName.split(" ").firstOrNull() ?: ""
-                val lastName = displayName.split(" ").drop(1).joinToString(" ")
                 userEntity = UserEntity(
                     id = uid,
                     email = email,
                     firstName = firstName,
                     lastName = lastName,
                     photoUrl = authResult.user?.photoUrl?.toString(),
-                    isGuest = false
+                    isGuest = false,
+                    customerAccessToken = shopifyToken
                 )
+                firestoreDataSource.saveUser(userEntity)
+            } else {
+                userEntity = userEntity.copy(customerAccessToken = shopifyToken)
                 firestoreDataSource.saveUser(userEntity)
             }
             Resource.Success(userEntity.toDomain())
@@ -153,16 +224,13 @@ class AuthRepositoryImpl @Inject constructor(
             val userEntity = firestoreDataSource.getUser(uid)
 
             if (userEntity != null) {
-                // User exists in Firestore. Ensure email is verified if they have one.
                 if (email != null && !authDataSource.isEmailVerified()) {
                     authDataSource.signOut()
                     return Resource.Success(null)
                 }
                 return Resource.Success(userEntity.toDomain())
             } else {
-                // User is in Firebase Auth but NOT in Firestore
                 if (email == null) {
-                    // It's a Guest User (they don't have emails and aren't saved to Firestore)
                     val guestUser = User(
                         id = uid,
                         isGuest = true,
@@ -172,8 +240,6 @@ class AuthRepositoryImpl @Inject constructor(
                     )
                     return Resource.Success(guestUser)
                 } else {
-                    // CRITICAL FIX: It's an Email user who encountered an error during registration
-                    // and their Firestore data never saved. Clean up the corrupted local state.
                     authDataSource.signOut()
                     return Resource.Success(null)
                 }

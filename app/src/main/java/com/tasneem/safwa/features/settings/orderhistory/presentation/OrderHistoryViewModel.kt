@@ -11,21 +11,45 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import com.tasneem.safwa.features.auth.domain.usecase.GetCurrentUserUseCase
 import javax.inject.Inject
 
 @HiltViewModel
 class OrderHistoryViewModel @Inject constructor(
-    private val getOrdersUseCase: GetOrdersUseCase
+    private val getOrdersUseCase: GetOrdersUseCase,
+    private val getCurrentUserUseCase: GetCurrentUserUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(OrderHistoryState())
     val state: StateFlow<OrderHistoryState> = _state.asStateFlow()
+
+    init {
+        loadUserAndOrders()
+    }
 
     fun processIntent(intent: OrderHistoryIntent) {
         when (intent) {
             is OrderHistoryIntent.LoadOrders -> loadOrders(intent.customerAccessToken)
             is OrderHistoryIntent.FilterOrders -> filterOrders(intent.status)
             is OrderHistoryIntent.SearchOrders -> searchOrders(intent.query)
+        }
+    }
+
+    private fun loadUserAndOrders() {
+        viewModelScope.launch {
+            _state.update { it.copy(isLoading = true) }
+            val result = getCurrentUserUseCase()
+            if (result is Resource.Success && result.data != null) {
+                val user = result.data
+                val token = user.customerAccessToken
+                if (!token.isNullOrEmpty()) {
+                    loadOrders(token)
+                } else {
+                    _state.update { it.copy(isLoading = false, error = "Please login again to view orders") }
+                }
+            } else {
+                _state.update { it.copy(isLoading = false, error = "User not found") }
+            }
         }
     }
 

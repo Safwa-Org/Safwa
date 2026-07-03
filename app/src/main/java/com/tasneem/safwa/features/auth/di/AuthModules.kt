@@ -87,8 +87,9 @@ object AuthDataModule {
     @Singleton
     fun provideAuthRepository(
         firebaseAuthDataSource: FirebaseAuthDataSource,
-        firestoreDataSource: FirestoreDataSource
-    ): AuthRepository = AuthRepositoryImpl(firebaseAuthDataSource, firestoreDataSource)
+        firestoreDataSource: FirestoreDataSource,
+        authRemoteDataSource: com.tasneem.network.datasource.auth.AuthRemoteDataSource
+    ): AuthRepository = AuthRepositoryImpl(firebaseAuthDataSource, firestoreDataSource, authRemoteDataSource)
 }
 
 @Module

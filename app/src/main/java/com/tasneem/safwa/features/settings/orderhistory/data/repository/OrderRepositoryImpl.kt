@@ -20,13 +20,11 @@ class OrderRepositoryImpl @Inject constructor(
     override fun getOrders(customerAccessToken: String): Flow<Resource<List<OrderHistoryItem>>> = flow {
         emit(Resource.Loading)
 
-        // 1. Emit local data first if available
         val localOrders = localDataSource.getOrders().first()
         if (localOrders.isNotEmpty()) {
             emit(Resource.Success(localOrders.map { it.toDomain() }))
         }
 
-        // 2. Fetch from remote
         try {
             val edges = remoteDataSource.getOrders(customerAccessToken)
             val remoteOrders = edges.mapNotNull { it.node }.map { node ->
@@ -39,7 +37,7 @@ class OrderRepositoryImpl @Inject constructor(
 
                 val date = node.processedAt.toString().take(10) 
                 
-                val images = node.lineItems.edges.mapNotNull { it.node.variant?.image?.url as? String }
+                val images = node.lineItems.edges.mapNotNull { it.node.variant?.image?.url?.toString() }
                 
                 OrderHistoryItem(
                     id = node.id,
@@ -52,11 +50,9 @@ class OrderRepositoryImpl @Inject constructor(
                 )
             }
 
-            // 3. Save to local DB
             localDataSource.deleteAllOrders()
             localDataSource.insertOrders(remoteOrders.map { it.toEntity() })
 
-            // 4. Emit updated data
             emit(Resource.Success(remoteOrders))
         } catch (e: Exception) {
             emit(Resource.Error(e.message ?: "An unknown error occurred"))
