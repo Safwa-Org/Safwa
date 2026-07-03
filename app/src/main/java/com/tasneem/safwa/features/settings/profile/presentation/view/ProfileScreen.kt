@@ -58,7 +58,6 @@ fun ProfileScreen(
                 is ProfileEffect.NavigateToLanguageAndCurrency -> onNavigateToLanguageAndCurrency()
                 is ProfileEffect.NavigateToLogin -> onNavigateToLogin()
                 is ProfileEffect.ShowError -> {
-                    // TODO: Handle error, e.g., show a Snackbar
                 }
             }
         }

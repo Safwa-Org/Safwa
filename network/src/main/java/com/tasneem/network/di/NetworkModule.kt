@@ -3,9 +3,9 @@ package com.tasneem.network.di
 import com.apollographql.apollo.ApolloClient
 import com.tasneem.network.datasource.cart.CartRemoteDataSource
 import com.tasneem.network.datasource.cart.CartRemoteDataSourceImpl
-import com.tasneem.network.datasource.country.CountriesApi
-import com.tasneem.network.datasource.country.CountryRemoteDataSource
-import com.tasneem.network.datasource.country.CountryRemoteDataSourceImpl
+import com.tasneem.network.datasource.currency.ExchangeRateApi
+import com.tasneem.network.datasource.currency.ExchangeRateRemoteDataSource
+import com.tasneem.network.datasource.currency.ExchangeRateRemoteDataSourceImpl
 import com.tasneem.network.datasource.product.ProductRemoteDataSource
 import com.tasneem.network.datasource.product.ProductRemoteDataSourceImpl
 import com.tasneem.network.datasource.payment.PaymentRemoteDataSource
@@ -45,12 +45,12 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideCountriesApi(): CountriesApi {
+    fun provideExchangeRateApi(): ExchangeRateApi {
         return Retrofit.Builder()
-            .baseUrl(BuildConfig.COUNTRIES_BASE_URL)
+            .baseUrl("https://api.exchangerate-api.com/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
-            .create(CountriesApi::class.java)
+            .create(ExchangeRateApi::class.java)
     }
 }
 
@@ -74,7 +74,8 @@ abstract class DataSourceModule {
     ): PaymentRemoteDataSource
 
     @Binds
-    abstract fun bindCountryRemoteDataSource(
-        impl: CountryRemoteDataSourceImpl
-    ): CountryRemoteDataSource
+    abstract fun bindExchangeRateRemoteDataSource(
+        impl: ExchangeRateRemoteDataSourceImpl
+    ): ExchangeRateRemoteDataSource
+
 }

@@ -153,17 +153,19 @@ fun LanguageAndCurrencyContent(
                             selected = currency.code == state.selectedCurrencyCode,
                             onClick = { onEvent(LanguageAndCurrencyEvent.CurrencySelected(currency.code)) },
                             leadingIcon = {
-                                AsyncImage(
-                                    model = currency.flagUrl,
-                                    contentDescription = currency.name,
+                                Box(
                                     modifier = Modifier
-                                        .size(32.dp)
+                                        .size(40.dp)
                                         .clip(CircleShape)
                                         .background(MaterialTheme.colorScheme.surfaceVariant),
-                                    contentScale = ContentScale.Crop
-                                )
-                            }
-                        )
+                                    contentAlignment = androidx.compose.ui.Alignment.Center
+                                ) {
+                                    Text(
+                                        text = currency.flagEmoji,
+                                        style = MaterialTheme.typography.titleLarge
+                                    )
+                                }
+                            }                        )
                         if (index < currencies.lastIndex) {
                             SettingsDivider()
                         }

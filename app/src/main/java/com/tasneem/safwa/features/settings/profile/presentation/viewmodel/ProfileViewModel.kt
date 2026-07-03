@@ -60,21 +60,18 @@ class ProfileViewModel @Inject constructor(
                     }
                 }
 
-                // 2. Collect Settings/Preferences (Language, Currency, Dark Mode)
                 viewModelScope.launch {
-                    // NOTE: Replace `getAppPreferences()` with the exact name
-                    // of the use case/flow inside your PreferencesUseCases class.
                     preferencesUseCases.getAppPreferences().collect { prefs ->
                         _state.update {
                             it.copy(
-                                language = prefs.languageCode ?: "English", // Map "en"/"ar" to full names here if needed
-                                currency = prefs.currencyCode ?: "USD",
+                                // Transforming raw keys into beautiful user-facing strings
+                                language = mapLanguageCodeToName(prefs.languageCode),
+                                currency = mapCurrencyCodeToDisplay(prefs.currencyCode),
                                 isDarkMode = prefs.isDarkMode
                             )
                         }
                     }
-                }
-            }
+                }            }
 
             is ProfileEvent.OrderHistoryClicked -> {
                 viewModelScope.launch {
@@ -109,6 +106,26 @@ class ProfileViewModel @Inject constructor(
                     _effect.send(ProfileEffect.NavigateToLogin)
                 }
             }
+        }
+    }
+
+
+    private fun mapLanguageCodeToName(code: String?): String {
+        return when (code?.lowercase()) {
+            "ar" -> "العربية"
+            "en" -> "English"
+            else -> "English"
+        }
+    }
+
+    private fun mapCurrencyCodeToDisplay(code: String?): String {
+        return when (code?.uppercase()) {
+            "EGP" -> "EGP (🇪🇬)"
+            "USD" -> "USD (🇺🇸)"
+            "EUR" -> "EUR (🇪🇺)"
+            "GBP" -> "GBP (🇬🇧)"
+            "SAR" -> "SAR (🇸🇦)"
+            else -> code ?: "USD"
         }
     }
 }
