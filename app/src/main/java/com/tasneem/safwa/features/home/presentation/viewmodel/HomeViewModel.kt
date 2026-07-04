@@ -6,6 +6,7 @@ import com.tasneem.safwa.core.util.Resource
 import com.tasneem.safwa.features.auth.domain.usecase.GetCurrentUserUseCase
 import com.tasneem.safwa.features.cart.domain.repository.CartRepository
 import com.tasneem.safwa.features.home.domain.model.PromoBanner
+import com.tasneem.safwa.features.brand.domain.usecase.GetBrandsUseCase
 import com.tasneem.safwa.features.cart.domain.usecase.GetCartUseCase
 import com.tasneem.safwa.features.home.domain.usecase.GetProductsUseCase
 import com.tasneem.safwa.features.home.presentation.state.GreetingType
@@ -35,8 +36,13 @@ class HomeViewModel @Inject constructor(
     private val getCategoriesUseCase: GetCategoriesUseCase,
     private val getCartUseCase: GetCartUseCase,
     private val cartRepository: CartRepository,
-    private val getCurrentUserUseCase: GetCurrentUserUseCase
+    private val getCurrentUserUseCase: GetCurrentUserUseCase,
+    private val getBrandsUseCase: GetBrandsUseCase
 ) : ViewModel() {
+
+    companion object {
+        private const val HOME_BRANDS_COUNT = 8
+    }
 
     private val _state = MutableStateFlow(HomeState())
     val state: StateFlow<HomeState> = _state.asStateFlow()
@@ -53,6 +59,7 @@ class HomeViewModel @Inject constructor(
         }
         loadCurrentUser()
         loadProducts()
+        loadBrands()
         observeWishlist()
         loadCategories()
         observeCartCount()
@@ -81,13 +88,11 @@ class HomeViewModel @Inject constructor(
                     }
                     is Resource.Success -> {
                         val products = result.data
-                        val brands = products.map { it.vendor }.distinct().sorted()
                         _state.update {
                             it.copy(
                                 isLoading = false,
                                 products = products,
                                 filteredProducts = products,
-                                brands = brands,
                                 errorMessage = null
                             )
                         }
@@ -99,6 +104,18 @@ class HomeViewModel @Inject constructor(
                                 errorMessage = result.message
                             )
                         }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun loadBrands() {
+        viewModelScope.launch {
+            getBrandsUseCase().collect { result ->
+                if (result is Resource.Success) {
+                    _state.update { state ->
+                        state.copy(brands = result.data.take(HOME_BRANDS_COUNT).map { it.name })
                     }
                 }
             }
@@ -185,6 +202,9 @@ class HomeViewModel @Inject constructor(
             }
 
             is HomeEvent.ViewAllBrands -> {
+                viewModelScope.launch {
+                    _effect.send(HomeEffect.NavigateToBrands)
+                }
             }
 
             is HomeEvent.ShopEditClicked -> {

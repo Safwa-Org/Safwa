@@ -46,7 +46,9 @@ fun HomeScreen(
     onNavigateToProductDetails: (String) -> Unit = {},
     onNavigateToCart: () -> Unit = {},
     onNavigateToCategories: () -> Unit = {},
-    onNavigateToCategoryProducts: (String) -> Unit = {}
+    onNavigateToCategoryProducts: (String) -> Unit = {},
+    onNavigateToBrands: () -> Unit = {},
+    onNavigateToBrandProducts: (String) -> Unit = {}
 ) {
     val uiState by viewModel.state.collectAsStateWithLifecycle()
 
@@ -58,7 +60,8 @@ fun HomeScreen(
                 HomeEffect.NavigateToCategories -> onNavigateToCategories()
                 is HomeEffect.NavigateToCategoryProducts -> onNavigateToCategoryProducts(effect.categoryName)
                 is HomeEffect.NavigateToProductDetails -> onNavigateToProductDetails(effect.handle)
-                is HomeEffect.NavigateToBrand -> {}
+                is HomeEffect.NavigateToBrand -> onNavigateToBrandProducts(effect.brand)
+                HomeEffect.NavigateToBrands -> onNavigateToBrands()
             }
         }
     }
