@@ -9,8 +9,11 @@ data class UserEntity(
     val lastName: String = "",
     val phone: String? = null,
     val photoUrl: String? = null,
-    val isGuest: Boolean = false,
+    @get:com.google.firebase.firestore.PropertyName("isGuest")
+    @set:com.google.firebase.firestore.PropertyName("isGuest")
+    var isGuest: Boolean = false,
     val cartId: String = "",
+    val customerAccessToken: String? = null,
     val addresses: List<AddressEntity> = emptyList(),
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis()

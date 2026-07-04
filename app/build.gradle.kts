@@ -80,6 +80,8 @@ dependencies {
     // Firebase Auth & Firestore
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)
+    implementation("com.google.firebase:firebase-appcheck-playintegrity")
+    implementation("com.google.firebase:firebase-appcheck-debug")
 
     // Google Sign-In (Play Services)
     implementation(libs.play.services.auth)

@@ -24,12 +24,14 @@ fun Address.toEntity(): AddressEntity = AddressEntity(
 fun UserEntity.toDomain(): User = User(
     id = id, email = email, firstName = firstName, lastName = lastName,
     phone = phone, photoUrl = photoUrl, isGuest = isGuest, cartId = cartId,
+    customerAccessToken = customerAccessToken,
     addresses = addresses.map { it.toDomain() },
     createdAt = createdAt, updatedAt = updatedAt
 )
 fun User.toEntity(): UserEntity = UserEntity(
     id = id, email = email, firstName = firstName, lastName = lastName,
     phone = phone, photoUrl = photoUrl, isGuest = isGuest, cartId = cartId,
+    customerAccessToken = customerAccessToken,
     addresses = addresses.map { it.toEntity() },
     createdAt = createdAt, updatedAt = updatedAt
 )

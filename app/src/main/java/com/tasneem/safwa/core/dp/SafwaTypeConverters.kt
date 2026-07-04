@@ -17,4 +17,15 @@ class SafwaTypeConverters {
         val type = object : TypeToken<List<String>>() {}.type
         return gson.fromJson(value, type) ?: emptyList()
     }
+
+    @TypeConverter
+    fun fromOrderLineItemList(value: List<com.tasneem.safwa.features.settings.orderhistory.domain.model.OrderLineItem>?): String {
+        return gson.toJson(value)
+    }
+
+    @TypeConverter
+    fun toOrderLineItemList(value: String): List<com.tasneem.safwa.features.settings.orderhistory.domain.model.OrderLineItem> {
+        val type = object : TypeToken<List<com.tasneem.safwa.features.settings.orderhistory.domain.model.OrderLineItem>>() {}.type
+        return gson.fromJson(value, type) ?: emptyList()
+    }
 }

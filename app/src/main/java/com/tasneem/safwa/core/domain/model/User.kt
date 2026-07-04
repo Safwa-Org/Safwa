@@ -9,6 +9,7 @@ data class User(
     val photoUrl: String? = null,
     val isGuest: Boolean = false,
     val cartId: String = "",
+    val customerAccessToken: String? = null,
     val addresses: List<Address> = emptyList(), // Added addresses array
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis()

@@ -11,7 +11,7 @@ interface FirebaseAuthDataSource {
     suspend fun signOut()
     fun getCurrentUserId(): String?
     fun getCurrentUserEmail(): String?
-    suspend fun sendEmailVerification()
+    suspend fun sendEmailVerification(user: com.google.firebase.auth.FirebaseUser? = null)
     fun isEmailVerified(): Boolean
     fun observeAuthState(): Flow<Boolean>
 }
