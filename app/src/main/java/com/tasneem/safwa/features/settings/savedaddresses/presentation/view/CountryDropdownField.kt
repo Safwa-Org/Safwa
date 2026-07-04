@@ -2,17 +2,8 @@ package com.tasneem.safwa.features.settings.savedaddresses.presentation.view
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -28,6 +19,12 @@ fun CountryDropdownField(
     modifier: Modifier = Modifier
 ) {
     var expanded by remember { mutableStateOf(false) }
+    var query by remember(selected) { mutableStateOf(selected?.name ?: "") }
+
+    val filtered = remember(query, countries) {
+        if (query.isBlank()) countries
+        else countries.filter { it.name.contains(query, ignoreCase = true) }
+    }
 
     ExposedDropdownMenuBox(
         expanded = expanded,
@@ -35,21 +32,29 @@ fun CountryDropdownField(
         modifier = modifier
     ) {
         OutlinedTextField(
-            value = selected?.name ?: "",
-            onValueChange = {},
-            readOnly = true,
+            value = query,
+            onValueChange = {
+                query = it
+                expanded = true
+            },
             label = { Text(stringResource(R.string.country)) },
+            singleLine = true,
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
             shape = RoundedCornerShape(16.dp),
-            modifier = Modifier
-                .menuAnchor()
-                .fillMaxWidth()
+            modifier = Modifier.menuAnchor().fillMaxWidth()
         )
-        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            countries.forEach { country ->
+        ExposedDropdownMenu(
+            expanded = expanded && filtered.isNotEmpty(),
+            onDismissRequest = { expanded = false }
+        ) {
+            filtered.forEach { country ->
                 DropdownMenuItem(
                     text = { Text(country.name) },
-                    onClick = { onSelect(country); expanded = false }
+                    onClick = {
+                        onSelect(country)
+                        query = country.name
+                        expanded = false
+                    }
                 )
             }
         }

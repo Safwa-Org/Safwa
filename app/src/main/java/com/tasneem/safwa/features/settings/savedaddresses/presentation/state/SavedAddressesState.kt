@@ -22,5 +22,7 @@ data class SavedAddressesState(
 
     val recipientNameErrorResId: Int? = null,
     val mobileNumberErrorResId: Int? = null,
-    val addressErrorResId: Int? = null
+    val addressErrorResId: Int? = null,
+
+    val isOffline: Boolean = false
 )

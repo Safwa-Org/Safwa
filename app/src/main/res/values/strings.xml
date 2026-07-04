@@ -179,7 +179,8 @@
     <string name="decrease_quantity">Decrease quantity</string>
     <string name="increase_quantity">Increase quantity</string>
     <string name="err_empty_name">Recipient name cannot be empty</string>
-    <string name="err_invalid_mobile">Please enter a valid mobile number (min 9 digits)</string>
+    <string name="err_invalid_mobile">Please enter a valid mobile number</string>
+    <string name="err_no_internet">No internet connection — connect and search again</string>
     <string name="err_empty_street">Street address field is required</string>
     <string name="auth_gate_wishlist_title">Save your favorites</string>
     <string name="auth_gate_wishlist_desc">Sign in to keep track of the pieces you love and access them anytime.</string>
@@ -219,4 +220,13 @@
     <string name="search_for_your_address">Search for your address</string>
     <string name="select_a_country_first">Select a country first</string>
     <string name="country">Country</string>
+
+    <string name="address_search_hint">Search for your address</string>
+    <string name="address_search_disabled_hint">Select a country first</string>
+    <string name="country_label">Country</string>
+
+    <string name="msg_select_address_from_suggestions">Please pick an address from the suggestions list before saving.</string>
+    <string name="msg_offline_search_address">You\'re offline — connect to the internet and search for your address again.</string>
+    <string name="msg_could_not_remove_address">Could not remove address from server.</string>
+    <string name="msg_unknown_error">An unknown error occurred.</string>
 </resources>

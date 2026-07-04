@@ -29,13 +29,6 @@ val locationBaseUrl = localProperties.getProperty("Location_BASE_URL")
 val locationApiKey = localProperties.getProperty("LOCATIONIQ_API_KEY")
     ?: throw Exception("Missing LOCATIONIQ_API_KEY in local.properties.")
 
-
-val countriesBaseUrl = localProperties.getProperty("Countries_BASE_URL")
-    ?: throw Exception("Missing Countries_BASE_URL in local.properties.")
-
-val countriesApiKey = localProperties.getProperty("RESTCOUNTRIES_API_KEY")
-    ?: throw Exception("Missing RESTCOUNTRIES_API_KEY in local.properties.")
-
 android {
     namespace = "com.tasneem.safwa.network"
     compileSdk = 36
@@ -51,8 +44,6 @@ android {
         buildConfigField("String", "Currency_Exchange_BASE_URL", "\"$currencyBaseUrl\"")
         buildConfigField("String", "Location_BASE_URL", "\"$locationBaseUrl\"")
         buildConfigField("String", "LOCATIONIQ_API_KEY", "\"$locationApiKey\"")
-        buildConfigField("String", "Countries_BASE_URL", "\"$countriesBaseUrl\"")
-        buildConfigField("String", "RESTCOUNTRIES_API_KEY", "\"$countriesApiKey\"")
 
 
     }

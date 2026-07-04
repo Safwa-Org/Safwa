@@ -1,5 +1,6 @@
 package com.tasneem.safwa.features.settings.savedaddresses.presentation.view
 
+import android.content.Context
 import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -31,6 +32,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -51,13 +53,13 @@ fun SavedAddressesScreen(
 ) {
     val uiState by viewModel.state.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
-
+    val context = LocalContext.current
     LaunchedEffect(Unit) {
         viewModel.effect.collect { effect ->
             when (effect) {
                 is SavedAddressesEffect.NavigateBack -> onNavigateBack()
                 is SavedAddressesEffect.ShowError -> {
-                    snackbarHostState.showSnackbar(message = effect.message)
+                    snackbarHostState.showSnackbar(message = context.getString(effect.messageResId))
                 }
             }
         }

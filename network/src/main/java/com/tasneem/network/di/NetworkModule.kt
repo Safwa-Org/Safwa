@@ -19,9 +19,6 @@ import com.tasneem.network.datasource.auth.AuthRemoteDataSource
 import com.tasneem.network.datasource.auth.AuthRemoteDataSourceImpl
 import com.tasneem.network.datasource.location.AddressValidationRemoteDataSource
 import com.tasneem.network.datasource.location.AddressValidationRemoteDataSourceImpl
-import com.tasneem.network.datasource.location.CountryApi
-import com.tasneem.network.datasource.location.CountryRemoteDataSource
-import com.tasneem.network.datasource.location.CountryRemoteDataSourceImpl
 import com.tasneem.network.datasource.location.LocationIqApi
 import com.tasneem.safwa.network.BuildConfig
 import retrofit2.Retrofit
@@ -76,28 +73,6 @@ object NetworkModule {
             .build()
             .create(LocationIqApi::class.java)
 
-    @Provides
-    @Singleton
-    @Named("restCountriesClient")
-    fun provideRestCountriesOkHttpClient(): OkHttpClient =
-        OkHttpClient.Builder()
-            .addInterceptor { chain ->
-                val authedRequest = chain.request().newBuilder()
-                    .addHeader("Authorization", "Bearer ${BuildConfig.RESTCOUNTRIES_API_KEY}")
-                    .build()
-                chain.proceed(authedRequest)
-            }
-            .build()
-
-    @Provides
-    @Singleton
-    fun provideCountryApi(@Named("restCountriesClient") client: OkHttpClient): CountryApi =
-        Retrofit.Builder()
-            .baseUrl(BuildConfig.Countries_BASE_URL)
-            .client(client)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-            .create(CountryApi::class.java)
 }
 
 @Module
@@ -142,10 +117,5 @@ abstract class DataSourceModule {
     abstract fun bindAddressValidationRemoteDataSource(
         impl: AddressValidationRemoteDataSourceImpl
     ): AddressValidationRemoteDataSource
-
-    @Binds
-    abstract fun bindCountryRemoteDataSource(
-        impl: CountryRemoteDataSourceImpl
-    ): CountryRemoteDataSource
 
 }

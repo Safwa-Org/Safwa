@@ -1,5 +1,7 @@
 package com.tasneem.safwa.features.settings.savedaddresses.di
 
+import com.tasneem.safwa.features.settings.savedaddresses.data.datasource.CountryLocalDataSource
+import com.tasneem.safwa.features.settings.savedaddresses.data.datasource.CountryLocalDataSourceImpl
 import com.tasneem.safwa.features.settings.savedaddresses.data.repository.AddressLookupRepositoryImpl
 import com.tasneem.safwa.features.settings.savedaddresses.data.repository.CountryRepositoryImpl
 import com.tasneem.safwa.features.settings.savedaddresses.domain.repository.AddressLookupRepository
@@ -24,4 +26,10 @@ abstract class CoreRepositoryModule {
     abstract fun bindCountryRepository(
         impl: CountryRepositoryImpl
     ): CountryRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindCountryLocalDataSource(
+        impl: CountryLocalDataSourceImpl
+    ): CountryLocalDataSource
 }

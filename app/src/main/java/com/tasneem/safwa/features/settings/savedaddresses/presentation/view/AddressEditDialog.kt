@@ -195,7 +195,7 @@ fun AddressEditDialog(
                         onClick = {
                             isNameDirty = false
                             isMobileDirty = false
-                            onSave(label, recipientName, mobileNumber)
+                            onSave(label.ifBlank { "Address" }, recipientName, mobileNumber)
                         },
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(16.dp)
