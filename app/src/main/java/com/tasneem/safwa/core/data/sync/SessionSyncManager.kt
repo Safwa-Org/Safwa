@@ -7,6 +7,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
@@ -18,7 +19,9 @@ class SessionSyncManager @Inject constructor(
 ) {
     fun startRealTimeSync() {
         externalScope.launch {
-            localRepo.isLoggedIn.collectLatest { isLoggedIn ->
+            localRepo.isLoggedIn
+                .distinctUntilChanged()
+                .collectLatest { isLoggedIn ->
                 if (isLoggedIn) {
                     val userId = localRepo.currentUser.first()?.id ?: return@collectLatest
                     remoteRepo.observeUser(userId).collect { remoteUser ->

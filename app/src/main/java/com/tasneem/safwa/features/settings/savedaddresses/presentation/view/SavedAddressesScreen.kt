@@ -98,13 +98,13 @@ fun SavedAddressesContent(
     modifier: Modifier = Modifier
 ) {
     Scaffold(
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize().padding(top = 24.dp, bottom = 0.dp),
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
             SafwaTopAppBar(
                 title = stringResource(R.string.savedaddresses),
                 onBackClick = { onEvent(SavedAddressesEvent.BackClicked) },
-                windowInsets = WindowInsets.systemBars
+               // windowInsets = WindowInsets.systemBars
             )
         },
         bottomBar = {
