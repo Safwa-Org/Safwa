@@ -1,7 +1,6 @@
 package com.tasneem.safwa.core.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -14,6 +13,7 @@ import com.tasneem.safwa.core.domain.model.AuthState
 import com.tasneem.safwa.core.presentation.mainactivity.viewmodel.MainViewModel
 import com.tasneem.safwa.features.auth.presentation.login.view.LoginScreen
 import com.tasneem.safwa.features.auth.presentation.register.view.RegisterScreen
+import com.tasneem.safwa.features.brands.presentation.BrandsScreen
 import com.tasneem.safwa.features.cart.presentation.view.CartScreen
 import com.tasneem.safwa.features.category.presentation.categories.CategoriesScreen
 import com.tasneem.safwa.features.category.presentation.category_products.CategoryProductsScreen
@@ -191,7 +191,7 @@ fun SafwaNavHost(
 
         composable<ScreenRoute.SavedAddresses> {
             SavedAddressesScreen(
-                 onNavigateBack = { navController.popBackStack() }
+                onNavigateBack = { navController.popBackStack() }
             )
         }
 
@@ -205,7 +205,7 @@ fun SafwaNavHost(
 
         composable<ScreenRoute.Language> {
             LanguageAndCurrencyScreen(
-                 onNavigateBack = { navController.popBackStack() }
+                onNavigateBack = { navController.popBackStack() }
             )
         }
 
@@ -226,5 +226,13 @@ fun SafwaNavHost(
                 }
             )
         }
+
+        composable<ScreenRoute.Brands> {
+            BrandsScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToDetails = { }
+            )
+        }
+
     }
 }

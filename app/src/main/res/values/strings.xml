@@ -203,4 +203,9 @@
     <string name="go_to_category">Go to category</string>
     <string name="no_products_found">No products found in this category.</string>
     <string name="required">Required</string>
+    <string name="all_brands">All Brands</string>
+    <string name="view_brand">View Brand</string>
+    <string name="brands_title">Brands</string>
+    <string name="curated_houses">Curated houses</string>
+    <string name="unknown_error">An error occurred while loading brands.</string>
 </resources>
