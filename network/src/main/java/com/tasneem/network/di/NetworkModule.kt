@@ -20,6 +20,8 @@ import com.tasneem.network.datasource.auth.AuthRemoteDataSourceImpl
 import com.tasneem.network.datasource.location.AddressValidationRemoteDataSource
 import com.tasneem.network.datasource.location.AddressValidationRemoteDataSourceImpl
 import com.tasneem.network.datasource.location.CountryApi
+import com.tasneem.network.datasource.location.CountryRemoteDataSource
+import com.tasneem.network.datasource.location.CountryRemoteDataSourceImpl
 import com.tasneem.network.datasource.location.LocationIqApi
 import com.tasneem.safwa.network.BuildConfig
 import retrofit2.Retrofit
@@ -140,5 +142,10 @@ abstract class DataSourceModule {
     abstract fun bindAddressValidationRemoteDataSource(
         impl: AddressValidationRemoteDataSourceImpl
     ): AddressValidationRemoteDataSource
+
+    @Binds
+    abstract fun bindCountryRemoteDataSource(
+        impl: CountryRemoteDataSourceImpl
+    ): CountryRemoteDataSource
 
 }

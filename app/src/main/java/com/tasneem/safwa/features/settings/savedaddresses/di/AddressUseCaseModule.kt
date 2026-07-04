@@ -1,5 +1,6 @@
 package com.tasneem.safwa.features.settings.savedaddresses.di
 
+import com.tasneem.safwa.core.di.ApplicationScope
 import com.tasneem.safwa.core.domain.repository.RemoteUserRepository
 import com.tasneem.safwa.core.domain.repository.SessionPreferencesRepository
 import com.tasneem.safwa.features.settings.savedaddresses.domain.repository.AddressLookupRepository
@@ -45,7 +46,7 @@ object AddressUseCaseModule {
     @ViewModelScoped
     fun provideUpdateAddressUseCase(localRepo: SessionPreferencesRepository,
                                     remoteRepo: RemoteUserRepository,
-                                    externalScope: CoroutineScope) =
+                                  @ApplicationScope  externalScope: CoroutineScope) =
         UpdateAddressUseCase(localRepo, remoteRepo, externalScope)
 
 }

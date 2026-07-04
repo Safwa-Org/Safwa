@@ -74,14 +74,21 @@ fun SavedAddressesScreen(
             initialAddress = uiState.addressToEdit,
             nameErrorResId = uiState.recipientNameErrorResId,
             mobileErrorResId = uiState.mobileNumberErrorResId,
-            streetErrorResId = uiState.streetErrorResId,
+            addressErrorResId = uiState.addressErrorResId,
+            countries = uiState.countries,
+            selectedCountry = uiState.selectedCountry,
+            addressQuery = uiState.addressQuery,
+            suggestions = uiState.suggestions,
+            isSearchingAddress = uiState.isSearchingAddress,
+            onCountrySelected = { viewModel.onEvent(SavedAddressesEvent.CountrySelected(it)) },
+            onAddressQueryChange = { viewModel.onEvent(SavedAddressesEvent.AddressQueryChanged(it)) },
+            onSuggestionSelected = { viewModel.onEvent(SavedAddressesEvent.SuggestionSelected(it)) },
             onDismiss = { viewModel.onEvent(SavedAddressesEvent.DismissDialogs) },
-            onSave = { updatedAddress ->
-                viewModel.onEvent(SavedAddressesEvent.SaveAddress(updatedAddress))
+            onSave = { label, recipientName, mobileNumber ->
+                viewModel.onEvent(SavedAddressesEvent.SaveAddress(label, recipientName, mobileNumber))
             }
         )
     }
-
     if (uiState.addressToDelete != null) {
         ConfirmDeleteDialog(
             onDismiss = { viewModel.onEvent(SavedAddressesEvent.DismissDialogs) },
@@ -104,7 +111,6 @@ fun SavedAddressesContent(
             SafwaTopAppBar(
                 title = stringResource(R.string.savedaddresses),
                 onBackClick = { onEvent(SavedAddressesEvent.BackClicked) },
-               // windowInsets = WindowInsets.systemBars
             )
         },
         bottomBar = {

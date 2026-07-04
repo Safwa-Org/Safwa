@@ -33,33 +33,38 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.tasneem.safwa.R
-import com.tasneem.safwa.features.settings.savedaddresses.domain.model.Address
 import com.tasneem.safwa.core.shared_component.SafwaLogo
+import com.tasneem.safwa.features.settings.savedaddresses.domain.model.Address
+import com.tasneem.safwa.features.settings.savedaddresses.domain.model.AddressCandidate
+import com.tasneem.safwa.features.settings.savedaddresses.domain.model.Country
 
 @Composable
 fun AddressEditDialog(
     initialAddress: Address?,
     nameErrorResId: Int?,
     mobileErrorResId: Int?,
-    streetErrorResId: Int?,
+    addressErrorResId: Int?,
+    countries: List<Country>,
+    selectedCountry: Country?,
+    addressQuery: String,
+    suggestions: List<AddressCandidate>,
+    isSearchingAddress: Boolean,
+    onCountrySelected: (Country) -> Unit,
+    onAddressQueryChange: (String) -> Unit,
+    onSuggestionSelected: (AddressCandidate) -> Unit,
     onDismiss: () -> Unit,
-    onSave: (Address) -> Unit
+    onSave: (label: String, recipientName: String, mobileNumber: String) -> Unit
 ) {
     var label by remember { mutableStateOf(initialAddress?.label ?: "") }
     var recipientName by remember { mutableStateOf(initialAddress?.recipientName ?: "") }
     var mobileNumber by remember { mutableStateOf(initialAddress?.mobileNumber ?: "") }
-    var street by remember { mutableStateOf(initialAddress?.street ?: "") }
-    var cityAndZip by remember { mutableStateOf(initialAddress?.cityAndZip ?: "") }
 
-    // Control structural errors reactively
     var isNameDirty by remember { mutableStateOf(false) }
     var isMobileDirty by remember { mutableStateOf(false) }
-    var isStreetDirty by remember { mutableStateOf(false) }
 
     LaunchedEffect(initialAddress) {
         isNameDirty = false
         isMobileDirty = false
-        isStreetDirty = false
     }
 
     val textFieldShape = RoundedCornerShape(16.dp)
@@ -101,7 +106,6 @@ fun AddressEditDialog(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // LABEL
                 OutlinedTextField(
                     value = label,
                     onValueChange = { label = it },
@@ -113,7 +117,6 @@ fun AddressEditDialog(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // RECIPIENT NAME
                 val hasNameError = nameErrorResId != null && !isNameDirty
                 OutlinedTextField(
                     value = recipientName,
@@ -130,7 +133,6 @@ fun AddressEditDialog(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // MOBILE NUMBER (Now captures both blank inputs and regex mismatches seamlessly)
                 val hasMobileError = mobileErrorResId != null && !isMobileDirty
                 OutlinedTextField(
                     value = mobileNumber,
@@ -147,32 +149,33 @@ fun AddressEditDialog(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // STREET
-                val hasStreetError = streetErrorResId != null && !isStreetDirty
-                OutlinedTextField(
-                    value = street,
-                    onValueChange = { street = it; isStreetDirty = true },
-                    label = { Text(stringResource(R.string.address_street)) },
-                    modifier = Modifier.fillMaxWidth(),
-                    minLines = 1,
-                    isError = hasStreetError,
-                    supportingText = if (hasStreetError && streetErrorResId != null) {
-                        { Text(stringResource(streetErrorResId)) }
-                    } else null,
-                    shape = textFieldShape
+                CountryDropdownField(
+                    countries = countries,
+                    selected = selectedCountry,
+                    onSelect = onCountrySelected,
+                    modifier = Modifier.fillMaxWidth()
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // CITY & ZIP
-                OutlinedTextField(
-                    value = cityAndZip,
-                    onValueChange = { cityAndZip = it },
-                    label = { Text(stringResource(R.string.address_city_zip)) },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    shape = textFieldShape
+                AddressAutocompleteField(
+                    query = addressQuery,
+                    suggestions = suggestions,
+                    isSearching = isSearchingAddress,
+                    enabled = selectedCountry != null,
+                    onQueryChange = onAddressQueryChange,
+                    onSuggestionSelected = onSuggestionSelected,
+                    modifier = Modifier.fillMaxWidth()
                 )
+
+                if (addressErrorResId != null) {
+                    Text(
+                        text = stringResource(addressErrorResId),
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(top = 4.dp, start = 4.dp)
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(32.dp))
 
@@ -190,21 +193,9 @@ fun AddressEditDialog(
 
                     Button(
                         onClick = {
-                            // Clear dirty flags right before evaluation submission
                             isNameDirty = false
                             isMobileDirty = false
-                            isStreetDirty = false
-
-                            onSave(
-                                Address(
-                                    id = initialAddress?.id ?: "",
-                                    label = label.ifBlank { "Address" },
-                                    recipientName = recipientName,
-                                    street = street,
-                                    cityAndZip = cityAndZip,
-                                    mobileNumber = mobileNumber
-                                )
-                            )
+                            onSave(label, recipientName, mobileNumber)
                         },
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(16.dp)
