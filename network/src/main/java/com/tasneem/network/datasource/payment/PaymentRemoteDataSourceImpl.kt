@@ -82,9 +82,6 @@ class PaymentRemoteDataSourceImpl @Inject constructor(
     override suspend fun addCard(request: DepositRequest): String {
         return withContext(Dispatchers.IO) {
             try {
-                val safeLast4 = if (request.creditCard.number.length >= 4) request.creditCard.number.takeLast(4) else "****"
-                android.util.Log.d("PaymentRemoteDataSource", "Starting addCard (deposit session) for card ending in $safeLast4")
-
                 val response = depositApi.createSession(request)
                 response.id
             } catch (e: Exception) {

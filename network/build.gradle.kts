@@ -23,6 +23,12 @@ val storefrontToken = localProperties.getProperty("STOREFRONT_TOKEN")
 val currencyBaseUrl = localProperties.getProperty("Currency_Exchange_BASE_URL")
     ?: throw Exception("Missing Currency_Exchange_BASE_URL in local.properties.")
 
+val paypalClientId = localProperties.getProperty("PAYPAL_CLIENT_ID")
+    ?: throw Exception("Missing PAYPAL_CLIENT_ID in local.properties.")
+
+val paypalSecret = localProperties.getProperty("PAYPAL_SECRET")
+    ?: throw Exception("Missing PAYPAL_SECRET in local.properties.")
+
 android {
     namespace = "com.tasneem.safwa.network"
     compileSdk = 36
@@ -36,6 +42,9 @@ android {
         )
 
         buildConfigField("String", "COUNTRIES_BASE_URL", "\"$currencyBaseUrl\"")
+        buildConfigField("String", "PAYPAL_CLIENT_ID", "\"$paypalClientId\"")
+        buildConfigField("String", "PAYPAL_SECRET", "\"$paypalSecret\"")
+        buildConfigField("String", "PAYPAL_BASE_URL", "\"https://api-m.sandbox.paypal.com/\"")
     }
     buildFeatures {
         buildConfig = true
@@ -64,5 +73,6 @@ dependencies {
     implementation(libs.hilt.android)
     implementation(libs.retrofit.core)
     implementation(libs.retrofit.converter.gson)
+    implementation(libs.okhttp.logging.interceptor)
     ksp(libs.hilt.android.compiler)
 }
