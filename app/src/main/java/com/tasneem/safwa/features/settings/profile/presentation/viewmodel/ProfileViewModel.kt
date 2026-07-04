@@ -14,13 +14,20 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flowOf
+import com.tasneem.safwa.core.util.Resource
+import com.tasneem.safwa.features.settings.orderhistory.domain.usecase.GetOrdersUseCase
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
     private val logoutUseCase: LogoutUseCase,
-    private val preferencesUseCases: PreferencesUseCases
+    private val preferencesUseCases: PreferencesUseCases,
+    private val getOrdersUseCase: GetOrdersUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(ProfileState())
@@ -31,6 +38,28 @@ class ProfileViewModel @Inject constructor(
 
     init {
         onEvent(ProfileEvent.LoadProfile)
+        observeOrders()
+    }
+
+    @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+    private fun observeOrders() {
+        viewModelScope.launch {
+            preferencesUseCases.getUserSession()
+                .map { it?.customerAccessToken }
+                .distinctUntilChanged()
+                .flatMapLatest { token ->
+                    if (!token.isNullOrEmpty()) {
+                        getOrdersUseCase(token)
+                    } else {
+                        flowOf(Resource.Success(emptyList()))
+                    }
+                }
+                .collect { result ->
+                    if (result is Resource.Success) {
+                        _state.update { it.copy(ordersCount = result.data.size) }
+                    }
+                }
+        }
     }
 
     fun onEvent(event: ProfileEvent) {

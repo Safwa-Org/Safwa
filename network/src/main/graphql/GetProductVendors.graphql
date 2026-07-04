@@ -1,0 +1,11 @@
+query GetProductVendors($first: Int!, $after: String) {
+  products(first: $first, after: $after) {
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+    nodes {
+      vendor
+    }
+  }
+}

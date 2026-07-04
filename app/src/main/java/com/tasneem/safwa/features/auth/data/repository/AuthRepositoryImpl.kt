@@ -13,9 +13,11 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
+import com.tasneem.network.datasource.auth.AuthRemoteDataSource
 class AuthRepositoryImpl @Inject constructor(
     private val authDataSource: FirebaseAuthDataSource,
     private val firestoreDataSource: FirestoreDataSource,
+    private val authRemoteDataSource: AuthRemoteDataSource
 ) : AuthRepository {
 
     override suspend fun register(
@@ -29,22 +31,38 @@ class AuthRepositoryImpl @Inject constructor(
             val authResult = authDataSource.signUpWithEmail(email, password)
             val uid = authResult.user?.uid ?: return Resource.Error("Registration failed: no user")
 
+            val shopifyPassword = uid.take(10) + "Safwa123!"
+            val shopifyResult = authRemoteDataSource.registerCustomer(email, shopifyPassword, firstName, lastName, phone)
+            if (shopifyResult.isFailure) {
+                // If Shopify registration fails, clean up Firebase user and return error
+                authDataSource.signOut()
+                return Resource.Error("Shopify registration failed: ${shopifyResult.exceptionOrNull()?.message}")
+            }
+            val shopifyToken = shopifyResult.getOrNull()
+
             val userEntity = UserEntity(
                 id = uid,
                 email = email,
                 firstName = firstName,
                 lastName = lastName,
                 phone = phone,
-                isGuest = false
+                isGuest = false,
+                customerAccessToken = shopifyToken
             )
 
             try {
                 firestoreDataSource.saveUser(userEntity)
-                authDataSource.sendEmailVerification()
             } catch (innerException: Exception) {
-
+                android.util.Log.e("AuthRepository", "Failed to save user to Firestore", innerException)
                 authDataSource.signOut()
                 throw innerException
+            }
+
+            try {
+                authDataSource.sendEmailVerification(authResult.user)
+            } catch (e: Exception) {
+                android.util.Log.e("AuthRepository", "Failed to send verification email during registration", e)
+                // Registration succeeded even if email sending fails, do not throw
             }
 
             authDataSource.signOut()
@@ -65,13 +83,40 @@ class AuthRepositoryImpl @Inject constructor(
                 return Resource.Error("Please verify your email before logging in. A verification link was sent to your email.")
             }
 
+            val deterministicPassword = uid.take(10) + "Safwa123!"
+            var shopifyResult = authRemoteDataSource.loginCustomer(email, deterministicPassword)
+            
+            // Fallback for older users who might have their actual password registered
+            if (shopifyResult.isFailure && shopifyResult.exceptionOrNull()?.message?.contains("Unidentified customer", ignoreCase = true) == true) {
+                val fallbackResult = authRemoteDataSource.loginCustomer(email, password)
+                if (fallbackResult.isSuccess) {
+                    val token = fallbackResult.getOrNull()
+                    if (token != null) {
+                        // Silently migrate their Shopify password to the deterministic one
+                        authRemoteDataSource.updateCustomerPassword(token, deterministicPassword)
+                        shopifyResult = Result.success(token)
+                    }
+                }
+            }
+
+            if (shopifyResult.isFailure) {
+                val errorMsg = shopifyResult.exceptionOrNull()?.message ?: ""
+                authDataSource.signOut()
+                return Resource.Error("Shopify login failed: $errorMsg")
+            }
+            val shopifyToken = shopifyResult.getOrNull()
+
             var userEntity = firestoreDataSource.getUser(uid)
             if (userEntity == null) {
                 userEntity = UserEntity(
                     id = uid,
                     email = email,
-                    isGuest = false
+                    isGuest = false,
+                    customerAccessToken = shopifyToken
                 )
+                firestoreDataSource.saveUser(userEntity)
+            } else {
+                userEntity = userEntity.copy(customerAccessToken = shopifyToken)
                 firestoreDataSource.saveUser(userEntity)
             }
             Resource.Success(userEntity.toDomain())
@@ -85,6 +130,7 @@ class AuthRepositoryImpl @Inject constructor(
             authDataSource.sendEmailVerification()
             Resource.Success(Unit)
         } catch (e: Exception) {
+            android.util.Log.e("AuthRepository", "Failed to send verification email", e)
             Resource.Error(e.localizedMessage ?: "Failed to send verification email")
         }
     }
@@ -97,20 +143,52 @@ class AuthRepositoryImpl @Inject constructor(
         return try {
             val authResult = authDataSource.signInWithGoogle(idToken)
             val uid = authResult.user?.uid ?: return Resource.Error("Google login failed")
+            
+            val email = authResult.user?.email ?: ""
+            val displayName = authResult.user?.displayName ?: ""
+            val firstName = displayName.split(" ").firstOrNull() ?: ""
+            val lastName = displayName.split(" ").drop(1).joinToString(" ")
+            
+            val shopifyPassword = uid.take(10) + "Safwa123!"
+
+            var shopifyResult = authRemoteDataSource.loginCustomer(email, shopifyPassword)
+            
+            if (shopifyResult.isFailure) {
+                shopifyResult = authRemoteDataSource.registerCustomer(email, shopifyPassword, firstName, lastName, null)
+                if (shopifyResult.isFailure) {
+                     authDataSource.signOut()
+                     val msg = shopifyResult.exceptionOrNull()?.message ?: ""
+                     if (msg.contains("Email has already been taken", ignoreCase = true) ||
+                         msg.contains("has already been taken", ignoreCase = true)
+                     ) {
+                         return Resource.Error("This email is already registered. Please login using Email and Password.")
+                     }
+                     if (msg.contains("We have sent an email", ignoreCase = true) || msg.contains("verify", ignoreCase = true)) {
+                         return Resource.Error("Please check your email inbox and verify your email address to continue.")
+                     }
+                     return Resource.Error("Shopify error: $msg")
+                }
+            } else {
+                // If loginCustomer succeeded, but we were checking for "We have sent an email"
+                // wait, if loginCustomer succeeded, shopifyResult is success.
+            }
+            
+            val shopifyToken = shopifyResult.getOrNull()
+
             var userEntity = firestoreDataSource.getUser(uid)
             if (userEntity == null) {
-                val email = authResult.user?.email ?: ""
-                val displayName = authResult.user?.displayName ?: ""
-                val firstName = displayName.split(" ").firstOrNull() ?: ""
-                val lastName = displayName.split(" ").drop(1).joinToString(" ")
                 userEntity = UserEntity(
                     id = uid,
                     email = email,
                     firstName = firstName,
                     lastName = lastName,
                     photoUrl = authResult.user?.photoUrl?.toString(),
-                    isGuest = false
+                    isGuest = false,
+                    customerAccessToken = shopifyToken
                 )
+                firestoreDataSource.saveUser(userEntity)
+            } else {
+                userEntity = userEntity.copy(customerAccessToken = shopifyToken)
                 firestoreDataSource.saveUser(userEntity)
             }
             Resource.Success(userEntity.toDomain())
@@ -153,16 +231,13 @@ class AuthRepositoryImpl @Inject constructor(
             val userEntity = firestoreDataSource.getUser(uid)
 
             if (userEntity != null) {
-                // User exists in Firestore. Ensure email is verified if they have one.
                 if (email != null && !authDataSource.isEmailVerified()) {
                     authDataSource.signOut()
                     return Resource.Success(null)
                 }
                 return Resource.Success(userEntity.toDomain())
             } else {
-                // User is in Firebase Auth but NOT in Firestore
                 if (email == null) {
-                    // It's a Guest User (they don't have emails and aren't saved to Firestore)
                     val guestUser = User(
                         id = uid,
                         isGuest = true,
@@ -172,8 +247,6 @@ class AuthRepositoryImpl @Inject constructor(
                     )
                     return Resource.Success(guestUser)
                 } else {
-                    // CRITICAL FIX: It's an Email user who encountered an error during registration
-                    // and their Firestore data never saved. Clean up the corrupted local state.
                     authDataSource.signOut()
                     return Resource.Success(null)
                 }

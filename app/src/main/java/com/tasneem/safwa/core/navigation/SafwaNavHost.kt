@@ -1,19 +1,21 @@
 package com.tasneem.safwa.core.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import com.tasneem.safwa.core.domain.model.AuthState
 import com.tasneem.safwa.core.presentation.mainactivity.viewmodel.MainViewModel
 import com.tasneem.safwa.features.auth.presentation.login.view.LoginScreen
 import com.tasneem.safwa.features.auth.presentation.register.view.RegisterScreen
+import com.tasneem.safwa.features.brand.presentation.view.BrandProductsScreen
+import com.tasneem.safwa.features.brand.presentation.view.BrandsScreen
 import com.tasneem.safwa.features.cart.presentation.view.CartScreen
 import com.tasneem.safwa.features.category.presentation.categories.CategoriesScreen
 import com.tasneem.safwa.features.category.presentation.category_products.CategoryProductsScreen
@@ -21,6 +23,7 @@ import com.tasneem.safwa.features.onboarding.OnboardingScreen
 import com.tasneem.safwa.features.payment.presentation.view.PaymentScreen
 import com.tasneem.safwa.features.productdetails.presentation.view.ProductDetailsScreen
 import com.tasneem.safwa.features.search.presentation.SearchScreen
+import com.tasneem.safwa.features.settings.orderhistory.presentation.view.OrderDetailsScreen
 import com.tasneem.safwa.features.settings.languageandcurrency.presentation.view.LanguageAndCurrencyScreen
 import com.tasneem.safwa.features.settings.orderhistory.presentation.view.OrderHistoryScreen
 import com.tasneem.safwa.features.settings.savedaddresses.presentation.view.SavedAddressesScreen
@@ -118,7 +121,6 @@ fun SafwaNavHost(
                 },
                 onNavigateToLogin = {
                     navController.navigate(ScreenRoute.Login) {
-                        // Clear the entire backstack when logging out
                         popUpTo(navController.graph.id) { inclusive = true }
                     }
                 },
@@ -133,6 +135,12 @@ fun SafwaNavHost(
                 },
                 onNavigateToCreateAccount = {
                     navController.navigate(ScreenRoute.Register)
+                },
+                onNavigateToBrands = {
+                    navController.navigate(ScreenRoute.Brands)
+                },
+                onNavigateToBrandProducts = { brandName ->
+                    navController.navigate(ScreenRoute.BrandProducts(brandName))
                 },
             )
         }
@@ -184,14 +192,23 @@ fun SafwaNavHost(
 
         composable<ScreenRoute.OrderHistory> {
             OrderHistoryScreen(
-                // Assuming you add an onNavigateBack callback to this screen
-                // onNavigateBack = { navController.popBackStack() }
+                onNavigateToOrderDetails = { orderId ->
+                    navController.navigate(ScreenRoute.OrderDetails(orderId))
+                },
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable<ScreenRoute.OrderDetails> { backStackEntry ->
+            val orderDetails = backStackEntry.toRoute<ScreenRoute.OrderDetails>()
+            OrderDetailsScreen(
+                onNavigateBack = { navController.popBackStack() }
             )
         }
 
         composable<ScreenRoute.SavedAddresses> {
             SavedAddressesScreen(
-                 onNavigateBack = { navController.popBackStack() }
+                onNavigateBack = { navController.popBackStack() }
             )
         }
 
@@ -205,7 +222,7 @@ fun SafwaNavHost(
 
         composable<ScreenRoute.Language> {
             LanguageAndCurrencyScreen(
-                 onNavigateBack = { navController.popBackStack() }
+                onNavigateBack = { navController.popBackStack() }
             )
         }
 
@@ -226,5 +243,24 @@ fun SafwaNavHost(
                 }
             )
         }
+
+        composable<ScreenRoute.Brands> {
+            BrandsScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToBrandProducts = { brandName ->
+                    navController.navigate(ScreenRoute.BrandProducts(brandName))
+                }
+            )
+        }
+
+        composable<ScreenRoute.BrandProducts> {
+            BrandProductsScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToProductDetails = { handle ->
+                    navController.navigate(ScreenRoute.ProductDetails(handle))
+                }
+            )
+        }
+
     }
 }
