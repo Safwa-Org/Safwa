@@ -1,26 +1,12 @@
 package com.tasneem.safwa.core.data.mapper
 
-import com.tasneem.safwa.core.data.model.AddressEntity
+import com.tasneem.safwa.features.settings.savedaddresses.data.model.AddressEntity
 import com.tasneem.safwa.core.data.model.UserEntity
 import com.tasneem.safwa.features.settings.savedaddresses.domain.model.Address
 import com.tasneem.safwa.core.domain.model.User
+import com.tasneem.safwa.features.settings.savedaddresses.data.mapper.toDomain
+import com.tasneem.safwa.features.settings.savedaddresses.data.mapper.toEntity
 
-fun AddressEntity.toDomain(): Address = Address(
-    id = id,
-    label = label,
-    recipientName = recipientName,
-    street = street,
-    cityAndZip = cityAndZip,
-    mobileNumber = mobileNumber
-)
-fun Address.toEntity(): AddressEntity = AddressEntity(
-    id = id,
-    label = label,
-    recipientName = recipientName,
-    street = street,
-    cityAndZip = cityAndZip,
-    mobileNumber = mobileNumber
-)
 fun UserEntity.toDomain(): User = User(
     id = id, email = email, firstName = firstName, lastName = lastName,
     phone = phone, photoUrl = photoUrl, isGuest = isGuest, cartId = cartId,

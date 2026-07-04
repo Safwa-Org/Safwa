@@ -25,18 +25,12 @@ object PreferencesUseCaseModule {
         saveUserSessionUseCase: SaveUserSessionUseCase,
         getAppPreferencesUseCase: GetAppPreferencesUseCase,
         updateAppPreferencesUseCase: UpdateAppPreferencesUseCase,
-        getSavedAddressesUseCase: GetSavedAddressesUseCase,
-        updateAddressUseCase: UpdateAddressUseCase,
-        deleteAddressUseCase: DeleteAddressUseCase
     ): PreferencesUseCases {
         return PreferencesUseCases(
             getUserSession = getUserSessionUseCase,
             saveUserSession = saveUserSessionUseCase,
             getAppPreferences = getAppPreferencesUseCase,
             updateAppPreferences = updateAppPreferencesUseCase,
-            getSavedAddresses = getSavedAddressesUseCase,
-            updateAddress = updateAddressUseCase,
-            deleteAddress = deleteAddressUseCase
         )
     }
 }
