@@ -2,6 +2,8 @@ package com.tasneem.network.di
 
 import com.apollographql.apollo.ApolloClient
 import com.tasneem.network.datasource.cart.CartRemoteDataSource
+import com.tasneem.network.datasource.payment.IPayPalRemoteDataSource
+import com.tasneem.network.datasource.payment.PayPalRemoteDataSource
 import com.tasneem.network.datasource.cart.CartRemoteDataSourceImpl
 import com.tasneem.network.datasource.currency.ExchangeRateApi
 import com.tasneem.network.datasource.currency.ExchangeRateRemoteDataSource
@@ -13,6 +15,8 @@ import com.tasneem.network.datasource.payment.PaymentRemoteDataSourceImpl
 import com.tasneem.network.datasource.payment.PayPalApiService
 import com.tasneem.network.datasource.payment.ShopifyDepositApi
 import com.tasneem.safwa.network.BuildConfig
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import dagger.Binds
@@ -20,11 +24,29 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
+
+    @Provides
+    @Singleton
+    fun provideOkHttpClient(): OkHttpClient {
+        val logging = HttpLoggingInterceptor().apply {
+            level = if (BuildConfig.DEBUG)
+                HttpLoggingInterceptor.Level.BODY
+            else
+                HttpLoggingInterceptor.Level.NONE
+        }
+        return OkHttpClient.Builder()
+            .addInterceptor(logging)
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(30, TimeUnit.SECONDS)
+            .build()
+    }
 
     @Provides
     @Singleton
@@ -36,9 +58,10 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideShopifyDepositApi(): ShopifyDepositApi {
+    fun provideShopifyDepositApi(okHttpClient: OkHttpClient): ShopifyDepositApi {
         return Retrofit.Builder()
             .baseUrl("https://elb.deposit.shopifycs.com/")
+            .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(ShopifyDepositApi::class.java)
@@ -46,9 +69,10 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideExchangeRateApi(): ExchangeRateApi {
+    fun provideExchangeRateApi(okHttpClient: OkHttpClient): ExchangeRateApi {
         return Retrofit.Builder()
             .baseUrl("https://api.exchangerate-api.com/")
+            .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(ExchangeRateApi::class.java)
@@ -56,9 +80,10 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun providePayPalApiService(): PayPalApiService {
+    fun providePayPalApiService(okHttpClient: OkHttpClient): PayPalApiService {
         return Retrofit.Builder()
             .baseUrl(BuildConfig.PAYPAL_BASE_URL)
+            .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(PayPalApiService::class.java)
@@ -88,5 +113,10 @@ abstract class DataSourceModule {
     abstract fun bindExchangeRateRemoteDataSource(
         impl: ExchangeRateRemoteDataSourceImpl
     ): ExchangeRateRemoteDataSource
+
+    @Binds
+    abstract fun bindPayPalRemoteDataSource(
+        impl: PayPalRemoteDataSource
+    ): IPayPalRemoteDataSource
 
 }

@@ -10,14 +10,14 @@ import javax.inject.Inject
 
 class PayPalRemoteDataSource @Inject constructor(
     private val payPalApiService: PayPalApiService
-) {
+) : IPayPalRemoteDataSource {
 
     private val basicAuthHeader: String by lazy {
         val credentials = "${BuildConfig.PAYPAL_CLIENT_ID}:${BuildConfig.PAYPAL_SECRET}"
         "Basic " + Base64.encodeToString(credentials.toByteArray(), Base64.NO_WRAP)
     }
 
-    suspend fun createOrder(amount: Double): Pair<String, String> =
+    override suspend fun createOrder(amount: Double): Pair<String, String> =
         withContext(Dispatchers.IO) {
             val tokenBody = "grant_type=client_credentials"
                 .toRequestBody("application/x-www-form-urlencoded".toMediaType())
@@ -43,7 +43,7 @@ class PayPalRemoteDataSource @Inject constructor(
             Pair(approvalUrl, orderResponse.id)
         }
 
-    suspend fun captureOrder(orderId: String): PayPalCaptureResponse =
+    override suspend fun captureOrder(orderId: String): PayPalCaptureResponse =
         withContext(Dispatchers.IO) {
             val tokenBody = "grant_type=client_credentials"
                 .toRequestBody("application/x-www-form-urlencoded".toMediaType())
