@@ -22,7 +22,6 @@ import com.tasneem.safwa.features.onboarding.OnboardingScreen
 import com.tasneem.safwa.features.payment.presentation.view.PaymentScreen
 import com.tasneem.safwa.features.productdetails.presentation.view.ProductDetailsScreen
 import com.tasneem.safwa.features.search.presentation.SearchScreen
-import com.tasneem.safwa.features.settings.languageandcurrency.presentation.presentation.LanguageAndCurrencyScreen
 import com.tasneem.safwa.features.settings.orderhistory.presentation.view.OrderDetailsScreen
 import com.tasneem.safwa.features.settings.languageandcurrency.presentation.view.LanguageAndCurrencyScreen
 import com.tasneem.safwa.features.settings.orderhistory.presentation.view.OrderHistoryScreen

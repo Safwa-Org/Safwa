@@ -86,6 +86,7 @@ abstract class DataSourceModule {
     abstract fun bindOrderRemoteDataSource(
         impl: OrderRemoteDataSourceImpl
     ): OrderRemoteDataSource
+    @Binds
     abstract fun bindExchangeRateRemoteDataSource(
         impl: ExchangeRateRemoteDataSourceImpl
     ): ExchangeRateRemoteDataSource
