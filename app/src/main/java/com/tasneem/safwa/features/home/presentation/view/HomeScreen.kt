@@ -31,7 +31,7 @@ import com.tasneem.safwa.features.home.presentation.state.HomeEffect
 import com.tasneem.safwa.features.home.presentation.state.HomeEvent
 import com.tasneem.safwa.features.home.presentation.state.HomeState
 import com.tasneem.safwa.features.home.presentation.view.component.BrandsRow
-import com.tasneem.safwa.features.home.presentation.view.component.EditorialBanner
+import com.tasneem.safwa.features.home.presentation.view.component.PromoBannerPager
 import com.tasneem.safwa.features.home.presentation.view.component.GreetingSection
 import com.tasneem.safwa.features.home.presentation.view.component.HomeTopBar
 import com.tasneem.safwa.features.home.presentation.view.component.SectionHeader
@@ -46,7 +46,9 @@ fun HomeScreen(
     onNavigateToProductDetails: (String) -> Unit = {},
     onNavigateToCart: () -> Unit = {},
     onNavigateToCategories: () -> Unit = {},
-    onNavigateToCategoryProducts: (String) -> Unit = {}
+    onNavigateToCategoryProducts: (String) -> Unit = {},
+    onNavigateToBrands: () -> Unit = {},
+    onNavigateToBrandProducts: (String) -> Unit = {}
 ) {
     val uiState by viewModel.state.collectAsStateWithLifecycle()
 
@@ -58,7 +60,8 @@ fun HomeScreen(
                 HomeEffect.NavigateToCategories -> onNavigateToCategories()
                 is HomeEffect.NavigateToCategoryProducts -> onNavigateToCategoryProducts(effect.categoryName)
                 is HomeEffect.NavigateToProductDetails -> onNavigateToProductDetails(effect.handle)
-                is HomeEffect.NavigateToBrand -> {}
+                is HomeEffect.NavigateToBrand -> onNavigateToBrandProducts(effect.brand)
+                HomeEffect.NavigateToBrands -> onNavigateToBrands()
             }
         }
     }
@@ -121,9 +124,8 @@ fun HomeContent(
                             Spacer(modifier = Modifier.height(20.dp))
                         }
                         item(span = { GridItemSpan(2) }) {
-                            EditorialBanner(
-                                editorialNumber = state.editorialNumber,
-                                onClick = { onEvent(HomeEvent.ShopEditClicked) }
+                            PromoBannerPager(
+                                banners = state.promoBanners
                             )
                         }
 

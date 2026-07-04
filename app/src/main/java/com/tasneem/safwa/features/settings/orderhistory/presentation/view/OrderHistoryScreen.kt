@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -38,94 +37,45 @@ import androidx.compose.ui.unit.dp
 import com.tasneem.safwa.R
 import com.tasneem.safwa.core.shared_component.SafwaTopAppBar
 import com.tasneem.safwa.core.theme.SafwaTheme
-
-enum class OrderStatus {
-    ALL, IN_TRANSIT, DELIVERED, CANCELLED
-}
-
-data class OrderHistoryItem(
-    val id: String,
-    val orderNumber: String,
-    val status: OrderStatus,
-    val images: List<String>,
-    val itemCount: Int,
-    val date: String,
-    val totalPrice: String
-)
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.tasneem.safwa.features.settings.orderhistory.presentation.OrderHistoryViewModel
+import com.tasneem.safwa.features.settings.orderhistory.presentation.OrderHistoryIntent
+import androidx.compose.material3.CircularProgressIndicator
 
 @Composable
 fun OrderHistoryScreen(
-    // viewModel: ProfileViewModel = hiltViewModel(),
-    // onNavigateBack: () -> Unit = {}
+    viewModel: OrderHistoryViewModel = hiltViewModel(),
+    onNavigateToOrderDetails: (String) -> Unit = {},
+    onNavigateBack: () -> Unit = {}
 ) {
-    // Dummy Data - Will eventually come from ViewModel/DB
-    val dummyOrders = remember {
-        listOf(
-            OrderHistoryItem(
-                id = "1",
-                orderNumber = "#SAF-204891",
-                status = OrderStatus.IN_TRANSIT,
-                images = listOf(
-                    "https://images.unsplash.com/photo-1523293115678-d2900f52f5d2?q=80&w=200",
-                    "https://images.unsplash.com/photo-1627123424574-724758594e93?q=80&w=200"
-                ),
-                itemCount = 2,
-                date = "24 Nov 2025",
-                totalPrice = "SAR 1,238"
-            ),
-            OrderHistoryItem(
-                id = "2",
-                orderNumber = "#SAF-203114",
-                status = OrderStatus.DELIVERED,
-                images = listOf(
-                    "https://images.unsplash.com/photo-1524592094714-0f0654e20314?q=80&w=200"
-                ),
-                itemCount = 1,
-                date = "08 Nov 2025",
-                totalPrice = "SAR 2,150"
-            ),
-            OrderHistoryItem(
-                id = "3",
-                orderNumber = "#SAF-201044",
-                status = OrderStatus.DELIVERED,
-                images = listOf(
-                    "https://images.unsplash.com/photo-1511499767150-a48a237f0083?q=80&w=200"
-                ),
-                itemCount = 1,
-                date = "21 Oct 2025",
-                totalPrice = "SAR 540"
-            )
-        )
-    }
+    val state by viewModel.state.collectAsStateWithLifecycle()
 
-    // Local State for Search and Filter
-    var selectedFilter by remember { mutableStateOf(OrderStatus.ALL) }
-    var searchQuery by remember { mutableStateOf("") }
+
     var isSearchVisible by remember { mutableStateOf(false) }
-
-    // Filter Logic
-    val filteredOrders = dummyOrders.filter { order ->
-        val matchesFilter = selectedFilter == OrderStatus.ALL || order.status == selectedFilter
-        val matchesSearch = searchQuery.isBlank() || order.orderNumber.contains(searchQuery, ignoreCase = true)
-        matchesFilter && matchesSearch
-    }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        // Custom Top Bar layout to support the search icon action
-        Row(
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(end = 12.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .padding(top = 16.dp)
         ) {
-            Box(modifier = Modifier.weight(1f)) {
-                SafwaTopAppBar(title = stringResource(R.string.order_history))
-            }
-            IconButton(onClick = { isSearchVisible = !isSearchVisible }) {
+            SafwaTopAppBar(
+                title = stringResource(R.string.order_history),
+                onBackClick = onNavigateBack,
+                modifier = Modifier.fillMaxWidth()
+            )
+            
+            IconButton(
+                onClick = { isSearchVisible = !isSearchVisible },
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .padding(end = 12.dp)
+            ) {
                 Icon(
                     imageVector = Icons.Rounded.Search,
                     contentDescription = stringResource(R.string.search_orders)
@@ -133,15 +83,14 @@ fun OrderHistoryScreen(
             }
         }
 
-        // Animated Search Field
         AnimatedVisibility(
             visible = isSearchVisible,
             enter = expandVertically(),
             exit = shrinkVertically()
         ) {
             OutlinedTextField(
-                value = searchQuery,
-                onValueChange = { searchQuery = it },
+                value = state.searchQuery,
+                onValueChange = { viewModel.processIntent(OrderHistoryIntent.SearchOrders(it)) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 20.dp, vertical = 8.dp),
@@ -157,24 +106,65 @@ fun OrderHistoryScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Filter Chips
         OrderFilterRow(
-            selectedFilter = selectedFilter,
-            onFilterSelected = { selectedFilter = it }
+            selectedFilter = state.selectedFilter,
+            onFilterSelected = { viewModel.processIntent(OrderHistoryIntent.FilterOrders(it)) }
         )
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Order List
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(start = 20.dp, end = 20.dp, bottom = 32.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            items(filteredOrders, key = { it.id }) { order ->
-                OrderCard(
-                    order = order,
-                    onClick = { /* TODO: Navigate to Details */ }
+        Box(modifier = Modifier.fillMaxSize()) {
+            if (state.error != null) {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = state.error!!,
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+            } else if (!state.isLoading && state.filteredOrders.isEmpty()) {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = stringResource(R.string.no_orders_found),
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = stringResource(R.string.adjust_filters_or_search),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(start = 20.dp, end = 20.dp, bottom = 32.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    items(state.filteredOrders, key = { it.id }) { order ->
+                        OrderCard(
+                            order = order,
+                            onClick = {
+                                onNavigateToOrderDetails(order.id)
+                            }
+                        )
+                    }
+                }
+            }
+
+            if (state.isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.Center)
                 )
             }
         }

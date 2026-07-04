@@ -3,7 +3,10 @@ package com.tasneem.safwa.features.home.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tasneem.safwa.core.util.Resource
+import com.tasneem.safwa.features.auth.domain.usecase.GetCurrentUserUseCase
 import com.tasneem.safwa.features.cart.domain.repository.CartRepository
+import com.tasneem.safwa.features.home.domain.model.PromoBanner
+import com.tasneem.safwa.features.brand.domain.usecase.GetBrandsUseCase
 import com.tasneem.safwa.features.cart.domain.usecase.GetCartUseCase
 import com.tasneem.safwa.features.home.domain.usecase.GetProductsUseCase
 import com.tasneem.safwa.features.home.presentation.state.GreetingType
@@ -32,8 +35,14 @@ class HomeViewModel @Inject constructor(
     private val getWishlistUseCase: GetWishlistUseCase,
     private val getCategoriesUseCase: GetCategoriesUseCase,
     private val getCartUseCase: GetCartUseCase,
-    private val cartRepository: CartRepository
+    private val cartRepository: CartRepository,
+    private val getCurrentUserUseCase: GetCurrentUserUseCase,
+    private val getBrandsUseCase: GetBrandsUseCase
 ) : ViewModel() {
+
+    companion object {
+        private const val HOME_BRANDS_COUNT = 8
+    }
 
     private val _state = MutableStateFlow(HomeState())
     val state: StateFlow<HomeState> = _state.asStateFlow()
@@ -42,12 +51,32 @@ class HomeViewModel @Inject constructor(
     val effect = _effect.receiveAsFlow()
 
     init {
-        _state.update { it.copy(userName = "Ashraf", greeting = getGreeting()) }
+        _state.update {
+            it.copy(
+                greeting = getGreeting(),
+                promoBanners = getPromoBanners()
+            )
+        }
+        loadCurrentUser()
         loadProducts()
+        loadBrands()
         observeWishlist()
         loadCategories()
         observeCartCount()
         loadCartCount()
+    }
+
+    private fun loadCurrentUser() {
+        viewModelScope.launch {
+            when (val result = getCurrentUserUseCase()) {
+                is Resource.Success -> {
+                    _state.update { it.copy(userName = result.data?.firstName ?: "Guest") }
+                }
+                else -> {
+                    _state.update { it.copy(userName = "Guest") }
+                }
+            }
+        }
     }
 
     private fun loadProducts() {
@@ -59,13 +88,11 @@ class HomeViewModel @Inject constructor(
                     }
                     is Resource.Success -> {
                         val products = result.data
-                        val brands = products.map { it.vendor }.distinct().sorted()
                         _state.update {
                             it.copy(
                                 isLoading = false,
                                 products = products,
                                 filteredProducts = products,
-                                brands = brands,
                                 errorMessage = null
                             )
                         }
@@ -77,6 +104,18 @@ class HomeViewModel @Inject constructor(
                                 errorMessage = result.message
                             )
                         }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun loadBrands() {
+        viewModelScope.launch {
+            getBrandsUseCase().collect { result ->
+                if (result is Resource.Success) {
+                    _state.update { state ->
+                        state.copy(brands = result.data.take(HOME_BRANDS_COUNT).map { it.name })
                     }
                 }
             }
@@ -163,6 +202,9 @@ class HomeViewModel @Inject constructor(
             }
 
             is HomeEvent.ViewAllBrands -> {
+                viewModelScope.launch {
+                    _effect.send(HomeEffect.NavigateToBrands)
+                }
             }
 
             is HomeEvent.ShopEditClicked -> {
@@ -177,6 +219,47 @@ class HomeViewModel @Inject constructor(
             hour < 18 -> GreetingType.AFTERNOON
             else -> GreetingType.EVENING
         }
+    }
+
+    private fun getPromoBanners(): List<PromoBanner> {
+        return listOf(
+            PromoBanner(
+                id = "1",
+                tagLabel = "BLACK FRIDAY",
+                headline = "Massive savings!\nGet 80% off\neverything.",
+                promoCode = "CODE_DISCOUNT_BLACKFRIDAY",
+                imageUrl = "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?q=80&w=2070",
+                backgroundColor = androidx.compose.ui.graphics.Color(0xFF1A1A1A),
+                contentColor = androidx.compose.ui.graphics.Color.White
+            ),
+            PromoBanner(
+                id = "2",
+                tagLabel = "FREE SHIPPING",
+                headline = "Buy 3 items\nor more and get\nfree shipping.",
+                promoCode = "FREESHIPPING2026",
+                imageUrl = "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=80&w=2070",
+                backgroundColor = androidx.compose.ui.graphics.Color(0xFFE8C874),
+                contentColor = androidx.compose.ui.graphics.Color(0xFF1A1A1A)
+            ),
+            PromoBanner(
+                id = "3",
+                tagLabel = "HALF PRICE",
+                headline = "Upgrade your\ncollection at\nhalf the price.",
+                promoCode = "BUY1GET50",
+                imageUrl = "https://images.unsplash.com/photo-1492707892479-7bc8d5a4ee93?q=80&w=2000",
+                backgroundColor = androidx.compose.ui.graphics.Color(0xFF005D39),
+                contentColor = androidx.compose.ui.graphics.Color.White
+            ),
+            PromoBanner(
+                id = "4",
+                tagLabel = "SUMMER BOGO",
+                headline = "Buy one get\none free on\nsummer items.",
+                promoCode = "CODE_BXGY_DISCOUNT_SUMMERBOGO",
+                imageUrl = "https://images.unsplash.com/photo-1523362628745-0c100150b504?q=80&w=2036",
+                backgroundColor = androidx.compose.ui.graphics.Color(0xFF5D98B0),
+                contentColor = androidx.compose.ui.graphics.Color.White
+            )
+        )
     }
 }
 

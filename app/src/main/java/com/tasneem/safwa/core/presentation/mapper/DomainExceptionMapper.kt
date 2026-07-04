@@ -22,3 +22,9 @@ fun DomainException.toUiError(): UiError = when (this) {
         descriptionRes = R.string.error_generic_desc,
     )
 }
+
+fun Throwable?.toUiError(): UiError = (this as? DomainException)?.toUiError()
+    ?: UiError(
+        titleRes = R.string.something_went_wrong,
+        descriptionRes = R.string.error_generic_desc,
+    )

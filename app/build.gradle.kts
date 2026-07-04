@@ -44,6 +44,7 @@ android {
 
 dependencies {
     implementation(project(":network"))
+    implementation(libs.appcompat)
     implementation(libs.androidx.material3)
     implementation(libs.hilt.android)
     implementation(libs.hilt.navigation.compose)
@@ -79,6 +80,8 @@ dependencies {
     // Firebase Auth & Firestore
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)
+    implementation("com.google.firebase:firebase-appcheck-playintegrity")
+    implementation("com.google.firebase:firebase-appcheck-debug")
 
     // Google Sign-In (Play Services)
     implementation(libs.play.services.auth)
@@ -94,4 +97,6 @@ dependencies {
     // Coil (Image Loading)
     implementation("io.coil-kt.coil3:coil-compose:3.5.0")
     implementation("io.coil-kt.coil3:coil-network-okhttp:3.5.0")
+
+    implementation("androidx.browser:browser:1.8.0")
 }
