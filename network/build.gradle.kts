@@ -19,6 +19,10 @@ val storefrontToken = localProperties.getProperty("STOREFRONT_TOKEN")
                 "STOREFRONT_TOKEN=your_storefront_access_token"
     )
 
+
+val currencyBaseUrl = localProperties.getProperty("Currency_Exchange_BASE_URL")
+    ?: throw Exception("Missing Currency_Exchange_BASE_URL in local.properties.")
+
 android {
     namespace = "com.tasneem.safwa.network"
     compileSdk = 36
@@ -30,6 +34,8 @@ android {
             "String", "SHOPIFY_ENDPOINT",
             "\"https://mad46-and10.myshopify.com/api/2025-04/graphql.json\""
         )
+
+        buildConfigField("String", "COUNTRIES_BASE_URL", "\"$currencyBaseUrl\"")
     }
     buildFeatures {
         buildConfig = true

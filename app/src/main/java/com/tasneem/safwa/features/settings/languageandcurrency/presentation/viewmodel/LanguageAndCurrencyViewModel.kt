@@ -3,6 +3,7 @@ package com.tasneem.safwa.features.settings.languageandcurrency.presentation.vie
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tasneem.safwa.core.domain.usecase.preferences.PreferencesUseCases
+import com.tasneem.safwa.features.settings.languageandcurrency.domain.usecase.GetSupportedCurrenciesUseCase
 import com.tasneem.safwa.features.settings.languageandcurrency.presentation.state.LanguageAndCurrencyEffect
 import com.tasneem.safwa.features.settings.languageandcurrency.presentation.state.LanguageAndCurrencyEvent
 import com.tasneem.safwa.features.settings.languageandcurrency.presentation.state.LanguageAndCurrencyState
@@ -19,7 +20,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class LanguageAndCurrencyViewModel @Inject constructor(
-    private val preferencesUseCases: PreferencesUseCases
+    private val preferencesUseCases: PreferencesUseCases,
+    private val getSupportedCurrenciesUseCase: GetSupportedCurrenciesUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(LanguageAndCurrencyState())
@@ -37,14 +39,22 @@ class LanguageAndCurrencyViewModel @Inject constructor(
             is LanguageAndCurrencyEvent.LoadPreferences -> {
                 viewModelScope.launch {
                     _state.update { it.copy(isLoading = true) }
-                    // Load initial saved preferences
-                    val prefs = preferencesUseCases.getAppPreferences().first()
-                    _state.update {
-                        it.copy(
-                            isLoading = false,
-                            selectedLanguageCode = prefs.languageCode,
-                            // selectedCurrencyCode remains USD for now as requested
-                        )
+
+                    try {
+                        val prefs = preferencesUseCases.getAppPreferences().first()
+                        val currencies = getSupportedCurrenciesUseCase().first()
+
+                        _state.update {
+                            it.copy(
+                                isLoading = false,
+                                selectedLanguageCode = prefs.languageCode,
+                                selectedCurrencyCode = prefs.currencyCode,
+                                availableCurrencies = currencies
+                            )
+                        }
+                    } catch (e: Exception) {
+                        _state.update { it.copy(isLoading = false) }
+                        // Handle error - maybe show a snackbar or log it
                     }
                 }
             }
@@ -54,16 +64,14 @@ class LanguageAndCurrencyViewModel @Inject constructor(
             }
 
             is LanguageAndCurrencyEvent.CurrencySelected -> {
-                // Currency logic is static for now, but we prepare the state
                 _state.update { it.copy(selectedCurrencyCode = event.code) }
             }
 
             is LanguageAndCurrencyEvent.SavePreferencesClicked -> {
                 viewModelScope.launch {
-                    // Save the selected language to DataStore
                     preferencesUseCases.updateAppPreferences.updateLanguage(_state.value.selectedLanguageCode)
+                    preferencesUseCases.updateAppPreferences.updateCurrency(_state.value.selectedCurrencyCode)
 
-                    // Navigate back after saving
                     _effect.send(LanguageAndCurrencyEffect.NavigateBack)
                 }
             }

@@ -1,45 +1,36 @@
 package com.tasneem.safwa.features.settings.languageandcurrency.presentation.view
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil3.compose.AsyncImage
 import com.tasneem.safwa.R
 import com.tasneem.safwa.core.shared_component.SafwaTopAppBar
 import com.tasneem.safwa.features.settings.core.presentation.view.components.SectionTitle
 import com.tasneem.safwa.features.settings.core.presentation.view.components.SettingsDivider
 import com.tasneem.safwa.features.settings.core.presentation.view.components.SettingsGroupCard
+import com.tasneem.safwa.features.settings.languageandcurrency.domain.model.Currency
 import com.tasneem.safwa.features.settings.languageandcurrency.presentation.state.LanguageAndCurrencyEffect
 import com.tasneem.safwa.features.settings.languageandcurrency.presentation.state.LanguageAndCurrencyEvent
 import com.tasneem.safwa.features.settings.languageandcurrency.presentation.state.LanguageAndCurrencyState
 import com.tasneem.safwa.features.settings.languageandcurrency.presentation.viewmodel.LanguageAndCurrencyViewModel
 
 data class AppLanguage(val code: String, val title: String, val subtitle: String)
-data class AppCurrency(val code: String, val name: String, val flag: String)
 
 @Composable
 fun LanguageAndCurrencyScreen(
@@ -61,18 +52,10 @@ fun LanguageAndCurrencyScreen(
         AppLanguage("ar", "العربية", "مصر")
     )
 
-    val dummyCurrencies = listOf(
-        AppCurrency("EGP", "Egyptian Pound", "🇪🇬"),
-        AppCurrency("SAR", "Saudi Riyal", "🇸🇦"),
-        AppCurrency("AED", "Emirati Dirham", "🇦🇪"),
-        AppCurrency("QAR", "Qatari Riyal", "🇶🇦"),
-        AppCurrency("USD", "US Dollar", "🇺🇸")
-    )
-
     LanguageAndCurrencyContent(
         state = uiState,
         languages = languages,
-        currencies = dummyCurrencies,
+        currencies = uiState.availableCurrencies,
         onEvent = viewModel::onEvent
     )
 }
@@ -81,19 +64,20 @@ fun LanguageAndCurrencyScreen(
 fun LanguageAndCurrencyContent(
     state: LanguageAndCurrencyState,
     languages: List<AppLanguage>,
-    currencies: List<AppCurrency>,
+    currencies: List<Currency>,
     onEvent: (LanguageAndCurrencyEvent) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val scrollState = rememberScrollState()
 
     Scaffold(
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier
+            .fillMaxSize()
+            .padding(top = 24.dp, bottom = 0.dp),
         topBar = {
             SafwaTopAppBar(
                 title = stringResource(R.string.langandcurrency),
-                onBackClick = { onEvent(LanguageAndCurrencyEvent.BackClicked) },
-                windowInsets = WindowInsets.systemBars
+                onBackClick = { onEvent(LanguageAndCurrencyEvent.BackClicked) }
             )
         },
         bottomBar = {
@@ -116,7 +100,7 @@ fun LanguageAndCurrencyContent(
                     )
                 ) {
                     Text(
-                        text = stringResource(R.string.save_preferences), // Use your actual string resource
+                        text = stringResource(R.string.save_preferences),
                         style = MaterialTheme.typography.titleMedium
                     )
                 }
@@ -131,7 +115,6 @@ fun LanguageAndCurrencyContent(
                 .verticalScroll(scrollState)
                 .padding(horizontal = 20.dp, vertical = 16.dp)
         ) {
-            // --- APP LANGUAGE SECTION ---
             SectionTitle(title = stringResource(R.string.app_language))
             Spacer(modifier = Modifier.height(16.dp))
             SettingsGroupCard {
@@ -154,17 +137,38 @@ fun LanguageAndCurrencyContent(
             // --- CURRENCY SECTION ---
             SectionTitle(title = stringResource(R.string.currency))
             Spacer(modifier = Modifier.height(16.dp))
-            SettingsGroupCard {
-                currencies.forEachIndexed { index, currency ->
-                    RadioSettingsItem(
-                        title = currency.name,
-                        subtitle = "${currency.code} · ${currency.name}",
-                        selected = currency.code == state.selectedCurrencyCode,
-                        onClick = { onEvent(LanguageAndCurrencyEvent.CurrencySelected(currency.code)) },
-                        leadingIcon = { FlagIcon(flagEmoji = currency.flag) }
-                    )
-                    if (index < currencies.lastIndex) {
-                        SettingsDivider()
+
+            if (currencies.isEmpty() && state.isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier
+                        .size(32.dp)
+                        .padding(top = 16.dp)
+                )
+            } else {
+                SettingsGroupCard {
+                    currencies.forEachIndexed { index, currency ->
+                        RadioSettingsItem(
+                            title = currency.name,
+                            subtitle = "${currency.code} · ${currency.name}",
+                            selected = currency.code == state.selectedCurrencyCode,
+                            onClick = { onEvent(LanguageAndCurrencyEvent.CurrencySelected(currency.code)) },
+                            leadingIcon = {
+                                Box(
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                        .clip(CircleShape)
+                                        .background(MaterialTheme.colorScheme.surfaceVariant),
+                                    contentAlignment = androidx.compose.ui.Alignment.Center
+                                ) {
+                                    Text(
+                                        text = currency.flagEmoji,
+                                        style = MaterialTheme.typography.titleLarge
+                                    )
+                                }
+                            }                        )
+                        if (index < currencies.lastIndex) {
+                            SettingsDivider()
+                        }
                     }
                 }
             }
