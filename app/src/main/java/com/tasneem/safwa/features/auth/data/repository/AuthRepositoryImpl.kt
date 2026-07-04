@@ -52,11 +52,17 @@ class AuthRepositoryImpl @Inject constructor(
 
             try {
                 firestoreDataSource.saveUser(userEntity)
-                authDataSource.sendEmailVerification()
             } catch (innerException: Exception) {
-
+                android.util.Log.e("AuthRepository", "Failed to save user to Firestore", innerException)
                 authDataSource.signOut()
                 throw innerException
+            }
+
+            try {
+                authDataSource.sendEmailVerification(authResult.user)
+            } catch (e: Exception) {
+                android.util.Log.e("AuthRepository", "Failed to send verification email during registration", e)
+                // Registration succeeded even if email sending fails, do not throw
             }
 
             authDataSource.signOut()
@@ -124,6 +130,7 @@ class AuthRepositoryImpl @Inject constructor(
             authDataSource.sendEmailVerification()
             Resource.Success(Unit)
         } catch (e: Exception) {
+            android.util.Log.e("AuthRepository", "Failed to send verification email", e)
             Resource.Error(e.localizedMessage ?: "Failed to send verification email")
         }
     }
