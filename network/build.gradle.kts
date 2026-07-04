@@ -73,5 +73,6 @@ dependencies {
     implementation(libs.hilt.android)
     implementation(libs.retrofit.core)
     implementation(libs.retrofit.converter.gson)
+    implementation(libs.okhttp.logging.interceptor)
     ksp(libs.hilt.android.compiler)
 }
