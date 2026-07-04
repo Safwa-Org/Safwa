@@ -67,7 +67,6 @@ class ProfileViewModel @Inject constructor(
             is ProfileEvent.LoadProfile -> {
                 _state.update { it.copy(isLoading = true) }
 
-                // 1. Collect User Details
                 viewModelScope.launch {
                     preferencesUseCases.getUserSession().collect { user ->
                         if (user != null) {
@@ -93,14 +92,14 @@ class ProfileViewModel @Inject constructor(
                     preferencesUseCases.getAppPreferences().collect { prefs ->
                         _state.update {
                             it.copy(
-                                // Transforming raw keys into beautiful user-facing strings
                                 language = mapLanguageCodeToName(prefs.languageCode),
                                 currency = mapCurrencyCodeToDisplay(prefs.currencyCode),
                                 isDarkMode = prefs.isDarkMode
                             )
                         }
                     }
-                }            }
+                }
+            }
 
             is ProfileEvent.OrderHistoryClicked -> {
                 viewModelScope.launch {
@@ -128,6 +127,11 @@ class ProfileViewModel @Inject constructor(
             }
 
             is ProfileEvent.LogoutClicked -> {
+                _state.update { it.copy(showLogoutConfirmDialog = true) }
+            }
+
+            is ProfileEvent.ConfirmLogout -> {
+                _state.update { it.copy(showLogoutConfirmDialog = false) }
                 viewModelScope.launch {
                     _state.update { it.copy(isLoading = true) }
                     logoutUseCase()
@@ -135,9 +139,12 @@ class ProfileViewModel @Inject constructor(
                     _effect.send(ProfileEffect.NavigateToLogin)
                 }
             }
+
+            is ProfileEvent.DismissLogoutDialog -> {
+                _state.update { it.copy(showLogoutConfirmDialog = false) }
+            }
         }
     }
-
 
     private fun mapLanguageCodeToName(code: String?): String {
         return when (code?.lowercase()) {

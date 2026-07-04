@@ -18,5 +18,7 @@ data class ProfileState(
     val currency: String = "USD",
     val isDarkMode: Boolean = false,
 
+    val showLogoutConfirmDialog: Boolean = false,
+
     val errorMessage: String? = null
 )
