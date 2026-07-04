@@ -5,6 +5,9 @@ import com.tasneem.network.datasource.brand.BrandRemoteDataSource
 import com.tasneem.network.datasource.brand.BrandRemoteDataSourceImpl
 import com.tasneem.network.datasource.cart.CartRemoteDataSource
 import com.tasneem.network.datasource.cart.CartRemoteDataSourceImpl
+import com.tasneem.network.datasource.currency.ExchangeRateApi
+import com.tasneem.network.datasource.currency.ExchangeRateRemoteDataSource
+import com.tasneem.network.datasource.currency.ExchangeRateRemoteDataSourceImpl
 import com.tasneem.network.datasource.product.ProductRemoteDataSource
 import com.tasneem.network.datasource.product.ProductRemoteDataSourceImpl
 import com.tasneem.network.datasource.payment.PaymentRemoteDataSource
@@ -41,6 +44,16 @@ object NetworkModule {
             .build()
             .create(ShopifyDepositApi::class.java)
     }
+
+    @Provides
+    @Singleton
+    fun provideExchangeRateApi(): ExchangeRateApi {
+        return Retrofit.Builder()
+            .baseUrl("https://api.exchangerate-api.com/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(ExchangeRateApi::class.java)
+    }
 }
 
 @Module
@@ -66,4 +79,10 @@ abstract class DataSourceModule {
     abstract fun bindPaymentRemoteDatasource(
         impl: PaymentRemoteDataSourceImpl
     ): PaymentRemoteDataSource
+
+    @Binds
+    abstract fun bindExchangeRateRemoteDataSource(
+        impl: ExchangeRateRemoteDataSourceImpl
+    ): ExchangeRateRemoteDataSource
+
 }

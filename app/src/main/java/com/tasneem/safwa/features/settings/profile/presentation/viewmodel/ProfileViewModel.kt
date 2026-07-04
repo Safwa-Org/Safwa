@@ -38,6 +38,7 @@ class ProfileViewModel @Inject constructor(
             is ProfileEvent.LoadProfile -> {
                 _state.update { it.copy(isLoading = true) }
 
+                // 1. Collect User Details
                 viewModelScope.launch {
                     preferencesUseCases.getUserSession().collect { user ->
                         if (user != null) {
@@ -48,9 +49,9 @@ class ProfileViewModel @Inject constructor(
                                     lastName = user.lastName,
                                     email = user.email ?: "",
                                     photoUrl = user.photoUrl,
-                                    isElite = true, // Replace with real logic if needed
-                                    ordersCount = 12, // Dummy until Orders UseCase is implemented
-                                    wishlistCount = 8, // Dummy until Wishlist UseCase is implemented
+                                    isElite = true,
+                                    ordersCount = 12,
+                                    wishlistCount = 8,
                                     savedAddressesCount = user.addresses.size,
                                     points = 2400
                                 )
@@ -58,7 +59,19 @@ class ProfileViewModel @Inject constructor(
                         }
                     }
                 }
-            }
+
+                viewModelScope.launch {
+                    preferencesUseCases.getAppPreferences().collect { prefs ->
+                        _state.update {
+                            it.copy(
+                                // Transforming raw keys into beautiful user-facing strings
+                                language = mapLanguageCodeToName(prefs.languageCode),
+                                currency = mapCurrencyCodeToDisplay(prefs.currencyCode),
+                                isDarkMode = prefs.isDarkMode
+                            )
+                        }
+                    }
+                }            }
 
             is ProfileEvent.OrderHistoryClicked -> {
                 viewModelScope.launch {
@@ -88,14 +101,31 @@ class ProfileViewModel @Inject constructor(
             is ProfileEvent.LogoutClicked -> {
                 viewModelScope.launch {
                     _state.update { it.copy(isLoading = true) }
-
-                    // Securely process Logout: Revokes Firebase token and purges DataStore
                     logoutUseCase()
-
                     _state.update { it.copy(isLoading = false) }
                     _effect.send(ProfileEffect.NavigateToLogin)
                 }
             }
+        }
+    }
+
+
+    private fun mapLanguageCodeToName(code: String?): String {
+        return when (code?.lowercase()) {
+            "ar" -> "العربية"
+            "en" -> "English"
+            else -> "English"
+        }
+    }
+
+    private fun mapCurrencyCodeToDisplay(code: String?): String {
+        return when (code?.uppercase()) {
+            "EGP" -> "EGP (🇪🇬)"
+            "USD" -> "USD (🇺🇸)"
+            "EUR" -> "EUR (🇪🇺)"
+            "GBP" -> "GBP (🇬🇧)"
+            "SAR" -> "SAR (🇸🇦)"
+            else -> code ?: "USD"
         }
     }
 }
