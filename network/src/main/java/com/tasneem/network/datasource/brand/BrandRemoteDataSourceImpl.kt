@@ -63,12 +63,14 @@ class BrandRemoteDataSourceImpl @Inject constructor(
     private suspend fun <T> fetchAllPages(fetchPage: suspend (after: String?) -> Page<T>): List<T> {
         val items = mutableListOf<T>()
         var after: String? = null
+        var hasNextPage: Boolean
 
         do {
             val page = fetchPage(after)
             items += page.items
             after = page.endCursor
-        } while (page.hasNextPage && after != null)
+            hasNextPage = page.hasNextPage
+        } while (hasNextPage && after != null)
 
         return items
     }

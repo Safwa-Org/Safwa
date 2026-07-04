@@ -12,13 +12,18 @@ class BrandRepositoryImpl @Inject constructor(
     private val remoteDataSource: BrandRemoteDataSource
 ) : BrandRepository {
 
+    private var cachedBrands: List<Brand>? = null
+
     override suspend fun getBrands(): List<Brand> {
+        cachedBrands?.let { return it }
         return safeCall {
-            remoteDataSource.getProductVendors()
+            val brands = remoteDataSource.getProductVendors()
                 .filter { it.isNotBlank() }
                 .distinct()
                 .sortedBy { it.lowercase() }
                 .map { Brand(name = it) }
+            cachedBrands = brands
+            brands
         }
     }
 

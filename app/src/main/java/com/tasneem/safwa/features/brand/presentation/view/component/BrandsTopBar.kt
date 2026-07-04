@@ -39,4 +39,4 @@ fun BrandsTopBar(
             containerColor = MaterialTheme.colorScheme.background
         )
     )
-}
+}

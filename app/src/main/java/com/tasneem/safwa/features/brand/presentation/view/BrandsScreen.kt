@@ -67,12 +67,6 @@ fun BrandsScreen(
                 .padding(horizontal = 16.dp)
         ) {
 
-            Text(
-                text = stringResource(id = R.string.all_brands),
-                style = MaterialTheme.typography.headlineSmall,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-
             Spacer(modifier = Modifier.height(20.dp))
 
             when {
