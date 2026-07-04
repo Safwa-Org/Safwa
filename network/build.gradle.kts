@@ -29,6 +29,12 @@ val locationBaseUrl = localProperties.getProperty("Location_BASE_URL")
 val locationApiKey = localProperties.getProperty("LOCATIONIQ_API_KEY")
     ?: throw Exception("Missing LOCATIONIQ_API_KEY in local.properties.")
 
+val paypalClientId = localProperties.getProperty("PAYPAL_CLIENT_ID")
+    ?: throw Exception("Missing PAYPAL_CLIENT_ID in local.properties.")
+
+val paypalSecret = localProperties.getProperty("PAYPAL_SECRET")
+    ?: throw Exception("Missing PAYPAL_SECRET in local.properties.")
+
 android {
     namespace = "com.tasneem.safwa.network"
     compileSdk = 36
@@ -41,6 +47,10 @@ android {
             "\"https://mad46-and10.myshopify.com/api/2025-04/graphql.json\""
         )
 
+        buildConfigField("String", "COUNTRIES_BASE_URL", "\"$currencyBaseUrl\"")
+        buildConfigField("String", "PAYPAL_CLIENT_ID", "\"$paypalClientId\"")
+        buildConfigField("String", "PAYPAL_SECRET", "\"$paypalSecret\"")
+        buildConfigField("String", "PAYPAL_BASE_URL", "\"https://api-m.sandbox.paypal.com/\"")
         buildConfigField("String", "Currency_Exchange_BASE_URL", "\"$currencyBaseUrl\"")
         buildConfigField("String", "Location_BASE_URL", "\"$locationBaseUrl\"")
         buildConfigField("String", "LOCATIONIQ_API_KEY", "\"$locationApiKey\"")
@@ -74,5 +84,6 @@ dependencies {
     implementation(libs.hilt.android)
     implementation(libs.retrofit.core)
     implementation(libs.retrofit.converter.gson)
+    implementation(libs.okhttp.logging.interceptor)
     ksp(libs.hilt.android.compiler)
 }

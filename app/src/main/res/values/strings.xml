@@ -202,6 +202,11 @@
     <string name="cardholder">Cardholder</string>
     <string name="expires">Expires</string>
     <string name="payment_successful">Payment successful!</string>
+    <string name="paypal">PayPal</string>
+    <string name="pay_with_paypal">Pay with PayPal</string>
+    <string name="paypal_processing">Opening PayPal&#8230;</string>
+    <string name="paypal_success">PayPal payment completed successfully!</string>
+    <string name="paypal_failed">PayPal payment failed. Please try again.</string>
     <string name="add_new_card_clicked">Add new card clicked</string>
     <string name="go_to_category">Go to category</string>
     <string name="no_products_found">No products found in this category.</string>

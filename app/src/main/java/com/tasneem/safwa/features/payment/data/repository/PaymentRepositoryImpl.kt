@@ -4,6 +4,7 @@ import com.tasneem.safwa.features.payment.data.datasource.local.SavedCardDao
 import com.tasneem.safwa.features.payment.data.datasource.local.toEntity
 import com.tasneem.network.dto.PaymentRequestDto
 import com.tasneem.network.datasource.payment.PaymentRemoteDataSource
+import com.tasneem.network.datasource.payment.PayPalRemoteDataSource
 import com.tasneem.safwa.features.payment.domain.model.CardDetails
 import com.tasneem.safwa.features.payment.domain.model.PaymentDetails
 import com.tasneem.safwa.features.payment.domain.model.SavedCard
@@ -15,6 +16,7 @@ import javax.inject.Inject
 
 class PaymentRepositoryImpl @Inject constructor(
     private val remoteDataSource: PaymentRemoteDataSource,
+    private val payPalRemoteDataSource: PayPalRemoteDataSource,
     private val savedCardDao: SavedCardDao
 ) : PaymentRepository {
 
@@ -71,6 +73,31 @@ class PaymentRepositoryImpl @Inject constructor(
                 emit(Result.success(Unit))
             } else {
                 emit(Result.failure(Exception(response.errorMessage ?: "Payment failed")))
+            }
+        } catch (e: Exception) {
+            emit(Result.failure(e))
+        }
+    }
+
+    override fun initiatePayPalPayment(
+        orderId: String,
+        amount: Double
+    ): Flow<Result<Pair<String, String>>> = flow {
+        try {
+            val (approvalUrl, paypalOrderId) = payPalRemoteDataSource.createOrder(amount)
+            emit(Result.success(Pair(approvalUrl, paypalOrderId)))
+        } catch (e: Exception) {
+            emit(Result.failure(e))
+        }
+    }
+
+    override fun capturePayPalPayment(paypalOrderId: String): Flow<Result<Unit>> = flow {
+        try {
+            val response = payPalRemoteDataSource.captureOrder(paypalOrderId)
+            if (response.status == "COMPLETED") {
+                emit(Result.success(Unit))
+            } else {
+                emit(Result.failure(Exception("Capture status: ${response.status}")))
             }
         } catch (e: Exception) {
             emit(Result.failure(e))
