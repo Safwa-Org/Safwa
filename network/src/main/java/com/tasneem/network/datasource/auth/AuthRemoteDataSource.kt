@@ -13,4 +13,9 @@ interface AuthRemoteDataSource {
         email: String,
         password: String
     ): Result<String>
+
+    suspend fun updateCustomerPassword(
+        customerAccessToken: String,
+        newPassword: String
+    ): Result<Unit>
 }

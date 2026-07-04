@@ -73,4 +73,30 @@ class AuthRemoteDataSourceImpl @Inject constructor(
             Result.failure(e)
         }
     }
+
+    override suspend fun updateCustomerPassword(
+        customerAccessToken: String,
+        newPassword: String
+    ): Result<Unit> {
+        return try {
+            val input = com.tasneem.safwa.network.type.CustomerUpdateInput(
+                password = Optional.presentIfNotNull(newPassword)
+            )
+            val response = apolloClient.mutation(
+                com.tasneem.safwa.network.CustomerUpdateMutation(
+                    customerAccessToken = customerAccessToken,
+                    customer = input
+                )
+            ).execute()
+            
+            val errors = response.data?.customerUpdate?.customerUserErrors
+            if (!errors.isNullOrEmpty()) {
+                val errorMsg = errors.first().message
+                return Result.failure(Exception(errorMsg))
+            }
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }

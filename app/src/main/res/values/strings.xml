@@ -152,6 +152,8 @@
     <string name="filter_in_transit">In transit</string>
     <string name="filter_delivered">Delivered</string>
     <string name="filter_cancelled">Cancelled</string>
+    <string name="no_orders_found">No orders found.</string>
+    <string name="adjust_filters_or_search">Try adjusting your filters or search query.</string>
     <string name="order">Order</string>
     <string name="item">Item</string>
     <string name="view_details">View Details</string>

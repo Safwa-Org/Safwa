@@ -11,6 +11,7 @@ import com.tasneem.safwa.features.settings.orderhistory.domain.repository.OrderR
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class OrderRepositoryImpl @Inject constructor(
@@ -63,5 +64,13 @@ class OrderRepositoryImpl @Inject constructor(
         } catch (e: Exception) {
             emit(Resource.Error(e.message ?: "An unknown error occurred"))
         }
+    }
+
+    override fun getOrderById(orderId: String): Flow<OrderHistoryItem?> {
+        return localDataSource.getOrderById(orderId).map { it?.toDomain() }
+    }
+
+    override suspend fun clearOrders() {
+        localDataSource.deleteAllOrders()
     }
 }

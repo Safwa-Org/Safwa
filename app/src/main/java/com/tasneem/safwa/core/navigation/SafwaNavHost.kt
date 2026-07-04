@@ -4,7 +4,6 @@ import androidx.compose.runtime.Composable
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -185,8 +184,8 @@ fun SafwaNavHost(
 
         composable<ScreenRoute.OrderHistory> {
             OrderHistoryScreen(
-                onNavigateToOrderDetails = { orderJson ->
-                    navController.navigate(ScreenRoute.OrderDetails(orderJson))
+                onNavigateToOrderDetails = { orderId ->
+                    navController.navigate(ScreenRoute.OrderDetails(orderId))
                 },
                 onNavigateBack = { navController.popBackStack() }
             )
@@ -195,7 +194,6 @@ fun SafwaNavHost(
         composable<ScreenRoute.OrderDetails> { backStackEntry ->
             val orderDetails = backStackEntry.toRoute<ScreenRoute.OrderDetails>()
             OrderDetailsScreen(
-                orderJson = orderDetails.orderJson,
                 onNavigateBack = { navController.popBackStack() }
             )
         }

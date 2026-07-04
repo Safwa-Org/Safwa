@@ -1,6 +1,5 @@
 package com.tasneem.safwa.features.settings.orderhistory.presentation.view
 
-import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -10,7 +9,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -19,20 +20,24 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import com.google.gson.Gson
 import com.tasneem.safwa.R
 import com.tasneem.safwa.core.shared_component.SafwaTopAppBar
 import com.tasneem.safwa.features.settings.orderhistory.domain.model.OrderHistoryItem
 import com.tasneem.safwa.features.settings.orderhistory.domain.model.OrderLineItem
+import com.tasneem.safwa.features.settings.orderhistory.presentation.viewmodel.OrderDetailsViewModel
 
 @Composable
 fun OrderDetailsScreen(
-    orderJson: String,
+    viewModel: OrderDetailsViewModel = hiltViewModel(),
     onNavigateBack: () -> Unit
 ) {
-    val order = remember(orderJson) {
-        val decodedJson = Uri.decode(orderJson)
-        Gson().fromJson(decodedJson, OrderHistoryItem::class.java)
+    val order by viewModel.order.collectAsStateWithLifecycle()
+
+    if (order == null) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator()
+        }
+        return
     }
 
     Column(
@@ -56,20 +61,20 @@ fun OrderDetailsScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             item {
-                OrderSummaryCard(order = order)
+                OrderSummaryCard(order = order!!)
             }
 
             item {
                 Text(
-                    text = "${stringResource(R.string.items)} (${order.itemCount})",
+                    text = "${stringResource(R.string.items)} (${order!!.itemCount})",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onBackground
                 )
             }
 
-            if (order.lineItems.isNotEmpty()) {
-                items(order.lineItems) { lineItem ->
+            if (order!!.lineItems.isNotEmpty()) {
+                items(order!!.lineItems) { lineItem ->
                     OrderLineItemCard(lineItem = lineItem)
                 }
             } else {

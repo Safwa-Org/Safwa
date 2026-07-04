@@ -31,7 +31,8 @@ class AuthRepositoryImpl @Inject constructor(
             val authResult = authDataSource.signUpWithEmail(email, password)
             val uid = authResult.user?.uid ?: return Resource.Error("Registration failed: no user")
 
-            val shopifyResult = authRemoteDataSource.registerCustomer(email, password, firstName, lastName, phone)
+            val shopifyPassword = uid.take(10) + "Safwa123!"
+            val shopifyResult = authRemoteDataSource.registerCustomer(email, shopifyPassword, firstName, lastName, phone)
             if (shopifyResult.isFailure) {
                 // If Shopify registration fails, clean up Firebase user and return error
                 authDataSource.signOut()
@@ -76,35 +77,26 @@ class AuthRepositoryImpl @Inject constructor(
                 return Resource.Error("Please verify your email before logging in. A verification link was sent to your email.")
             }
 
-            var shopifyResult = authRemoteDataSource.loginCustomer(email, password)
+            val deterministicPassword = uid.take(10) + "Safwa123!"
+            var shopifyResult = authRemoteDataSource.loginCustomer(email, deterministicPassword)
+            
+            // Fallback for older users who might have their actual password registered
+            if (shopifyResult.isFailure && shopifyResult.exceptionOrNull()?.message?.contains("Unidentified customer", ignoreCase = true) == true) {
+                val fallbackResult = authRemoteDataSource.loginCustomer(email, password)
+                if (fallbackResult.isSuccess) {
+                    val token = fallbackResult.getOrNull()
+                    if (token != null) {
+                        // Silently migrate their Shopify password to the deterministic one
+                        authRemoteDataSource.updateCustomerPassword(token, deterministicPassword)
+                        shopifyResult = Result.success(token)
+                    }
+                }
+            }
+
             if (shopifyResult.isFailure) {
                 val errorMsg = shopifyResult.exceptionOrNull()?.message ?: ""
-                if (errorMsg.contains("Unidentified customer", ignoreCase = true)) {
-                    val existingUser = firestoreDataSource.getUser(uid)
-                    if (existingUser != null) {
-                        val regResult = authRemoteDataSource.registerCustomer(
-                            email, password, existingUser.firstName, existingUser.lastName, existingUser.phone
-                        )
-                        if (regResult.isSuccess) {
-                            val token = regResult.getOrNull()
-                            if (token != null) {
-                                shopifyResult = Result.success(token)
-                            } else {
-                                authDataSource.signOut()
-                                return Resource.Error("Shopify login failed: Missing token after re-registration.")
-                            }
-                        } else {
-                            authDataSource.signOut()
-                            return Resource.Error("Shopify login failed: Account was deleted and could not be recreated. Reason: ${regResult.exceptionOrNull()?.message}")
-                        }
-                    } else {
-                        authDataSource.signOut()
-                        return Resource.Error("Shopify login failed: Unidentified customer.")
-                    }
-                } else {
-                    authDataSource.signOut()
-                    return Resource.Error("Shopify login failed: $errorMsg")
-                }
+                authDataSource.signOut()
+                return Resource.Error("Shopify login failed: $errorMsg")
             }
             val shopifyToken = shopifyResult.getOrNull()
 
@@ -159,11 +151,19 @@ class AuthRepositoryImpl @Inject constructor(
                 if (shopifyResult.isFailure) {
                      authDataSource.signOut()
                      val msg = shopifyResult.exceptionOrNull()?.message ?: ""
-                     if (msg.contains("Email has already been taken", ignoreCase = true)) {
+                     if (msg.contains("Email has already been taken", ignoreCase = true) ||
+                         msg.contains("has already been taken", ignoreCase = true)
+                     ) {
                          return Resource.Error("This email is already registered. Please login using Email and Password.")
                      }
-                     return Resource.Error("Shopify Google registration failed: $msg")
+                     if (msg.contains("We have sent an email", ignoreCase = true) || msg.contains("verify", ignoreCase = true)) {
+                         return Resource.Error("Please check your email inbox and verify your email address to continue.")
+                     }
+                     return Resource.Error("Shopify error: $msg")
                 }
+            } else {
+                // If loginCustomer succeeded, but we were checking for "We have sent an email"
+                // wait, if loginCustomer succeeded, shopifyResult is success.
             }
             
             val shopifyToken = shopifyResult.getOrNull()

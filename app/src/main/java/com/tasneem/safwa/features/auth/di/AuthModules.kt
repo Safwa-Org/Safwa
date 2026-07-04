@@ -6,6 +6,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.tasneem.network.datasource.auth.AuthRemoteDataSource
 import com.tasneem.safwa.R
 import com.tasneem.safwa.core.domain.repository.SessionPreferencesRepository
 import com.tasneem.safwa.features.auth.data.datasource.auth.FirebaseAuthDataSource
@@ -25,6 +26,7 @@ import com.tasneem.safwa.features.auth.domain.usecase.RegisterUseCase
 import com.tasneem.safwa.features.auth.domain.usecase.SendVerificationEmailUseCase
 import com.tasneem.safwa.features.auth.domain.usecase.SyncUserSessionUseCase
 import com.tasneem.safwa.features.core.domain.usecase.ClearWishlistUseCase
+import com.tasneem.safwa.features.settings.orderhistory.domain.repository.OrderRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -88,7 +90,7 @@ object AuthDataModule {
     fun provideAuthRepository(
         firebaseAuthDataSource: FirebaseAuthDataSource,
         firestoreDataSource: FirestoreDataSource,
-        authRemoteDataSource: com.tasneem.network.datasource.auth.AuthRemoteDataSource
+        authRemoteDataSource: AuthRemoteDataSource
     ): AuthRepository = AuthRepositoryImpl(firebaseAuthDataSource, firestoreDataSource, authRemoteDataSource)
 }
 
@@ -122,8 +124,9 @@ object AuthUseCaseModule {
     fun provideLogoutUseCase(
         authRepository: AuthRepository,
         sessionPreferencesRepository: SessionPreferencesRepository,
-        clearWishlistUseCase: ClearWishlistUseCase
-    ): LogoutUseCase = LogoutUseCase(authRepository,clearWishlistUseCase ,sessionPreferencesRepository)
+        clearWishlistUseCase: ClearWishlistUseCase,
+        orderRepository: OrderRepository
+    ): LogoutUseCase = LogoutUseCase(authRepository,clearWishlistUseCase ,sessionPreferencesRepository, orderRepository)
 
     @Provides
     @Singleton

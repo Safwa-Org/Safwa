@@ -11,6 +11,9 @@ interface OrderDao {
     @Query("SELECT * FROM order_history_table")
     fun getOrders(): Flow<List<OrderHistoryEntity>>
 
+    @Query("SELECT * FROM order_history_table WHERE id = :orderId")
+    fun getOrderById(orderId: String): Flow<OrderHistoryEntity?>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertOrders(orders: List<OrderHistoryEntity>)
 

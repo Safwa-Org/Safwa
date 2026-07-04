@@ -66,6 +66,7 @@ fun OrderHistoryScreen(
         ) {
             SafwaTopAppBar(
                 title = stringResource(R.string.order_history),
+                onBackClick = onNavigateBack,
                 modifier = Modifier.fillMaxWidth()
             )
             
@@ -113,20 +114,33 @@ fun OrderHistoryScreen(
         Spacer(modifier = Modifier.height(24.dp))
 
         Box(modifier = Modifier.fillMaxSize()) {
-            if (!state.isLoading && state.filteredOrders.isEmpty()) {
+            if (state.error != null) {
                 Column(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "No orders found.",
+                        text = state.error!!,
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+            } else if (!state.isLoading && state.filteredOrders.isEmpty()) {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = stringResource(R.string.no_orders_found),
                         style = MaterialTheme.typography.titleLarge,
                         color = MaterialTheme.colorScheme.onBackground
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Try adjusting your filters or search query.",
+                        text = stringResource(R.string.adjust_filters_or_search),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.secondary
                     )
@@ -141,9 +155,7 @@ fun OrderHistoryScreen(
                         OrderCard(
                             order = order,
                             onClick = {
-                                val json = com.google.gson.Gson().toJson(order)
-                                val encodedJson = android.net.Uri.encode(json)
-                                onNavigateToOrderDetails(encodedJson)
+                                onNavigateToOrderDetails(order.id)
                             }
                         )
                     }

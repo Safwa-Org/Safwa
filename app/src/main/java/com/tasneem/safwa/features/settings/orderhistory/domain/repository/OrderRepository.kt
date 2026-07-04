@@ -7,4 +7,6 @@ import kotlinx.coroutines.flow.Flow
 
 interface OrderRepository {
     fun getOrders(customerAccessToken: String): Flow<Resource<List<OrderHistoryItem>>>
+    fun getOrderById(orderId: String): Flow<OrderHistoryItem?>
+    suspend fun clearOrders()
 }
