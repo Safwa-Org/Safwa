@@ -15,9 +15,13 @@ import com.tasneem.network.datasource.product.ProductRemoteDataSourceImpl
 import com.tasneem.network.datasource.payment.PaymentRemoteDataSource
 import com.tasneem.network.datasource.payment.PaymentRemoteDataSourceImpl
 import com.tasneem.network.datasource.payment.ShopifyDepositApi
-import com.tasneem.safwa.network.BuildConfig
 import com.tasneem.network.datasource.auth.AuthRemoteDataSource
 import com.tasneem.network.datasource.auth.AuthRemoteDataSourceImpl
+import com.tasneem.network.datasource.location.AddressValidationRemoteDataSource
+import com.tasneem.network.datasource.location.AddressValidationRemoteDataSourceImpl
+import com.tasneem.network.datasource.location.CountryApi
+import com.tasneem.network.datasource.location.LocationIqApi
+import com.tasneem.safwa.network.BuildConfig
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import dagger.Binds
@@ -25,6 +29,8 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import okhttp3.OkHttpClient
+import javax.inject.Named
 import javax.inject.Singleton
 
 @Module
@@ -53,11 +59,43 @@ object NetworkModule {
     @Singleton
     fun provideExchangeRateApi(): ExchangeRateApi {
         return Retrofit.Builder()
-            .baseUrl("https://api.exchangerate-api.com/")
+            .baseUrl(BuildConfig.Currency_Exchange_BASE_URL)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(ExchangeRateApi::class.java)
     }
+
+    @Provides
+    @Singleton
+    fun provideLocationIqApi(): LocationIqApi =
+        Retrofit.Builder()
+            .baseUrl(BuildConfig.Location_BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(LocationIqApi::class.java)
+
+    @Provides
+    @Singleton
+    @Named("restCountriesClient")
+    fun provideRestCountriesOkHttpClient(): OkHttpClient =
+        OkHttpClient.Builder()
+            .addInterceptor { chain ->
+                val authedRequest = chain.request().newBuilder()
+                    .addHeader("Authorization", "Bearer ${BuildConfig.RESTCOUNTRIES_API_KEY}")
+                    .build()
+                chain.proceed(authedRequest)
+            }
+            .build()
+
+    @Provides
+    @Singleton
+    fun provideCountryApi(@Named("restCountriesClient") client: OkHttpClient): CountryApi =
+        Retrofit.Builder()
+            .baseUrl(BuildConfig.Countries_BASE_URL)
+            .client(client)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(CountryApi::class.java)
 }
 
 @Module
@@ -97,5 +135,10 @@ abstract class DataSourceModule {
     abstract fun bindExchangeRateRemoteDataSource(
         impl: ExchangeRateRemoteDataSourceImpl
     ): ExchangeRateRemoteDataSource
+
+    @Binds
+    abstract fun bindAddressValidationRemoteDataSource(
+        impl: AddressValidationRemoteDataSourceImpl
+    ): AddressValidationRemoteDataSource
 
 }

@@ -1,6 +1,6 @@
 package com.tasneem.safwa.core.domain.usecase.preferences
 
-import com.tasneem.safwa.core.domain.model.Address
+import com.tasneem.safwa.features.settings.savedaddresses.domain.model.Address
 import com.tasneem.safwa.core.domain.model.AppPreferences
 import com.tasneem.safwa.core.domain.model.User
 import com.tasneem.safwa.core.di.ApplicationScope

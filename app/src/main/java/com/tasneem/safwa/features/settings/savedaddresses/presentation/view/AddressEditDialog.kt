@@ -33,7 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.tasneem.safwa.R
-import com.tasneem.safwa.core.domain.model.Address
+import com.tasneem.safwa.features.settings.savedaddresses.domain.model.Address
 import com.tasneem.safwa.core.shared_component.SafwaLogo
 
 @Composable

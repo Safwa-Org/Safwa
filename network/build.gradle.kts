@@ -23,6 +23,19 @@ val storefrontToken = localProperties.getProperty("STOREFRONT_TOKEN")
 val currencyBaseUrl = localProperties.getProperty("Currency_Exchange_BASE_URL")
     ?: throw Exception("Missing Currency_Exchange_BASE_URL in local.properties.")
 
+val locationBaseUrl = localProperties.getProperty("Location_BASE_URL")
+    ?: throw Exception("Missing Location_BASE_URL in local.properties.")
+
+val locationApiKey = localProperties.getProperty("LOCATIONIQ_API_KEY")
+    ?: throw Exception("Missing LOCATIONIQ_API_KEY in local.properties.")
+
+
+val countriesBaseUrl = localProperties.getProperty("Countries_BASE_URL")
+    ?: throw Exception("Missing Countries_BASE_URL in local.properties.")
+
+val countriesApiKey = localProperties.getProperty("RESTCOUNTRIES_API_KEY")
+    ?: throw Exception("Missing RESTCOUNTRIES_API_KEY in local.properties.")
+
 android {
     namespace = "com.tasneem.safwa.network"
     compileSdk = 36
@@ -35,7 +48,13 @@ android {
             "\"https://mad46-and10.myshopify.com/api/2025-04/graphql.json\""
         )
 
-        buildConfigField("String", "COUNTRIES_BASE_URL", "\"$currencyBaseUrl\"")
+        buildConfigField("String", "Currency_Exchange_BASE_URL", "\"$currencyBaseUrl\"")
+        buildConfigField("String", "Location_BASE_URL", "\"$locationBaseUrl\"")
+        buildConfigField("String", "LOCATIONIQ_API_KEY", "\"$locationApiKey\"")
+        buildConfigField("String", "Countries_BASE_URL", "\"$countriesBaseUrl\"")
+        buildConfigField("String", "RESTCOUNTRIES_API_KEY", "\"$countriesApiKey\"")
+
+
     }
     buildFeatures {
         buildConfig = true

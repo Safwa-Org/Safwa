@@ -2,7 +2,7 @@ package com.tasneem.safwa.core.data.mapper
 
 import com.tasneem.safwa.core.data.model.AddressEntity
 import com.tasneem.safwa.core.data.model.UserEntity
-import com.tasneem.safwa.core.domain.model.Address
+import com.tasneem.safwa.features.settings.savedaddresses.domain.model.Address
 import com.tasneem.safwa.core.domain.model.User
 
 fun AddressEntity.toDomain(): Address = Address(

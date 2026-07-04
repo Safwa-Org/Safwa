@@ -1,6 +1,6 @@
 package com.tasneem.safwa.features.settings.savedaddresses.presentation.state
 
-import com.tasneem.safwa.core.domain.model.Address
+import com.tasneem.safwa.features.settings.savedaddresses.domain.model.Address
 
 data class SavedAddressesState(
     val isLoading: Boolean = false,
