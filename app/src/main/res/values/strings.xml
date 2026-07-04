@@ -152,6 +152,8 @@
     <string name="filter_in_transit">In transit</string>
     <string name="filter_delivered">Delivered</string>
     <string name="filter_cancelled">Cancelled</string>
+    <string name="no_orders_found">No orders found.</string>
+    <string name="adjust_filters_or_search">Try adjusting your filters or search query.</string>
     <string name="order">Order</string>
     <string name="item">Item</string>
     <string name="view_details">View Details</string>
@@ -209,4 +211,8 @@
     <string name="unknown_error">An error occurred while loading brands.</string>
     <string name="no_brands_found">No brands found.</string>
     <string name="no_brand_products_found">No products found for this brand.</string>
+    <string name="order_details">Order Details</string>
+    <string name="total_amount">Total Amount</string>
+    <string name="date_label">Date</string>
+    <string name="no_images_available">No images available</string>
 </resources>

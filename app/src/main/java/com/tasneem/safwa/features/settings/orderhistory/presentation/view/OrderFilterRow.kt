@@ -1,5 +1,6 @@
 package com.tasneem.safwa.features.settings.orderhistory.presentation.view
 
+import com.tasneem.safwa.features.settings.orderhistory.domain.model.OrderStatus
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement

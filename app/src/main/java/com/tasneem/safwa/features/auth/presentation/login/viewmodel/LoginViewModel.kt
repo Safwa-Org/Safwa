@@ -113,8 +113,8 @@ class LoginViewModel @Inject constructor(
                         _state.update { it.copy(passwordErrorResId = R.string.error_password_empty) }
                     }
 
-                    message.contains("email", ignoreCase = true) ||
-                            message.contains("password", ignoreCase = true) -> {
+                    message.contains("error_email_empty", ignoreCase = true) ||
+                            message.contains("error_password_empty", ignoreCase = true) -> {
                         _state.update { it.copy(emailErrorResId = R.string.error_invalid_or_password) }
                     }
 

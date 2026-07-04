@@ -12,12 +12,15 @@ import com.tasneem.safwa.features.payment.data.datasource.local.SavedCardEntity
 import com.tasneem.safwa.features.wishlist.data.datasource.local.WishlistDao
 import com.tasneem.safwa.features.wishlist.data.datasource.local.WishlistEntity
 
-@Database(entities = [WishlistEntity::class, SavedCardEntity::class], version = 2)
+import com.tasneem.safwa.features.settings.orderhistory.data.datasource.local.OrderDao
+import com.tasneem.safwa.features.settings.orderhistory.data.datasource.local.OrderHistoryEntity
+
+@Database(entities = [WishlistEntity::class, SavedCardEntity::class, OrderHistoryEntity::class], version = 4)
 @TypeConverters(SafwaTypeConverters::class)
 abstract class SafwaDB : RoomDatabase() {
     abstract fun wishlistDao(): WishlistDao
     abstract fun savedCardDao(): SavedCardDao
-
+    abstract fun orderDao(): OrderDao
     companion object {
         @Volatile
         private var INSTANCE: SafwaDB? = null
@@ -37,6 +40,42 @@ abstract class SafwaDB : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `order_history_table` (" +
+                            "`id` TEXT NOT NULL, " +
+                            "`orderNumber` TEXT NOT NULL, " +
+                            "`status` TEXT NOT NULL, " +
+                            "`images` TEXT NOT NULL, " +
+                            "`itemCount` INTEGER NOT NULL, " +
+                            "`date` TEXT NOT NULL, " +
+                            "`totalPrice` TEXT NOT NULL, " +
+                            "PRIMARY KEY(`id`))"
+                )
+            }
+        }
+
+        // Renames `images` column to `lineItems` to store rich OrderLineItem objects.
+        // SQLite doesn't support RENAME COLUMN on older APIs, so we recreate the table.
+        private val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `order_history_table_new` (" +
+                            "`id` TEXT NOT NULL, " +
+                            "`orderNumber` TEXT NOT NULL, " +
+                            "`status` TEXT NOT NULL, " +
+                            "`lineItems` TEXT NOT NULL, " +
+                            "`itemCount` INTEGER NOT NULL, " +
+                            "`date` TEXT NOT NULL, " +
+                            "`totalPrice` TEXT NOT NULL, " +
+                            "PRIMARY KEY(`id`))"
+                )
+                db.execSQL("DROP TABLE IF EXISTS `order_history_table`")
+                db.execSQL("ALTER TABLE `order_history_table_new` RENAME TO `order_history_table`")
+            }
+        }
+
         fun getDatabase(context: Context): SafwaDB {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -44,7 +83,7 @@ abstract class SafwaDB : RoomDatabase() {
                     SafwaDB::class.java,
                     "safwa_database"
                 )
-                    .addMigrations(MIGRATION_1_2)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
                     .fallbackToDestructiveMigration(false)
                     .build()
                 INSTANCE = instance
@@ -52,4 +91,4 @@ abstract class SafwaDB : RoomDatabase() {
             }
         }
     }
-}
+}
