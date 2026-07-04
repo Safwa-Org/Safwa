@@ -1,4 +1,4 @@
-package com.tasneem.safwa.features.brands.presentation
+package com.tasneem.safwa.features.brand.presentation.view
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -31,13 +31,14 @@ import com.tasneem.safwa.features.brand.presentation.state.BrandsUiIntent
 import com.tasneem.safwa.features.brand.presentation.view.component.BrandCard
 import com.tasneem.safwa.features.brand.presentation.view.component.BrandsTopBar
 import com.tasneem.safwa.features.brand.presentation.viewmodel.BrandsViewModel
+import com.tasneem.safwa.features.core.presentation.component.ErrorContentWithRetry
 import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun BrandsScreen(
     viewModel: BrandsViewModel = hiltViewModel(),
     onNavigateBack: () -> Unit,
-    onNavigateToDetails: (String) -> Unit,
+    onNavigateToBrandProducts: (String) -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -45,7 +46,7 @@ fun BrandsScreen(
         viewModel.uiEffect.collectLatest { effect ->
             when (effect) {
                 is BrandsUiEffect.NavigateBack -> onNavigateBack()
-                is BrandsUiEffect.NavigateToBrandDetails -> onNavigateToDetails(effect.brandName)
+                is BrandsUiEffect.NavigateToBrandDetails -> onNavigateToBrandProducts(effect.brandName)
             }
         }
     }
@@ -65,13 +66,6 @@ fun BrandsScreen(
                 .padding(innerPadding)
                 .padding(horizontal = 16.dp)
         ) {
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = stringResource(id = R.string.curated_houses),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.secondary
-            )
 
             Text(
                 text = stringResource(id = R.string.all_brands),
@@ -89,8 +83,16 @@ fun BrandsScreen(
                 }
 
                 uiState.error != null -> {
+                    ErrorContentWithRetry(
+                        title = stringResource(uiState.error!!.titleRes),
+                        description = stringResource(uiState.error!!.descriptionRes),
+                        onRetry = { viewModel.handleIntent(BrandsUiIntent.LoadBrands) },
+                    )
+                }
+
+                uiState.brands.isEmpty() -> {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text(text = uiState.error ?: stringResource(id = R.string.unknown_error))
+                        Text(text = stringResource(id = R.string.no_brands_found))
                     }
                 }
 
@@ -102,7 +104,7 @@ fun BrandsScreen(
                         contentPadding = PaddingValues(bottom = 24.dp),
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        items(uiState.brands) { brand ->
+                        items(uiState.brands, key = { it.name }) { brand ->
                             BrandCard(
                                 brandName = brand.name,
                                 onClick = { viewModel.handleIntent(BrandsUiIntent.OnBrandClick(brand)) }

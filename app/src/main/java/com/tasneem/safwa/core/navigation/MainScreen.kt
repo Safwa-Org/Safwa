@@ -35,6 +35,8 @@ fun MainScreen(
     onNavigateToCategoryProducts: (String) -> Unit = {},
     onNavigateToSignIn: () -> Unit = {},
     onNavigateToCreateAccount: () -> Unit = {},
+    onNavigateToBrands: () -> Unit = {},
+    onNavigateToBrandProducts: (String) -> Unit = {},
 ) {
     var selectedTab by rememberSaveable { mutableIntStateOf(0) }
 
@@ -56,7 +58,9 @@ fun MainScreen(
                     onNavigateToProductDetails = onNavigateToProductDetails,
                     onNavigateToCart = onNavigateToCart,
                     onNavigateToCategories = onNavigateToCategories,
-                    onNavigateToCategoryProducts = onNavigateToCategoryProducts
+                    onNavigateToCategoryProducts = onNavigateToCategoryProducts,
+                    onNavigateToBrands = onNavigateToBrands,
+                    onNavigateToBrandProducts = onNavigateToBrandProducts
                 )
 
                 1 -> SearchScreen(

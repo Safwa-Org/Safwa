@@ -2,7 +2,9 @@ package com.tasneem.safwa.features.brand.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.tasneem.safwa.features.brand.domain.model.Brand
+import com.tasneem.safwa.core.presentation.mapper.toUiError
+import com.tasneem.safwa.core.util.Resource
+import com.tasneem.safwa.features.brand.domain.usecase.GetBrandsUseCase
 import com.tasneem.safwa.features.brand.presentation.state.BrandsUiEffect
 import com.tasneem.safwa.features.brand.presentation.state.BrandsUiIntent
 import com.tasneem.safwa.features.brand.presentation.state.BrandsUiState
@@ -18,7 +20,9 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class BrandsViewModel @Inject constructor() : ViewModel() {
+class BrandsViewModel @Inject constructor(
+    private val getBrandsUseCase: GetBrandsUseCase
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(BrandsUiState())
     val uiState: StateFlow<BrandsUiState> = _uiState.asStateFlow()
@@ -33,6 +37,7 @@ class BrandsViewModel @Inject constructor() : ViewModel() {
     fun handleIntent(intent: BrandsUiIntent) {
         when (intent) {
             is BrandsUiIntent.LoadBrands -> loadBrands()
+
             is BrandsUiIntent.OnBrandClick -> {
                 viewModelScope.launch {
                     _uiEffect.emit(BrandsUiEffect.NavigateToBrandDetails(intent.brand.name))
@@ -49,16 +54,22 @@ class BrandsViewModel @Inject constructor() : ViewModel() {
 
     private fun loadBrands() {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
-            try {
-                val brands = listOf(
-                    Brand("Maison"), Brand("Atelier"),
-                    Brand("Noir"), Brand("Lumière"),
-                    Brand("Riad"), Brand("Halcyon")
-                )
-                _uiState.update { it.copy(isLoading = false, brands = brands) }
-            } catch (e: Exception) {
-                _uiState.update { it.copy(isLoading = false, error = e.localizedMessage) }
+            getBrandsUseCase().collect { result ->
+                when (result) {
+                    is Resource.Loading -> {
+                        _uiState.update { it.copy(isLoading = true, error = null) }
+                    }
+
+                    is Resource.Success -> {
+                        _uiState.update { it.copy(isLoading = false, brands = result.data) }
+                    }
+
+                    is Resource.Error -> {
+                        _uiState.update {
+                            it.copy(isLoading = false, error = result.throwable.toUiError())
+                        }
+                    }
+                }
             }
         }
     }

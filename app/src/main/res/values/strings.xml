@@ -206,6 +206,7 @@
     <string name="all_brands">All Brands</string>
     <string name="view_brand">View Brand</string>
     <string name="brands_title">Brands</string>
-    <string name="curated_houses">Curated houses</string>
     <string name="unknown_error">An error occurred while loading brands.</string>
+    <string name="no_brands_found">No brands found.</string>
+    <string name="no_brand_products_found">No products found for this brand.</string>
 </resources>
