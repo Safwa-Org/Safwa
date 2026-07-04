@@ -6,7 +6,9 @@ import com.tasneem.safwa.R
 import com.tasneem.safwa.features.payment.domain.model.CardDetails
 import com.tasneem.safwa.features.payment.domain.model.PaymentDetails
 import com.tasneem.safwa.features.payment.domain.model.PaymentMethodType
+import com.tasneem.safwa.features.payment.domain.usecase.CapturePayPalPaymentUseCase
 import com.tasneem.safwa.features.payment.domain.usecase.GetSavedCardsUseCase
+import com.tasneem.safwa.features.payment.domain.usecase.InitiatePayPalPaymentUseCase
 import com.tasneem.safwa.features.payment.domain.usecase.ProcessPaymentUseCase
 import com.tasneem.safwa.features.payment.domain.usecase.SaveCardUseCase
 import com.tasneem.safwa.features.payment.presentation.state.PaymentEffect
@@ -26,7 +28,9 @@ import javax.inject.Inject
 class PaymentViewModel @Inject constructor(
     private val getSavedCardsUseCase: GetSavedCardsUseCase,
     private val saveCardUseCase: SaveCardUseCase,
-    private val processPaymentUseCase: ProcessPaymentUseCase
+    private val processPaymentUseCase: ProcessPaymentUseCase,
+    private val initiatePayPalPaymentUseCase: InitiatePayPalPaymentUseCase,
+    private val capturePayPalPaymentUseCase: CapturePayPalPaymentUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(PaymentState())
@@ -43,12 +47,7 @@ class PaymentViewModel @Inject constructor(
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
             getSavedCardsUseCase().collect { cards ->
-                _state.update { 
-                    it.copy(
-                        savedCards = cards,
-                        isLoading = false
-                    )
-                }
+                _state.update { it.copy(savedCards = cards, isLoading = false) }
             }
         }
     }
@@ -56,16 +55,15 @@ class PaymentViewModel @Inject constructor(
     fun onEvent(event: PaymentEvent) {
         when (event) {
             is PaymentEvent.BackClicked -> {
-                viewModelScope.launch {
-                    _effect.send(PaymentEffect.NavigateBack)
-                }
+                viewModelScope.launch { _effect.send(PaymentEffect.NavigateBack) }
             }
             is PaymentEvent.MethodSelected -> {
-                _state.update { 
+                _state.update {
                     it.copy(
                         selectedMethod = event.method,
-                        selectedCardId = if (event.method == PaymentMethodType.CASH_ON_DELIVERY) null else it.selectedCardId ?: it.savedCards.firstOrNull()?.id
-                    ) 
+                        selectedCardId = if (event.method == PaymentMethodType.CASH_ON_DELIVERY) null
+                        else it.selectedCardId ?: it.savedCards.firstOrNull()?.id
+                    )
                 }
             }
             is PaymentEvent.CardSelected -> {
@@ -87,54 +85,97 @@ class PaymentViewModel @Inject constructor(
                     )
                     saveCardUseCase(cardDetails).collect { result ->
                         result.onSuccess { savedCard ->
-                            _state.update { currentState ->
-                                currentState.copy(
-                                    savedCards = currentState.savedCards + savedCard,
+                            _state.update { s ->
+                                s.copy(
+                                    savedCards = s.savedCards + savedCard,
                                     showAddCardDialog = false,
                                     selectedCardId = savedCard.id,
                                     isLoading = false
                                 )
                             }
                         }.onFailure {
-                            _state.update { currentState ->
-                                currentState.copy(
-                                    isLoading = false,
-                                    errorMessage = it.message
-                                )
-                            }
+                            _state.update { s -> s.copy(isLoading = false, errorMessage = it.message) }
                         }
                     }
                 }
             }
             is PaymentEvent.ContinueClicked -> {
                 val currentMethod = _state.value.selectedMethod ?: return
-                
-                if (currentMethod == PaymentMethodType.CASH_ON_DELIVERY || 
-                    (currentMethod == PaymentMethodType.VISA && _state.value.selectedCardId != null)) {
-                    
-                    viewModelScope.launch {
-                        _state.update { it.copy(isLoading = true) }
-                        
-                        val paymentDetails = PaymentDetails(
-                            method = currentMethod,
-                            cardId = _state.value.selectedCardId
-                        )
-                        
-                        // Using a dummy orderId for now
-                        processPaymentUseCase("ORDER_12345", paymentDetails).collect { result ->
-                            result.onSuccess {
-                                _state.update { it.copy(isLoading = false, isSuccess = true) }
-                                _effect.send(PaymentEffect.ShowSnackBar(R.string.payment_successful))
-                                _effect.send(PaymentEffect.NavigateToHome)
-                            }.onFailure { error ->
-                                _state.update { 
-                                    it.copy(
-                                        isLoading = false, 
-                                        errorMessage = error.message
-                                    ) 
+                when (currentMethod) {
+                    PaymentMethodType.PAYPAL -> onEvent(PaymentEvent.PayPalClicked)
+                    PaymentMethodType.CASH_ON_DELIVERY,
+                    PaymentMethodType.VISA -> {
+                        if (currentMethod == PaymentMethodType.CASH_ON_DELIVERY ||
+                            (currentMethod == PaymentMethodType.VISA && _state.value.selectedCardId != null)
+                        ) {
+                            viewModelScope.launch {
+                                _state.update { it.copy(isLoading = true) }
+                                processPaymentUseCase(
+                                    "ORDER_12345",
+                                    PaymentDetails(currentMethod, _state.value.selectedCardId)
+                                ).collect { result ->
+                                    result.onSuccess {
+                                        _state.update { it.copy(isLoading = false, isSuccess = true) }
+                                        _effect.send(PaymentEffect.ShowSnackBar(R.string.payment_successful))
+                                        _effect.send(PaymentEffect.NavigateToHome)
+                                    }.onFailure { err ->
+                                        _state.update { it.copy(isLoading = false, errorMessage = err.message) }
+                                    }
                                 }
                             }
                         }
+                    }
+                }
+            }
+            is PaymentEvent.PayPalClicked -> {
+                viewModelScope.launch {
+                    _state.update { it.copy(isLoading = true) }
+                    initiatePayPalPaymentUseCase("ORDER_12345", 10.0).collect { result ->
+                        result.onSuccess { (approvalUrl, paypalOrderId) ->
+                            _state.update {
+                                it.copy(
+                                    isLoading = false,
+                                    pendingPayPalOrderId = paypalOrderId
+                                )
+                            }
+                            _effect.send(PaymentEffect.LaunchPayPalUrl(approvalUrl))
+                        }.onFailure { err ->
+                            _state.update { it.copy(isLoading = false, errorMessage = err.message) }
+                            _effect.send(PaymentEffect.ShowSnackBar(R.string.paypal_failed))
+                        }
+                    }
+                }
+            }
+            is PaymentEvent.PayPalPaymentCompleted -> {
+                viewModelScope.launch {
+                    if (event.success) {
+                        val orderId = _state.value.pendingPayPalOrderId
+                        if (orderId != null) {
+                            _state.update { it.copy(isLoading = true) }
+                            capturePayPalPaymentUseCase(orderId).collect { result ->
+                                result.onSuccess {
+                                    _state.update {
+                                        it.copy(
+                                            isLoading = false,
+                                            isSuccess = true,
+                                            pendingPayPalOrderId = null
+                                        )
+                                    }
+                                    _effect.send(PaymentEffect.ShowSnackBar(R.string.paypal_success))
+                                    _effect.send(PaymentEffect.NavigateToHome)
+                                }.onFailure { err ->
+                                    _state.update { it.copy(isLoading = false, errorMessage = err.message) }
+                                    _effect.send(PaymentEffect.ShowSnackBar(R.string.paypal_failed))
+                                }
+                            }
+                        } else {
+                            _state.update { it.copy(isSuccess = true) }
+                            _effect.send(PaymentEffect.ShowSnackBar(R.string.paypal_success))
+                            _effect.send(PaymentEffect.NavigateToHome)
+                        }
+                    } else {
+                        _state.update { it.copy(pendingPayPalOrderId = null) }
+                        _effect.send(PaymentEffect.ShowSnackBar(R.string.paypal_failed))
                     }
                 }
             }

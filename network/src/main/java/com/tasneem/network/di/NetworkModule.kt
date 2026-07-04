@@ -10,6 +10,7 @@ import com.tasneem.network.datasource.product.ProductRemoteDataSource
 import com.tasneem.network.datasource.product.ProductRemoteDataSourceImpl
 import com.tasneem.network.datasource.payment.PaymentRemoteDataSource
 import com.tasneem.network.datasource.payment.PaymentRemoteDataSourceImpl
+import com.tasneem.network.datasource.payment.PayPalApiService
 import com.tasneem.network.datasource.payment.ShopifyDepositApi
 import com.tasneem.safwa.network.BuildConfig
 import retrofit2.Retrofit
@@ -51,6 +52,16 @@ object NetworkModule {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(ExchangeRateApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun providePayPalApiService(): PayPalApiService {
+        return Retrofit.Builder()
+            .baseUrl(BuildConfig.PAYPAL_BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(PayPalApiService::class.java)
     }
 }
 
