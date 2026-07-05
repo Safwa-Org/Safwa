@@ -11,6 +11,8 @@ import com.tasneem.safwa.features.payment.domain.usecase.GetSavedCardsUseCase
 import com.tasneem.safwa.features.payment.domain.usecase.InitiatePayPalPaymentUseCase
 import com.tasneem.safwa.features.payment.domain.usecase.ProcessPaymentUseCase
 import com.tasneem.safwa.features.payment.domain.usecase.SaveCardUseCase
+import com.tasneem.safwa.features.cart.domain.usecase.GetCartUseCase
+import com.tasneem.safwa.core.util.Resource
 import com.tasneem.safwa.features.payment.presentation.state.PaymentEffect
 import com.tasneem.safwa.features.payment.presentation.state.PaymentEvent
 import com.tasneem.safwa.features.payment.presentation.state.PaymentState
@@ -26,6 +28,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class PaymentViewModel @Inject constructor(
+    private val getCartUseCase: GetCartUseCase,
     private val getSavedCardsUseCase: GetSavedCardsUseCase,
     private val saveCardUseCase: SaveCardUseCase,
     private val processPaymentUseCase: ProcessPaymentUseCase,
@@ -110,18 +113,24 @@ class PaymentViewModel @Inject constructor(
                         ) {
                             viewModelScope.launch {
                                 _state.update { it.copy(isLoading = true) }
-                                processPaymentUseCase(
-                                    "ORDER_12345",
-                                    PaymentDetails(currentMethod, _state.value.selectedCardId)
-                                ).collect { result ->
-                                    result.onSuccess {
-                                        _state.update { it.copy(isLoading = false, isSuccess = true) }
-                                        _effect.send(PaymentEffect.ShowSnackBar(R.string.payment_successful))
-                                        _effect.send(PaymentEffect.NavigateToHome)
-                                    }.onFailure { err ->
-                                        _state.update { it.copy(isLoading = false, errorMessage = err.message) }
-                                        _effect.send(PaymentEffect.ShowSnackBar(R.string.payment_failed))
+                                val cartResource = getCartUseCase()
+                                if (cartResource is Resource.Success && cartResource.data != null) {
+                                    processPaymentUseCase(
+                                        cartResource.data.id,
+                                        cartResource.data.totalAmount.toDoubleOrNull() ?: 0.0,
+                                        PaymentDetails(currentMethod, _state.value.selectedCardId)
+                                    ).collect { result ->
+                                        result.onSuccess {
+                                            _state.update { it.copy(isLoading = false, isSuccess = true) }
+                                            _effect.send(PaymentEffect.ShowSnackBar(R.string.payment_successful))
+                                        }.onFailure { err ->
+                                            _state.update { it.copy(isLoading = false, errorMessage = err.message) }
+                                            _effect.send(PaymentEffect.ShowSnackBar(R.string.payment_failed))
+                                        }
                                     }
+                                } else {
+                                    _state.update { it.copy(isLoading = false, errorMessage = "Cart not found") }
+                                    _effect.send(PaymentEffect.ShowSnackBar(R.string.payment_failed))
                                 }
                             }
                         }
@@ -129,28 +138,33 @@ class PaymentViewModel @Inject constructor(
                 }
             }
             is PaymentEvent.PayPalClicked -> {
-                // Step 1: Create the PayPal order via the REST API
                 viewModelScope.launch {
                     _state.update { it.copy(isLoading = true) }
-                    initiatePayPalPaymentUseCase("ORDER_12345", 10.0).collect { result ->
-                        result.onSuccess { (_, paypalOrderId) ->
-                            // Order created — open the in-app PayPal dialog (no browser)
-                            _state.update {
-                                it.copy(
-                                    isLoading = false,
-                                    pendingPayPalOrderId = paypalOrderId,
-                                    showPayPalDialog = true
-                                )
+                    val cartResource = getCartUseCase()
+                    if (cartResource is Resource.Success && cartResource.data != null) {
+                        val cart = cartResource.data
+                        val totalAmount = cart.totalAmount.toDoubleOrNull() ?: 0.0
+                        initiatePayPalPaymentUseCase(cart.id, totalAmount).collect { result ->
+                            result.onSuccess { (_, paypalOrderId) ->
+                                _state.update {
+                                    it.copy(
+                                        isLoading = false,
+                                        pendingPayPalOrderId = paypalOrderId,
+                                        showPayPalDialog = true
+                                    )
+                                }
+                            }.onFailure { err ->
+                                _state.update { it.copy(isLoading = false, errorMessage = err.message) }
+                                _effect.send(PaymentEffect.ShowSnackBar(R.string.paypal_failed))
                             }
-                        }.onFailure { err ->
-                            _state.update { it.copy(isLoading = false, errorMessage = err.message) }
-                            _effect.send(PaymentEffect.ShowSnackBar(R.string.paypal_failed))
                         }
+                    } else {
+                        _state.update { it.copy(isLoading = false, errorMessage = "Cart not found") }
+                        _effect.send(PaymentEffect.ShowSnackBar(R.string.paypal_failed))
                     }
                 }
             }
             is PaymentEvent.PayPalDialogConfirmed -> {
-                // Step 2: User tapped "Pay Now" inside the in-app dialog → capture the order
                 viewModelScope.launch {
                     val orderId = _state.value.pendingPayPalOrderId
                     if (orderId != null) {
@@ -175,7 +189,6 @@ class PaymentViewModel @Inject constructor(
                 }
             }
             is PaymentEvent.PayPalDialogDismissed -> {
-                // User cancelled the in-app dialog — reset without capturing
                 _state.update {
                     it.copy(
                         showPayPalDialog = false,

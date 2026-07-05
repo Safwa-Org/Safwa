@@ -8,7 +8,7 @@ import javax.inject.Inject
 class ProcessPaymentUseCase @Inject constructor(
     private val repository: PaymentRepository
 ) {
-    operator fun invoke(orderId: String, paymentDetails: PaymentDetails): Flow<Result<Unit>> {
-        return repository.processPayment(orderId, paymentDetails)
+    operator fun invoke(orderId: String, amount: Double, paymentDetails: PaymentDetails): Flow<Result<Unit>> {
+        return repository.processPayment(orderId, amount, paymentDetails)
     }
 }

@@ -27,7 +27,7 @@ class PayPalRemoteDataSource @Inject constructor(
             val orderRequest = PayPalCreateOrderRequest(
                 purchaseUnits = listOf(
                     PayPalPurchaseUnit(
-                        amount = PayPalAmount(value = String.format("%.2f", amount))
+                        amount = PayPalAmount(value = String.format(java.util.Locale.US, "%.2f", amount))
                     )
                 ),
                 paymentSource = PayPalPaymentSource(

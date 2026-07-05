@@ -34,7 +34,6 @@ class AuthRepositoryImpl @Inject constructor(
             val shopifyPassword = uid.take(10) + "Safwa123!"
             val shopifyResult = authRemoteDataSource.registerCustomer(email, shopifyPassword, firstName, lastName, phone)
             if (shopifyResult.isFailure) {
-                // If Shopify registration fails, clean up Firebase user and return error
                 authDataSource.signOut()
                 return Resource.Error("Shopify registration failed: ${shopifyResult.exceptionOrNull()?.message}")
             }
@@ -62,7 +61,6 @@ class AuthRepositoryImpl @Inject constructor(
                 authDataSource.sendEmailVerification(authResult.user)
             } catch (e: Exception) {
                 android.util.Log.e("AuthRepository", "Failed to send verification email during registration", e)
-                // Registration succeeded even if email sending fails, do not throw
             }
 
             authDataSource.signOut()
@@ -86,13 +84,11 @@ class AuthRepositoryImpl @Inject constructor(
             val deterministicPassword = uid.take(10) + "Safwa123!"
             var shopifyResult = authRemoteDataSource.loginCustomer(email, deterministicPassword)
             
-            // Fallback for older users who might have their actual password registered
             if (shopifyResult.isFailure && shopifyResult.exceptionOrNull()?.message?.contains("Unidentified customer", ignoreCase = true) == true) {
                 val fallbackResult = authRemoteDataSource.loginCustomer(email, password)
                 if (fallbackResult.isSuccess) {
                     val token = fallbackResult.getOrNull()
                     if (token != null) {
-                        // Silently migrate their Shopify password to the deterministic one
                         authRemoteDataSource.updateCustomerPassword(token, deterministicPassword)
                         shopifyResult = Result.success(token)
                     }
@@ -169,8 +165,6 @@ class AuthRepositoryImpl @Inject constructor(
                      return Resource.Error("Shopify error: $msg")
                 }
             } else {
-                // If loginCustomer succeeded, but we were checking for "We have sent an email"
-                // wait, if loginCustomer succeeded, shopifyResult is success.
             }
             
             val shopifyToken = shopifyResult.getOrNull()

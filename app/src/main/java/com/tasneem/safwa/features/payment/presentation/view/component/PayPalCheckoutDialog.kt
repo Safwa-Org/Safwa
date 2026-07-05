@@ -54,6 +54,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.tasneem.safwa.R
 import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.milliseconds
 
 
 private enum class PayPalStep { LOGIN, PROCESSING, CONFIRM }
@@ -72,12 +73,12 @@ fun PayPalCheckoutDialog(
     onDismiss: () -> Unit
 ) {
     var step by remember { mutableStateOf(PayPalStep.LOGIN) }
-    var email by remember { mutableStateOf("demo@example.com") }
+    var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
     LaunchedEffect(step) {
         if (step == PayPalStep.PROCESSING) {
-            delay(1500)
+            delay(1500.milliseconds)
             step = PayPalStep.CONFIRM
         }
     }
