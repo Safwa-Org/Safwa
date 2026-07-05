@@ -29,7 +29,6 @@ import com.tasneem.safwa.features.settings.core.presentation.view.components.Set
 import com.tasneem.safwa.features.settings.core.presentation.view.components.SettingsGroupCard
 import com.tasneem.safwa.features.settings.core.presentation.view.components.SettingsItem
 import com.tasneem.safwa.features.settings.profile.presentation.view.component.ProfileHeader
-import com.tasneem.safwa.features.settings.profile.presentation.view.component.ProfileStatsRow
 import com.tasneem.safwa.features.settings.profile.presentation.view.component.SettingsSwitchItem
 import androidx.compose.foundation.clickable
 import androidx.compose.runtime.LaunchedEffect
@@ -38,6 +37,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.tasneem.safwa.features.settings.profile.presentation.state.ProfileEffect
 import com.tasneem.safwa.features.settings.profile.presentation.state.ProfileEvent
 import com.tasneem.safwa.features.settings.profile.presentation.state.ProfileState
+import com.tasneem.safwa.features.settings.profile.presentation.view.component.LogoutConfirmDialog
 import com.tasneem.safwa.features.settings.profile.presentation.viewmodel.ProfileViewModel
 
 @Composable
@@ -67,6 +67,13 @@ fun ProfileScreen(
         state = uiState,
         onEvent = viewModel::onEvent
     )
+
+    if (uiState.showLogoutConfirmDialog) {
+        LogoutConfirmDialog(
+            onConfirm = { viewModel.onEvent(ProfileEvent.ConfirmLogout) },
+            onDismiss = { viewModel.onEvent(ProfileEvent.DismissLogoutDialog) }
+        )
+    }
 }
 
 @Composable
@@ -102,14 +109,6 @@ fun ProfileContent(
         )
 
         Spacer(modifier = Modifier.height(24.dp))
-/*
-        ProfileStatsRow(
-            ordersCount = state.ordersCount.toString(),
-            wishlistCount = state.wishlistCount.toString(),
-            points = formattedPoints
-        )
-
-        Spacer(modifier = Modifier.height(32.dp))*/
 
         SectionTitle(title = stringResource(R.string.accountcapital))
         Spacer(modifier = Modifier.height(16.dp))

@@ -1,12 +1,9 @@
 package com.tasneem.safwa.core.di
 
-import com.tasneem.safwa.core.domain.usecase.preferences.DeleteAddressUseCase
 import com.tasneem.safwa.core.domain.usecase.preferences.GetAppPreferencesUseCase
-import com.tasneem.safwa.core.domain.usecase.preferences.GetSavedAddressesUseCase
 import com.tasneem.safwa.core.domain.usecase.preferences.GetUserSessionUseCase
 import com.tasneem.safwa.core.domain.usecase.preferences.PreferencesUseCases
 import com.tasneem.safwa.core.domain.usecase.preferences.SaveUserSessionUseCase
-import com.tasneem.safwa.core.domain.usecase.preferences.UpdateAddressUseCase
 import com.tasneem.safwa.core.domain.usecase.preferences.UpdateAppPreferencesUseCase
 import dagger.Module
 import dagger.Provides
@@ -25,18 +22,12 @@ object PreferencesUseCaseModule {
         saveUserSessionUseCase: SaveUserSessionUseCase,
         getAppPreferencesUseCase: GetAppPreferencesUseCase,
         updateAppPreferencesUseCase: UpdateAppPreferencesUseCase,
-        getSavedAddressesUseCase: GetSavedAddressesUseCase,
-        updateAddressUseCase: UpdateAddressUseCase,
-        deleteAddressUseCase: DeleteAddressUseCase
     ): PreferencesUseCases {
         return PreferencesUseCases(
             getUserSession = getUserSessionUseCase,
             saveUserSession = saveUserSessionUseCase,
             getAppPreferences = getAppPreferencesUseCase,
             updateAppPreferences = updateAppPreferencesUseCase,
-            getSavedAddresses = getSavedAddressesUseCase,
-            updateAddress = updateAddressUseCase,
-            deleteAddress = deleteAddressUseCase
         )
     }
 }

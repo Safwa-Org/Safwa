@@ -29,7 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.tasneem.safwa.core.domain.model.Address
+import com.tasneem.safwa.features.settings.savedaddresses.domain.model.Address
 
 @Composable
 fun AddressCard(
@@ -113,6 +113,7 @@ fun AddressCard(
 
             // Address Details
             Text(
+
                 text = address.street,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.secondary

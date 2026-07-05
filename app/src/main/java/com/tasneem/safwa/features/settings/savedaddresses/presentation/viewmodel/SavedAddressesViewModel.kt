@@ -3,7 +3,14 @@ package com.tasneem.safwa.features.settings.savedaddresses.presentation.viewmode
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tasneem.safwa.R
-import com.tasneem.safwa.core.domain.usecase.preferences.PreferencesUseCases
+import com.tasneem.safwa.core.util.NetworkStatusProvider
+import com.tasneem.safwa.features.settings.savedaddresses.domain.model.Address
+import com.tasneem.safwa.features.settings.savedaddresses.domain.model.AddressCandidate
+import com.tasneem.safwa.features.settings.savedaddresses.domain.usecase.DeleteAddressUseCase
+import com.tasneem.safwa.features.settings.savedaddresses.domain.usecase.GetAddressSuggestionsUseCase
+import com.tasneem.safwa.features.settings.savedaddresses.domain.usecase.GetCountriesUseCase
+import com.tasneem.safwa.features.settings.savedaddresses.domain.usecase.GetSavedAddressesUseCase
+import com.tasneem.safwa.features.settings.savedaddresses.domain.usecase.UpdateAddressUseCase
 import com.tasneem.safwa.features.settings.savedaddresses.presentation.state.SavedAddressesEffect
 import com.tasneem.safwa.features.settings.savedaddresses.presentation.state.SavedAddressesEvent
 import com.tasneem.safwa.features.settings.savedaddresses.presentation.state.SavedAddressesState
@@ -14,14 +21,26 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.io.IOException
 import javax.inject.Inject
 
 @HiltViewModel
 class SavedAddressesViewModel @Inject constructor(
-    private val preferencesUseCases: PreferencesUseCases
+    private val getSavedAddressesUseCase: GetSavedAddressesUseCase,
+    private val updateAddressUseCase: UpdateAddressUseCase,
+    private val deleteAddressUseCase: DeleteAddressUseCase,
+    private val getCountriesUseCase: GetCountriesUseCase,
+    private val getAddressSuggestionsUseCase: GetAddressSuggestionsUseCase,
+    private val networkStatusProvider: NetworkStatusProvider
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(SavedAddressesState())
@@ -30,42 +49,103 @@ class SavedAddressesViewModel @Inject constructor(
     private val _effect = Channel<SavedAddressesEffect>()
     val effect = _effect.receiveAsFlow()
 
+    private val addressQueryFlow = MutableStateFlow("")
+
+
     init {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
-            preferencesUseCases.getSavedAddresses().collect { addresses ->
+            getSavedAddressesUseCase().collect { addresses ->
                 _state.update { it.copy(isLoading = false, addresses = addresses) }
             }
         }
-    }
+        viewModelScope.launch {
+            getCountriesUseCase().onSuccess { list ->
+                _state.update { it.copy(countries = list) }
+            }
+        }
+        viewModelScope.launch {
+            addressQueryFlow
+                .debounce(350)
+                .distinctUntilChanged()
+                .filter { it.length >= 3 && _state.value.selectedCountry != null }
+                .flatMapLatest { query ->
+                    flow {
+                        emit(getAddressSuggestionsUseCase(query, _state.value.selectedCountry!!.iso2))
+                    }
+                }
+                .collect { result ->
+                    result.onSuccess { suggestions ->
+                        _state.update {
+                            it.copy(
+                                suggestions = suggestions,
+                                isSearchingAddress = false,
+                                isOffline = false,
+                                addressErrorResId = null
+                            )
+                        }
+                    }.onFailure { error ->
+                        val offline = error is IOException
+                        _state.update {
+                            it.copy(
+                                suggestions = emptyList(),
+                                isSearchingAddress = false,
+                                isOffline = offline,
+                                addressErrorResId = if (offline) R.string.err_no_internet else null
+                            )
+                        }
+                    }
+                }
+        }    }
 
     fun onEvent(event: SavedAddressesEvent) {
         when (event) {
-            is SavedAddressesEvent.LoadAddresses -> {
-            }
+            is SavedAddressesEvent.LoadAddresses -> Unit
 
             is SavedAddressesEvent.AddNewAddressClicked -> {
                 _state.update {
                     it.copy(
                         addressToEdit = null,
                         showEditDialog = true,
+                        selectedCountry = null,
+                        addressQuery = "",
+                        suggestions = emptyList(),
+                        selectedCandidate = null,
+                        isOffline = false,
                         recipientNameErrorResId = null,
                         mobileNumberErrorResId = null,
-                        streetErrorResId = null,
-                        cityZipErrorResId = null
+                        addressErrorResId = null
                     )
                 }
             }
 
             is SavedAddressesEvent.EditAddressClicked -> {
+                val addr = event.address
+                val country = _state.value.countries.firstOrNull { it.iso2 == addr.countryCode }
+                val prefillCandidate = if (addr.isValidated && addr.latitude != null && addr.longitude != null) {
+                    AddressCandidate(
+                        id = "",
+                        displayLabel = listOfNotNull(addr.street, addr.cityAndZip).joinToString(", "),
+                        street = addr.street,
+                        cityAndZip = addr.cityAndZip,
+                        countryCode = addr.countryCode,
+                        latitude = addr.latitude,
+                        longitude = addr.longitude
+                    )
+                } else null
+
                 _state.update {
                     it.copy(
-                        addressToEdit = event.address,
+                        addressToEdit = addr,
                         showEditDialog = true,
+                        selectedCountry = country,
+                        addressQuery = prefillCandidate?.displayLabel ?: "",
+                        suggestions = emptyList(),
+                        selectedCandidate = prefillCandidate,
+                        isOffline = false,
                         recipientNameErrorResId = null,
                         mobileNumberErrorResId = null,
-                        streetErrorResId = null,
-                        cityZipErrorResId = null
+                        addressErrorResId = null
                     )
                 }
             }
@@ -74,24 +154,111 @@ class SavedAddressesViewModel @Inject constructor(
                 _state.update { it.copy(addressToDelete = event.address) }
             }
 
-            is SavedAddressesEvent.SaveAddress -> {
-                viewModelScope.launch {
-                    _state.update { it.copy(
-                        isLoading = true,
-                        recipientNameErrorResId = null,
-                        mobileNumberErrorResId = null,
-                        streetErrorResId = null,
-                        cityZipErrorResId = null
-                    )}
+            is SavedAddressesEvent.CountrySelected -> {
+                _state.update {
+                    it.copy(
+                        selectedCountry = event.country,
+                        suggestions = emptyList(),
+                        addressQuery = "",
+                        selectedCandidate = null,
+                        addressErrorResId = null
+                    )
+                }
+            }
 
-                    val result = preferencesUseCases.updateAddress(event.address)
+            is SavedAddressesEvent.AddressQueryChanged -> {
+                val online = networkStatusProvider.isConnected()
+                if (!online) {
+                    _state.update {
+                        it.copy(
+                            addressQuery = event.query,
+                            isOffline = true,
+                            isSearchingAddress = false,
+                            suggestions = emptyList(),
+                            selectedCandidate = null,
+                            addressErrorResId = R.string.err_no_internet
+                        )
+                    }
+                    return
+                }
+                _state.update {
+                    it.copy(
+                        addressQuery = event.query,
+                        isSearchingAddress = true,
+                        isOffline = false,
+                        addressErrorResId = null,
+                        selectedCandidate = null
+                    )
+                }
+                addressQueryFlow.value = event.query
+            }
+
+            is SavedAddressesEvent.SuggestionSelected -> {
+                _state.update {
+                    it.copy(
+                        selectedCandidate = event.candidate,
+                        addressQuery = event.candidate.displayLabel,
+                        suggestions = emptyList(),
+                        addressErrorResId = null
+                    )
+                }
+            }
+
+            is SavedAddressesEvent.SaveAddress -> {
+                if (_state.value.selectedCandidate == null) {
+                    val offline = _state.value.isOffline
+                    _state.update {
+                        it.copy(
+                            addressErrorResId = if (offline) R.string.err_no_internet else R.string.err_address_not_selected
+                        )
+                    }
+                    viewModelScope.launch {
+                        _effect.send(
+                            SavedAddressesEffect.ShowError(
+                                messageResId = if (offline)
+                                    R.string.msg_offline_search_address
+                                else
+                                    R.string.msg_select_address_from_suggestions
+                            )
+                        )
+                    }
+                    return
+                }
+
+                viewModelScope.launch {
+                    _state.update {
+                        it.copy(
+                            isLoading = true,
+                            recipientNameErrorResId = null,
+                            mobileNumberErrorResId = null,
+                            addressErrorResId = null
+                        )
+                    }
+
+                    val candidate = _state.value.selectedCandidate!!
+                    val addressToSave = Address(
+                        id = _state.value.addressToEdit?.id ?: "",
+                        label = event.label,
+                        recipientName = event.recipientName,
+                        mobileNumber = event.mobileNumber,
+                        street = candidate.street ?: "",
+                        cityAndZip = candidate.cityAndZip,
+                        countryCode = candidate.countryCode,
+                        latitude = candidate.latitude,
+                        longitude = candidate.longitude,
+                        isValidated = true
+                    )
+
+                    val result = updateAddressUseCase(addressToSave)
 
                     result.onSuccess {
-                        _state.update { it.copy(
-                            showEditDialog = false,
-                            addressToEdit = null,
-                            isLoading = false
-                        )}
+                        _state.update {
+                            it.copy(
+                                showEditDialog = false,
+                                addressToEdit = null,
+                                isLoading = false
+                            )
+                        }
                     }.onFailure { error ->
                         _state.update { it.copy(isLoading = false) }
 
@@ -104,19 +271,16 @@ class SavedAddressesViewModel @Inject constructor(
                                             updatedState.copy(recipientNameErrorResId = R.string.err_empty_name)
                                         AddressFieldError.MOBILE_NUMBER_INVALID ->
                                             updatedState.copy(mobileNumberErrorResId = R.string.err_invalid_mobile)
-                                        AddressFieldError.STREET_EMPTY ->
-                                            updatedState.copy(streetErrorResId = R.string.err_empty_street)
+                                        AddressFieldError.ADDRESS_NOT_SELECTED ->
+                                            updatedState.copy(addressErrorResId = R.string.err_address_not_selected)
                                     }
                                 }
                                 updatedState
                             }
                         } else {
-                            _state.update { it.copy(
-                                showEditDialog = false,
-                                addressToEdit = null
-                            )}
-
-                            _effect.send(SavedAddressesEffect.ShowError(error.message ?: "An unknown error occurred."))                        }
+                            _state.update { it.copy(showEditDialog = false, addressToEdit = null) }
+                            _effect.send(SavedAddressesEffect.ShowError(messageResId = R.string.msg_unknown_error))
+                        }
                     }
                 }
             }
@@ -126,22 +290,16 @@ class SavedAddressesViewModel @Inject constructor(
                 if (targetId != null) {
                     viewModelScope.launch {
                         _state.update { it.copy(isLoading = true) }
-
-                        val result = preferencesUseCases.deleteAddress(targetId)
-
+                        val result = deleteAddressUseCase(targetId)
                         _state.update { it.copy(isLoading = false) }
-
-                        result.onFailure { error ->
-                            _effect.send(
-                                SavedAddressesEffect.ShowError(
-                                    error.message ?: "Could not remove address from server."
-                                )
-                            )
+                        result.onFailure {
+                            _effect.send(SavedAddressesEffect.ShowError(messageResId = R.string.msg_could_not_remove_address))
                         }
                     }
                 }
                 _state.update { it.copy(addressToDelete = null) }
             }
+
             is SavedAddressesEvent.DismissDialogs -> {
                 _state.update {
                     it.copy(
@@ -150,8 +308,7 @@ class SavedAddressesViewModel @Inject constructor(
                         addressToDelete = null,
                         recipientNameErrorResId = null,
                         mobileNumberErrorResId = null,
-                        streetErrorResId = null,
-                        cityZipErrorResId = null
+                        addressErrorResId = null
                     )
                 }
             }
@@ -160,5 +317,4 @@ class SavedAddressesViewModel @Inject constructor(
                 viewModelScope.launch { _effect.send(SavedAddressesEffect.NavigateBack) }
             }
         }
-    }
-}
+    }}
