@@ -9,7 +9,4 @@ interface PaymentRepository {
     fun getSavedCards(): Flow<List<SavedCard>>
     fun saveNewCard(cardDetails: CardDetails): Flow<Result<SavedCard>>
     fun processPayment(orderId: String, paymentDetails: PaymentDetails): Flow<Result<Unit>>
-    /** Returns Pair(approvalUrl, paypalOrderId) */
-    fun initiatePayPalPayment(orderId: String, amount: Double): Flow<Result<Pair<String, String>>>
-    fun capturePayPalPayment(paypalOrderId: String): Flow<Result<Unit>>
 }

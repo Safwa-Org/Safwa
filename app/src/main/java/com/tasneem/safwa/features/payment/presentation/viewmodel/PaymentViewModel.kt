@@ -6,9 +6,7 @@ import com.tasneem.safwa.R
 import com.tasneem.safwa.features.payment.domain.model.CardDetails
 import com.tasneem.safwa.features.payment.domain.model.PaymentDetails
 import com.tasneem.safwa.features.payment.domain.model.PaymentMethodType
-import com.tasneem.safwa.features.payment.domain.usecase.CapturePayPalPaymentUseCase
 import com.tasneem.safwa.features.payment.domain.usecase.GetSavedCardsUseCase
-import com.tasneem.safwa.features.payment.domain.usecase.InitiatePayPalPaymentUseCase
 import com.tasneem.safwa.features.payment.domain.usecase.ProcessPaymentUseCase
 import com.tasneem.safwa.features.payment.domain.usecase.SaveCardUseCase
 import com.tasneem.safwa.features.payment.presentation.state.PaymentEffect
@@ -32,8 +30,6 @@ class PaymentViewModel @Inject constructor(
     private val getSavedCardsUseCase: GetSavedCardsUseCase,
     private val saveCardUseCase: SaveCardUseCase,
     private val processPaymentUseCase: ProcessPaymentUseCase,
-    private val initiatePayPalPaymentUseCase: InitiatePayPalPaymentUseCase,
-    private val capturePayPalPaymentUseCase: CapturePayPalPaymentUseCase,
     private val getCartUseCase: GetCartUseCase,
     private val clearCartUseCase: ClearCartUseCase
 ) : ViewModel() {
@@ -158,58 +154,8 @@ class PaymentViewModel @Inject constructor(
                     }
                 }
             }
-            is PaymentEvent.PayPalClicked -> {
-                viewModelScope.launch {
-                    _state.update { it.copy(isLoading = true) }
-                    initiatePayPalPaymentUseCase("ORDER_12345", 10.0).collect { result ->
-                        result.onSuccess { (approvalUrl, paypalOrderId) ->
-                            _state.update {
-                                it.copy(
-                                    isLoading = false,
-                                    pendingPayPalOrderId = paypalOrderId
-                                )
-                            }
-                            _effect.send(PaymentEffect.LaunchPayPalUrl(approvalUrl))
-                        }.onFailure { err ->
-                            _state.update { it.copy(isLoading = false, errorMessage = err.message) }
-                            _effect.send(PaymentEffect.ShowSnackBar(R.string.paypal_failed))
-                        }
-                    }
-                }
-            }
-            is PaymentEvent.PayPalPaymentCompleted -> {
-                viewModelScope.launch {
-                    if (event.success) {
-                        val orderId = _state.value.pendingPayPalOrderId
-                        if (orderId != null) {
-                            _state.update { it.copy(isLoading = true) }
-                            capturePayPalPaymentUseCase(orderId).collect { result ->
-                                result.onSuccess {
-                                    clearCartUseCase()
-                                    _state.update {
-                                        it.copy(
-                                            isLoading = false,
-                                            isSuccess = true,
-                                            pendingPayPalOrderId = null
-                                        )
-                                    }
-                                    _effect.send(PaymentEffect.NavigateToOrderConfirmed())
-                                }.onFailure { err ->
-                                    _state.update { it.copy(isLoading = false, errorMessage = err.message) }
-                                    _effect.send(PaymentEffect.NavigateToOrderFailed)
-                                }
-                            }
-                        } else {
-                            clearCartUseCase()
-                            _state.update { it.copy(isSuccess = true) }
-                            _effect.send(PaymentEffect.NavigateToOrderConfirmed())
-                        }
-                    } else {
-                        _state.update { it.copy(pendingPayPalOrderId = null) }
-                        _effect.send(PaymentEffect.NavigateToOrderFailed)
-                    }
-                }
-            }
+
+            else -> {}
         }
     }
 }

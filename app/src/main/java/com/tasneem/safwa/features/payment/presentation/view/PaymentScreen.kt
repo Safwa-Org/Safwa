@@ -2,9 +2,7 @@ package com.tasneem.safwa.features.payment.presentation.view
 
 import android.annotation.SuppressLint
 import android.content.res.Configuration
-import android.net.Uri
 import androidx.activity.ComponentActivity
-import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -43,22 +41,20 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.shopify.checkoutsheetkit.ShopifyCheckoutSheetKit
 import com.tasneem.safwa.R
-import kotlinx.coroutines.launch
 import com.tasneem.safwa.core.shared_component.CustomButon
 import com.tasneem.safwa.core.shared_component.SafwaTopAppBar
 import com.tasneem.safwa.core.theme.SafwaTheme
+import com.tasneem.safwa.features.payment.domain.model.PaymentMethodType
+import com.tasneem.safwa.features.payment.domain.model.SavedCard
 import com.tasneem.safwa.features.payment.presentation.state.PaymentEffect
 import com.tasneem.safwa.features.payment.presentation.state.PaymentEvent
-import com.tasneem.safwa.features.payment.domain.model.PaymentMethodType
 import com.tasneem.safwa.features.payment.presentation.state.PaymentState
-import com.tasneem.safwa.features.payment.domain.model.SavedCard
 import com.tasneem.safwa.features.payment.presentation.state.CheckoutEventProcessorImpl
 import com.tasneem.safwa.features.payment.presentation.view.component.AddCardDialog
 import com.tasneem.safwa.features.payment.presentation.view.component.PaymentOptionCard
 import com.tasneem.safwa.features.payment.presentation.view.component.SavedCardItem
 import com.tasneem.safwa.features.payment.presentation.viewmodel.PaymentViewModel
-import androidx.core.graphics.toColorInt
-import androidx.core.net.toUri
+import kotlinx.coroutines.launch
 
 
 @SuppressLint("LocalContextGetResourceValueCall")
@@ -72,8 +68,8 @@ fun PaymentScreen(
 ) {
     val uiState by viewModel.state.collectAsStateWithLifecycle()
     val snackBarHostState = remember { SnackbarHostState() }
-    val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val context = androidx.compose.ui.platform.LocalContext.current
 
     LaunchedEffect(Unit) {
         viewModel.effect.collect { effect ->
@@ -85,25 +81,6 @@ fun PaymentScreen(
                 is PaymentEffect.ShowSnackBar -> {
                     scope.launch {
                         snackBarHostState.showSnackbar(context.getString(effect.messageRes))
-                    }
-                }
-                is PaymentEffect.LaunchPayPalUrl -> {
-                    try {
-                        CustomTabsIntent.Builder()
-                            .setShowTitle(true)
-                            .setDefaultColorSchemeParams(
-                                androidx.browser.customtabs.CustomTabColorSchemeParams.Builder()
-                                    .setToolbarColor("#003087".toColorInt())
-                                    .build()
-                            )
-                            .build()
-                            .launchUrl(context, effect.url.toUri())
-                    } catch (e: Exception) {
-                        scope.launch {
-                            snackBarHostState.showSnackbar(
-                                context.getString(R.string.paypal_failed)
-                            )
-                        }
                     }
                 }
                 is PaymentEffect.LaunchShopifyCheckout -> {
