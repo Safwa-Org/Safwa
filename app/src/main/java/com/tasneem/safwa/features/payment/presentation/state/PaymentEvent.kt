@@ -17,5 +17,8 @@ sealed interface PaymentEvent {
     ) : PaymentEvent
     data object ContinueClicked : PaymentEvent
     data object PayPalClicked : PaymentEvent
-    data class PayPalPaymentCompleted(val success: Boolean) : PaymentEvent
+    /** User confirmed payment inside the in-app PayPal dialog. */
+    data object PayPalDialogConfirmed : PaymentEvent
+    /** User dismissed/cancelled the in-app PayPal dialog. */
+    data object PayPalDialogDismissed : PaymentEvent
 }

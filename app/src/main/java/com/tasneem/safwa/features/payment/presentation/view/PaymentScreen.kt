@@ -1,8 +1,6 @@
 package com.tasneem.safwa.features.payment.presentation.view
 
 import android.content.res.Configuration
-import android.net.Uri
-import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -33,8 +31,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -42,19 +38,20 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.tasneem.safwa.R
-import kotlinx.coroutines.launch
 import com.tasneem.safwa.core.shared_component.CustomButon
 import com.tasneem.safwa.core.shared_component.SafwaTopAppBar
 import com.tasneem.safwa.core.theme.SafwaTheme
+import com.tasneem.safwa.features.payment.domain.model.PaymentMethodType
+import com.tasneem.safwa.features.payment.domain.model.SavedCard
 import com.tasneem.safwa.features.payment.presentation.state.PaymentEffect
 import com.tasneem.safwa.features.payment.presentation.state.PaymentEvent
-import com.tasneem.safwa.features.payment.domain.model.PaymentMethodType
 import com.tasneem.safwa.features.payment.presentation.state.PaymentState
-import com.tasneem.safwa.features.payment.domain.model.SavedCard
 import com.tasneem.safwa.features.payment.presentation.view.component.AddCardDialog
+import com.tasneem.safwa.features.payment.presentation.view.component.PayPalCheckoutDialog
 import com.tasneem.safwa.features.payment.presentation.view.component.PaymentOptionCard
 import com.tasneem.safwa.features.payment.presentation.view.component.SavedCardItem
 import com.tasneem.safwa.features.payment.presentation.viewmodel.PaymentViewModel
+import kotlinx.coroutines.launch
 
 
 @Composable
@@ -65,8 +62,8 @@ fun PaymentScreen(
 ) {
     val uiState by viewModel.state.collectAsStateWithLifecycle()
     val snackBarHostState = remember { SnackbarHostState() }
-    val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val context = androidx.compose.ui.platform.LocalContext.current
 
     LaunchedEffect(Unit) {
         viewModel.effect.collect { effect ->
@@ -76,25 +73,6 @@ fun PaymentScreen(
                 is PaymentEffect.ShowSnackBar -> {
                     scope.launch {
                         snackBarHostState.showSnackbar(context.getString(effect.messageRes))
-                    }
-                }
-                is PaymentEffect.LaunchPayPalUrl -> {
-                    try {
-                        CustomTabsIntent.Builder()
-                            .setShowTitle(true)
-                            .setDefaultColorSchemeParams(
-                                androidx.browser.customtabs.CustomTabColorSchemeParams.Builder()
-                                    .setToolbarColor(android.graphics.Color.parseColor("#003087"))
-                                    .build()
-                            )
-                            .build()
-                            .launchUrl(context, Uri.parse(effect.url))
-                    } catch (e: Exception) {
-                        scope.launch {
-                            snackBarHostState.showSnackbar(
-                                context.getString(R.string.paypal_failed)
-                            )
-                        }
                     }
                 }
             }
@@ -218,6 +196,13 @@ fun PaymentContent(
                 }
             }
         }
+    }
+
+    if (state.showPayPalDialog) {
+        PayPalCheckoutDialog(
+            onConfirm = { onEvent(PaymentEvent.PayPalDialogConfirmed) },
+            onDismiss = { onEvent(PaymentEvent.PayPalDialogDismissed) }
+        )
     }
 
     if (state.showAddCardDialog) {

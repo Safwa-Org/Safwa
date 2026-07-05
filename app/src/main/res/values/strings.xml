@@ -201,6 +201,7 @@
     <string name="cardholder">Cardholder</string>
     <string name="expires">Expires</string>
     <string name="payment_successful">Payment successful!</string>
+    <string name="payment_failed">Payment failed. Please try again.</string>
     <string name="paypal">PayPal</string>
     <string name="pay_with_paypal">Pay with PayPal</string>
     <string name="paypal_processing">Opening PayPal&#8230;</string>
@@ -220,4 +221,20 @@
     <string name="total_amount">Total Amount</string>
     <string name="date_label">Date</string>
     <string name="no_images_available">No images available</string>
+    <string name="close">Close</string>
+    <string name="secure">Secure</string>
+    <string name="paypal_login_title">Log in to your PayPal account</string>
+    <string name="paypal_login_desc">You\'ll be returned to the app after logging in</string>
+
+    <string name="log_in">Log In</string>
+    <string name="paypal_cancel_return">Cancel and return to Safwa</string>
+    <string name="paypal_buyer_protection">🔒  Protected by PayPal\'s Buyer Protection</string>
+    <string name="paypal_connecting">Connecting to PayPal…</string>
+    <string name="paypal_logged_in_as">Logged in as</string>
+    <string name="payment_to">Payment to</string>
+    <string name="safwa_store">Safwa Store</string>
+
+    <string name="order_amount">Order Amount</string>
+    <string name="paypal_balance_usd">PayPal Balance · USD</string>
+    <string name="pay_now">Pay Now</string>
 </resources>

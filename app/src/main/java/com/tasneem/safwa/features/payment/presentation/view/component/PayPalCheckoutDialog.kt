@@ -5,6 +5,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,7 +17,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -32,7 +32,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -45,35 +44,27 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.tasneem.safwa.R
 import kotlinx.coroutines.delay
 
-private val PayPalNavy = Color(0xFF003087)
-private val PayPalSky = Color(0xFF009CDE)
-private val PayPalYellow = Color(0xFFFFC439)
-private val PayPalBg = Color(0xFFF5F7FA)
 
 private enum class PayPalStep { LOGIN, PROCESSING, CONFIRM }
 
 /**
- * Simulates the PayPal Web Checkout flow inside a full-screen dialog.
+ * In-app PayPal checkout dialog — styled with the Safwa theme (MaterialTheme tokens).
  *
  * Steps:
- *  1. LOGIN  — user enters email/password (pre-filled for demo)
- *  2. PROCESSING — brief spinner mimicking network round-trip
- *  3. CONFIRM — shows order summary with "Pay Now" button
- *
- * Replace this dialog with the real Chrome Custom Tab call once you have a
- * PayPal backend that can create Orders and return the approval_url.
+ *  1. LOGIN  — email / password (pre-filled for demo)
+ *  2. PROCESSING — brief spinner while the real PayPal order is being created
+ *  3. CONFIRM — order summary with "Pay Now" button
  */
 @Composable
 fun PayPalCheckoutDialog(
@@ -84,7 +75,6 @@ fun PayPalCheckoutDialog(
     var email by remember { mutableStateOf("demo@example.com") }
     var password by remember { mutableStateOf("") }
 
-    // Auto-advance from PROCESSING to CONFIRM after 1.5 s
     LaunchedEffect(step) {
         if (step == PayPalStep.PROCESSING) {
             delay(1500)
@@ -99,61 +89,69 @@ fun PayPalCheckoutDialog(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(PayPalBg)
+                .background(MaterialTheme.colorScheme.background)
         ) {
             Column(modifier = Modifier.fillMaxSize()) {
 
-                // ── Header bar ────────────────────────────────────────────
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(Color.White)
-                        .padding(horizontal = 8.dp, vertical = 8.dp)
+                // ── Top bar ────────────────────────────────────────────────
+                Surface(
+                    color = MaterialTheme.colorScheme.surface,
+                    shadowElevation = 2.dp
                 ) {
-                    // Close button
-                    IconButton(
-                        onClick = onDismiss,
-                        modifier = Modifier.align(Alignment.CenterStart)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Close,
-                            contentDescription = "Close",
-                            tint = Color.Gray
-                        )
-                    }
-                    // PayPal logotype centre
                     Row(
-                        modifier = Modifier.align(Alignment.Center),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 4.dp, vertical = 4.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .size(28.dp)
-                                .clip(CircleShape)
-                                .background(
-                                    Brush.verticalGradient(listOf(PayPalSky, PayPalNavy))
-                                ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text("P", color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = 15.sp)
+                        // Close button
+                        IconButton(onClick = onDismiss) {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = stringResource(R.string.close),
+                                tint = MaterialTheme.colorScheme.onSurface
+                            )
                         }
-                        Spacer(Modifier.width(6.dp))
-                        Text("Pay", fontWeight = FontWeight.ExtraBold, fontSize = 20.sp, color = PayPalNavy)
-                        Text("Pal", fontWeight = FontWeight.ExtraBold, fontSize = 20.sp, color = PayPalSky)
+
+                        // "PayPal" logotype — using app's primary color
+                        Row(
+                            modifier = Modifier.weight(1f),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(28.dp)
+                                    .clip(CircleShape)
+                                    .background(MaterialTheme.colorScheme.primary),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "P",
+                                    color = MaterialTheme.colorScheme.onPrimary,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                            Text(
+                                text = "  PayPal",
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+
+                        Icon(
+                            imageVector = Icons.Default.Lock,
+                            contentDescription = stringResource(R.string.secure),
+                            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
+                            modifier = Modifier
+                                .padding(end = 16.dp)
+                                .size(18.dp)
+                        )
                     }
-                    // Lock icon right side
-                    Icon(
-                        imageVector = Icons.Default.Lock,
-                        contentDescription = "Secure",
-                        tint = Color.Gray,
-                        modifier = Modifier
-                            .align(Alignment.CenterEnd)
-                            .padding(end = 12.dp)
-                            .size(18.dp)
-                    )
                 }
 
-                // ── Step content (animated) ────────────────────────────────
                 AnimatedContent(
                     targetState = step,
                     transitionSpec = {
@@ -202,11 +200,19 @@ private fun LoginStep(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Spacer(Modifier.height(8.dp))
+
         Text(
-            text = "Log in to your PayPal account",
+            text = stringResource(R.string.paypal_login_title),
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
-            color = PayPalNavy,
+            color = MaterialTheme.colorScheme.onBackground,
+            textAlign = TextAlign.Center
+        )
+
+        Text(
+            text = stringResource(R.string.paypal_login_desc),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
             textAlign = TextAlign.Center
         )
 
@@ -214,14 +220,10 @@ private fun LoginStep(
         OutlinedTextField(
             value = email,
             onValueChange = onEmailChange,
-            label = { Text("Email") },
+            label = { Text(stringResource(R.string.email)) },
             singleLine = true,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = PayPalSky,
-                focusedLabelColor = PayPalSky
-            ),
-            shape = RoundedCornerShape(8.dp),
+            shape = RoundedCornerShape(12.dp),
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -229,51 +231,59 @@ private fun LoginStep(
         OutlinedTextField(
             value = password,
             onValueChange = onPasswordChange,
-            label = { Text("Password") },
+            label = { Text(stringResource(R.string.password)) },
             singleLine = true,
             visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = PayPalSky,
-                focusedLabelColor = PayPalSky
-            ),
-            shape = RoundedCornerShape(8.dp),
+            shape = RoundedCornerShape(12.dp),
             modifier = Modifier.fillMaxWidth()
         )
 
         TextButton(onClick = {}) {
-            Text("Forgot Password?", color = PayPalSky, fontSize = 14.sp)
+            Text(
+                text = stringResource(R.string.forgot_password),
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.primary
+            )
         }
 
-        // Log In button
+        // Log In button — uses app's primary green
         Button(
             onClick = onNext,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(52.dp),
-            shape = RoundedCornerShape(26.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = PayPalYellow)
+                .height(56.dp),
+            shape = RoundedCornerShape(28.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primary
+            )
         ) {
             Text(
-                text = "Log In",
-                fontWeight = FontWeight.ExtraBold,
-                fontSize = 16.sp,
-                color = Color(0xFF003087)
+                text = stringResource(R.string.log_in),
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onPrimary
             )
         }
 
-        HorizontalDivider(color = Color.LightGray, thickness = 0.5.dp)
+        HorizontalDivider(
+            color = MaterialTheme.colorScheme.outline,
+            thickness = 0.5.dp
+        )
 
         TextButton(onClick = onCancel) {
-            Text("Cancel and return to Safwa", color = PayPalSky, fontSize = 14.sp)
+            Text(
+                text = stringResource(R.string.paypal_cancel_return),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.primary
+            )
         }
 
-        // Footer
         Text(
-            text = "Protected by PayPal's Buyer Protection",
-            fontSize = 11.sp,
-            color = Color.Gray,
-            textAlign = TextAlign.Center
+            text = stringResource(R.string.paypal_buyer_protection),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.45f),
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(bottom = 8.dp)
         )
     }
 }
@@ -290,12 +300,14 @@ private fun ProcessingStep() {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
-            CircularProgressIndicator(color = PayPalSky, strokeWidth = 3.dp)
+            CircularProgressIndicator(
+                color = MaterialTheme.colorScheme.primary,
+                strokeWidth = 3.dp
+            )
             Text(
-                text = "Connecting to PayPal…",
-                color = PayPalNavy,
-                fontWeight = FontWeight.Medium,
-                fontSize = 16.sp
+                text = stringResource(R.string.paypal_connecting),
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
             )
         }
     }
@@ -321,92 +333,108 @@ private fun ConfirmStep(
         Icon(
             imageVector = Icons.Default.CheckCircle,
             contentDescription = null,
-            tint = Color(0xFF00C853),
+            tint = MaterialTheme.colorScheme.primary,
             modifier = Modifier.size(52.dp)
         )
 
         Text(
-            text = "Logged in as",
-            color = Color.Gray,
-            fontSize = 13.sp
+            text = stringResource(R.string.paypal_logged_in_as),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
         )
         Text(
             text = email,
+            style = MaterialTheme.typography.titleSmall,
             fontWeight = FontWeight.Bold,
-            color = PayPalNavy,
-            fontSize = 15.sp
+            color = MaterialTheme.colorScheme.onBackground
         )
 
-        HorizontalDivider(color = Color.LightGray, thickness = 0.5.dp)
+        HorizontalDivider(
+            color = MaterialTheme.colorScheme.outline,
+            thickness = 0.5.dp
+        )
 
-        // Order summary card
+        // Order summary card — matches the app's surface card style
         Surface(
-            shape = RoundedCornerShape(12.dp),
-            color = Color.White,
-            modifier = Modifier.fillMaxWidth(),
-            shadowElevation = 2.dp
+            shape = RoundedCornerShape(16.dp),
+            color = MaterialTheme.colorScheme.surface,
+            border = BorderStroke(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.outline
+            ),
+            modifier = Modifier.fillMaxWidth()
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
-                    text = "Payment to",
-                    fontSize = 12.sp,
-                    color = Color.Gray
+                    text = stringResource(R.string.payment_to),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                 )
                 Text(
-                    text = "Safwa Store",
+                    text = stringResource(R.string.safwa_store),
+                    style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp,
-                    color = PayPalNavy
+                    color = MaterialTheme.colorScheme.onSurface
                 )
-                Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(12.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("Total", color = Color.Gray, fontSize = 14.sp)
                     Text(
-                        text = "Order Amount",
+                        text = stringResource(R.string.total),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                    )
+                    Text(
+                        text = stringResource(R.string.order_amount),
+                        style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold,
-                        color = PayPalNavy,
-                        fontSize = 14.sp
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    text = "PayPal Balance · USD",
-                    fontSize = 12.sp,
-                    color = Color.Gray
+                    text = stringResource(R.string.paypal_balance_usd),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f)
                 )
             }
         }
 
-        // Pay Now button
+        // Pay Now button — uses app's primary green
         Button(
             onClick = onConfirm,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(52.dp),
-            shape = RoundedCornerShape(26.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = PayPalYellow)
+                .height(56.dp),
+            shape = RoundedCornerShape(28.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primary
+            )
         ) {
             Text(
-                text = "Pay Now",
-                fontWeight = FontWeight.ExtraBold,
-                fontSize = 16.sp,
-                color = PayPalNavy
+                text = stringResource(R.string.pay_now),
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onPrimary
             )
         }
 
         TextButton(onClick = onCancel) {
-            Text("Cancel and return to Safwa", color = PayPalSky, fontSize = 14.sp)
+            Text(
+                text = stringResource(R.string.paypal_cancel_return),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.primary
+            )
         }
 
         Text(
-            text = "Protected by PayPal's Buyer Protection",
-            fontSize = 11.sp,
-            color = Color.Gray,
+            text = stringResource(R.string.paypal_buyer_protection),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.45f),
             textAlign = TextAlign.Center,
-            modifier = Modifier.padding(top = 8.dp)
+            modifier = Modifier.padding(bottom = 8.dp)
         )
     }
 }
