@@ -8,5 +8,5 @@ import kotlinx.coroutines.flow.Flow
 interface PaymentRepository {
     fun getSavedCards(): Flow<List<SavedCard>>
     fun saveNewCard(cardDetails: CardDetails): Flow<Result<SavedCard>>
-    fun processPayment(orderId: String, paymentDetails: PaymentDetails): Flow<Result<Unit>>
+    fun processPayment(orderId: String, amount: Double, paymentDetails: PaymentDetails): Flow<Result<Unit>>
 }

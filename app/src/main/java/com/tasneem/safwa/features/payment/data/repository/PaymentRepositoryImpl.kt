@@ -58,13 +58,15 @@ class PaymentRepositoryImpl @Inject constructor(
 
     override fun processPayment(
         orderId: String,
+        amount: Double,
         paymentDetails: PaymentDetails
     ): Flow<Result<Unit>> = flow {
         try {
             val response = remoteDataSource.processPayment(
                 PaymentRequestDto(
                     orderId = orderId,
-                    paymentMethodId = paymentDetails.cardId
+                    paymentMethodId = paymentDetails.cardId,
+                    amount = amount
                 )
             )
             if (response.success) {

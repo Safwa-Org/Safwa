@@ -9,6 +9,8 @@ import com.tasneem.safwa.features.payment.domain.model.PaymentMethodType
 import com.tasneem.safwa.features.payment.domain.usecase.GetSavedCardsUseCase
 import com.tasneem.safwa.features.payment.domain.usecase.ProcessPaymentUseCase
 import com.tasneem.safwa.features.payment.domain.usecase.SaveCardUseCase
+import com.tasneem.safwa.features.cart.domain.usecase.GetCartUseCase
+import com.tasneem.safwa.core.util.Resource
 import com.tasneem.safwa.features.payment.presentation.state.PaymentEffect
 import com.tasneem.safwa.features.payment.presentation.state.PaymentEvent
 import com.tasneem.safwa.features.payment.presentation.state.PaymentState
@@ -27,6 +29,7 @@ import com.tasneem.safwa.features.cart.domain.usecase.ClearCartUseCase
 
 @HiltViewModel
 class PaymentViewModel @Inject constructor(
+    private val getCartUseCase: GetCartUseCase,
     private val getSavedCardsUseCase: GetSavedCardsUseCase,
     private val saveCardUseCase: SaveCardUseCase,
     private val processPaymentUseCase: ProcessPaymentUseCase,
@@ -107,7 +110,6 @@ class PaymentViewModel @Inject constructor(
                 val currentMethod = _state.value.selectedMethod ?: return
                 when (currentMethod) {
                     PaymentMethodType.SHOPIFY -> onEvent(PaymentEvent.ShopifyClicked)
-                    PaymentMethodType.PAYPAL -> onEvent(PaymentEvent.PayPalClicked)
                     PaymentMethodType.CASH_ON_DELIVERY,
                     PaymentMethodType.VISA -> {
                         if (currentMethod == PaymentMethodType.CASH_ON_DELIVERY ||
@@ -115,18 +117,25 @@ class PaymentViewModel @Inject constructor(
                         ) {
                             viewModelScope.launch {
                                 _state.update { it.copy(isLoading = true) }
-                                processPaymentUseCase(
-                                    "ORDER_12345",
-                                    PaymentDetails(currentMethod, _state.value.selectedCardId)
-                                ).collect { result ->
-                                    result.onSuccess {
-                                        clearCartUseCase()
-                                        _state.update { it.copy(isLoading = false, isSuccess = true) }
-                                        _effect.send(PaymentEffect.NavigateToOrderConfirmed())
-                                    }.onFailure { err ->
-                                        _state.update { it.copy(isLoading = false, errorMessage = err.message) }
-                                        _effect.send(PaymentEffect.NavigateToOrderFailed)
+                                val cartResource = getCartUseCase()
+                                if (cartResource is com.tasneem.safwa.core.util.Resource.Success && cartResource.data != null) {
+                                    processPaymentUseCase(
+                                        cartResource.data.id,
+                                        cartResource.data.totalAmount.toDoubleOrNull() ?: 0.0,
+                                        PaymentDetails(currentMethod, _state.value.selectedCardId)
+                                    ).collect { result ->
+                                        result.onSuccess {
+                                            clearCartUseCase()
+                                            _state.update { it.copy(isLoading = false, isSuccess = true) }
+                                            _effect.send(PaymentEffect.NavigateToOrderConfirmed())
+                                        }.onFailure { err ->
+                                            _state.update { it.copy(isLoading = false, errorMessage = err.message) }
+                                            _effect.send(PaymentEffect.NavigateToOrderFailed)
+                                        }
                                     }
+                                } else {
+                                    _state.update { it.copy(isLoading = false, errorMessage = "Cart not found") }
+                                    _effect.send(PaymentEffect.NavigateToOrderFailed)
                                 }
                             }
                         }
@@ -154,7 +163,6 @@ class PaymentViewModel @Inject constructor(
                     }
                 }
             }
-
             else -> {}
         }
     }
