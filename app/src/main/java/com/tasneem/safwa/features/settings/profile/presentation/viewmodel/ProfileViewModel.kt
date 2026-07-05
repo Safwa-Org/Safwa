@@ -7,6 +7,7 @@ import com.tasneem.safwa.features.auth.domain.usecase.LogoutUseCase
 import com.tasneem.safwa.features.settings.profile.presentation.state.ProfileEffect
 import com.tasneem.safwa.features.settings.profile.presentation.state.ProfileEvent
 import com.tasneem.safwa.features.settings.profile.presentation.state.ProfileState
+import com.tasneem.safwa.features.settings.savedaddresses.domain.usecase.GetAddressesUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,6 +16,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOf
@@ -27,7 +29,8 @@ import javax.inject.Inject
 class ProfileViewModel @Inject constructor(
     private val logoutUseCase: LogoutUseCase,
     private val preferencesUseCases: PreferencesUseCases,
-    private val getOrdersUseCase: GetOrdersUseCase
+    private val getOrdersUseCase: GetOrdersUseCase,
+    private val getAddressesUseCase: GetAddressesUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(ProfileState())
@@ -39,6 +42,7 @@ class ProfileViewModel @Inject constructor(
     init {
         onEvent(ProfileEvent.LoadProfile)
         observeOrders()
+        observeSavedAddressesCount()
     }
 
     @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
@@ -62,6 +66,33 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
+    // Addresses now live in Shopify, not the Firestore-synced User object, so the count
+    // has to come from the same GetAddressesUseCase the Saved Addresses screen uses —
+    // it can no longer be read off `user.addresses.size`.
+    @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+    private fun observeSavedAddressesCount() {
+        viewModelScope.launch {
+            preferencesUseCases.getUserSession()
+                .map { it?.customerAccessToken }
+                .distinctUntilChanged()
+                .flatMapLatest { token ->
+                    if (!token.isNullOrEmpty()) {
+                        flow { emit(getAddressesUseCase(token)) }
+                    } else {
+                        flowOf(Result.success(emptyList()))
+                    }
+                }
+                .collect { result ->
+                    result.onSuccess { addresses ->
+                        _state.update { it.copy(savedAddressesCount = addresses.size) }
+                    }
+                    // On failure, silently leave the last known count in place rather than
+                    // flashing it to 0 — a transient network blip on the profile screen
+                    // shouldn't make it look like the user's addresses disappeared.
+                }
+        }
+    }
+
     fun onEvent(event: ProfileEvent) {
         when (event) {
             is ProfileEvent.LoadProfile -> {
@@ -80,7 +111,6 @@ class ProfileViewModel @Inject constructor(
                                     isElite = true,
                                     ordersCount = 12,
                                     wishlistCount = 8,
-                                    savedAddressesCount = user.addresses.size,
                                     points = 2400
                                 )
                             }

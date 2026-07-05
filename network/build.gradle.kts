@@ -62,8 +62,8 @@ android {
         buildConfig = true
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 }
 
@@ -79,8 +79,8 @@ apollo {
 }
 
 dependencies {
-    implementation(libs.apollo.runtime)
-    implementation(libs.apollo.normalized.cache.sqlite)
+    api(libs.apollo.runtime)
+    api(libs.apollo.normalized.cache.sqlite)
     implementation(libs.androidx.core.ktx)
     implementation(libs.hilt.android)
     implementation(libs.retrofit.core)
