@@ -12,7 +12,7 @@ import androidx.compose.runtime.getValue
 import androidx.core.os.LocaleListCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.tasneem.safwa.features.settings.savedaddresses.data.sync.SessionSyncManager
+import com.tasneem.safwa.core.data.sync.SessionSyncManager
 import com.tasneem.safwa.core.navigation.SafwaNavHost
 import com.tasneem.safwa.core.navigation.StartDestination
 import com.tasneem.safwa.core.presentation.mainactivity.viewmodel.MainViewModel
