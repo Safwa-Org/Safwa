@@ -18,4 +18,6 @@ sealed interface PaymentEvent {
     data object ContinueClicked : PaymentEvent
     data object PayPalClicked : PaymentEvent
     data class PayPalPaymentCompleted(val success: Boolean) : PaymentEvent
+    data object ShopifyClicked : PaymentEvent
+    data class ShopifyPaymentCompleted(val success: Boolean) : PaymentEvent
 }
