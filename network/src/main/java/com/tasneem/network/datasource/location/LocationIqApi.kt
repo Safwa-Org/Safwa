@@ -9,6 +9,7 @@ interface LocationIqApi {
     suspend fun autocomplete(
         @Query("q") query: String,
         @Query("countrycodes") countryCodeIso2: String,
+        @Query("addressdetails") addressDetails: Int = 1,
         @Query("format") format: String = "json",
         @Query("limit") limit: Int = 8,
         @Query("key") apiKey: String
