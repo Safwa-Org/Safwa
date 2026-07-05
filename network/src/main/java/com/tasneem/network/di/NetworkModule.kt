@@ -18,8 +18,6 @@ import com.tasneem.network.datasource.payment.PaymentRemoteDataSource
 import com.tasneem.network.datasource.payment.PaymentRemoteDataSourceImpl
 import com.tasneem.network.datasource.payment.PayPalApiService
 import com.tasneem.network.datasource.payment.ShopifyDepositApi
-import com.tasneem.safwa.network.BuildConfig
-import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import com.tasneem.network.datasource.auth.AuthRemoteDataSource
 import com.tasneem.network.datasource.auth.AuthRemoteDataSourceImpl
@@ -92,9 +90,10 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideLocationIqApi(): LocationIqApi =
+    fun provideLocationIqApi(okHttpClient: OkHttpClient): LocationIqApi =
         Retrofit.Builder()
             .baseUrl(BuildConfig.Location_BASE_URL)
+            .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(LocationIqApi::class.java)
