@@ -111,14 +111,13 @@ fun AddressCard(
             )
             Spacer(modifier = Modifier.height(4.dp))
 
-            if (address.street.isNotBlank()) {
-                Text(
-                    text = address.street,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.secondary
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-            }
+            // Address Details
+            Text(
+
+                text = address.street,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.secondary
+            )
             Text(
                 text = address.cityAndZip,
                 style = MaterialTheme.typography.bodyMedium,
@@ -126,6 +125,7 @@ fun AddressCard(
             )
             Spacer(modifier = Modifier.height(8.dp))
 
+            // Mobile Number
             Text(
                 text = address.mobileNumber,
                 style = MaterialTheme.typography.bodyMedium,

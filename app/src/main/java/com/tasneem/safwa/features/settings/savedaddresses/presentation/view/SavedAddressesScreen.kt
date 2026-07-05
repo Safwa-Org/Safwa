@@ -82,7 +82,6 @@ fun SavedAddressesScreen(
             addressQuery = uiState.addressQuery,
             suggestions = uiState.suggestions,
             isSearchingAddress = uiState.isSearchingAddress,
-            hasResolvedAddress = uiState.selectedCandidate != null,
             onCountrySelected = { viewModel.onEvent(SavedAddressesEvent.CountrySelected(it)) },
             onAddressQueryChange = { viewModel.onEvent(SavedAddressesEvent.AddressQueryChanged(it)) },
             onSuggestionSelected = { viewModel.onEvent(SavedAddressesEvent.SuggestionSelected(it)) },

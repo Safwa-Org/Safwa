@@ -49,7 +49,6 @@ fun AddressEditDialog(
     addressQuery: String,
     suggestions: List<AddressCandidate>,
     isSearchingAddress: Boolean,
-    hasResolvedAddress: Boolean,
     onCountrySelected: (Country) -> Unit,
     onAddressQueryChange: (String) -> Unit,
     onSuggestionSelected: (AddressCandidate) -> Unit,
@@ -168,22 +167,6 @@ fun AddressEditDialog(
                     onSuggestionSelected = onSuggestionSelected,
                     modifier = Modifier.fillMaxWidth()
                 )
-
-           val showNoStreetHint = selectedCountry != null &&
-                        addressQuery.length >= 3 &&
-                        suggestions.isEmpty() &&
-                        !isSearchingAddress &&
-                        !hasResolvedAddress &&
-                        addressErrorResId == null
-
-                if (showNoStreetHint) {
-                    Text(
-                        text = stringResource(R.string.hint_no_street_level_results),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier.padding(top = 4.dp, start = 4.dp)
-                    )
-                }
 
                 if (addressErrorResId != null) {
                     Text(
