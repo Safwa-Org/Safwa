@@ -7,4 +7,6 @@ sealed interface ProfileEvent {
     data object LanguageAndCurrencyClicked : ProfileEvent
     data class DarkModeToggled(val isDarkMode: Boolean) : ProfileEvent
     data object LogoutClicked : ProfileEvent
+    data object ConfirmLogout : ProfileEvent
+    data object DismissLogoutDialog : ProfileEvent
 }

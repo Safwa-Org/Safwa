@@ -1,4 +1,5 @@
 package com.tasneem.safwa.core.data.model
+import com.tasneem.safwa.features.settings.savedaddresses.data.model.AddressEntity
 import kotlinx.serialization.Serializable
 
 @Serializable
