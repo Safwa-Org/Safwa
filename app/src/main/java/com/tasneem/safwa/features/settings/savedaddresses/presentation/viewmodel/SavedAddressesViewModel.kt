@@ -241,7 +241,7 @@ class SavedAddressesViewModel @Inject constructor(
                         label = event.label,
                         recipientName = event.recipientName,
                         mobileNumber = event.mobileNumber,
-                        street = candidate.street,
+                        street = candidate.street ?: "",
                         cityAndZip = candidate.cityAndZip,
                         countryCode = candidate.countryCode,
                         latitude = candidate.latitude,
