@@ -33,7 +33,6 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
-import javax.inject.Named
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
@@ -70,7 +69,7 @@ object NetworkModule {
     @Singleton
     fun provideShopifyDepositApi(okHttpClient: OkHttpClient): ShopifyDepositApi {
         return Retrofit.Builder()
-            .baseUrl("https://elb.deposit.shopifycs.com/")
+            .baseUrl(BuildConfig.SHOPIFY_DEPOSIT_BASE_URL)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()

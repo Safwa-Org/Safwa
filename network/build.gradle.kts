@@ -51,6 +51,7 @@ android {
         buildConfigField("String", "PAYPAL_CLIENT_ID", "\"$paypalClientId\"")
         buildConfigField("String", "PAYPAL_SECRET", "\"$paypalSecret\"")
         buildConfigField("String", "PAYPAL_BASE_URL", "\"https://api-m.sandbox.paypal.com/\"")
+        buildConfigField("String", "SHOPIFY_DEPOSIT_BASE_URL", "\"https://elb.deposit.shopifycs.com/\"")
         buildConfigField("String", "Currency_Exchange_BASE_URL", "\"$currencyBaseUrl\"")
         buildConfigField("String", "Location_BASE_URL", "\"$locationBaseUrl\"")
         buildConfigField("String", "LOCATIONIQ_API_KEY", "\"$locationApiKey\"")
