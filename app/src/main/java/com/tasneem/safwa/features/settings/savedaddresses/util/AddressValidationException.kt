@@ -3,7 +3,7 @@ package com.tasneem.safwa.features.settings.savedaddresses.util
 enum class AddressFieldError {
     RECIPIENT_NAME_EMPTY,
     MOBILE_NUMBER_INVALID,
-    STREET_EMPTY
+    ADDRESS_NOT_SELECTED
 }
 
 class AddressValidationException(

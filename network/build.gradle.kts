@@ -23,6 +23,12 @@ val storefrontToken = localProperties.getProperty("STOREFRONT_TOKEN")
 val currencyBaseUrl = localProperties.getProperty("Currency_Exchange_BASE_URL")
     ?: throw Exception("Missing Currency_Exchange_BASE_URL in local.properties.")
 
+val locationBaseUrl = localProperties.getProperty("Location_BASE_URL")
+    ?: throw Exception("Missing Location_BASE_URL in local.properties.")
+
+val locationApiKey = localProperties.getProperty("LOCATIONIQ_API_KEY")
+    ?: throw Exception("Missing LOCATIONIQ_API_KEY in local.properties.")
+
 val paypalClientId = localProperties.getProperty("PAYPAL_CLIENT_ID")
     ?: throw Exception("Missing PAYPAL_CLIENT_ID in local.properties.")
 
@@ -45,6 +51,12 @@ android {
         buildConfigField("String", "PAYPAL_CLIENT_ID", "\"$paypalClientId\"")
         buildConfigField("String", "PAYPAL_SECRET", "\"$paypalSecret\"")
         buildConfigField("String", "PAYPAL_BASE_URL", "\"https://api-m.sandbox.paypal.com/\"")
+        buildConfigField("String", "SHOPIFY_DEPOSIT_BASE_URL", "\"https://elb.deposit.shopifycs.com/\"")
+        buildConfigField("String", "Currency_Exchange_BASE_URL", "\"$currencyBaseUrl\"")
+        buildConfigField("String", "Location_BASE_URL", "\"$locationBaseUrl\"")
+        buildConfigField("String", "LOCATIONIQ_API_KEY", "\"$locationApiKey\"")
+
+
     }
     buildFeatures {
         buildConfig = true

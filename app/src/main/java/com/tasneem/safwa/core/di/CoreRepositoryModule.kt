@@ -4,6 +4,8 @@ import com.tasneem.safwa.core.data.repository.RemoteUserRepositoryImpl
 import com.tasneem.safwa.core.data.repository.SessionPreferencesRepositoryImpl
 import com.tasneem.safwa.core.domain.repository.RemoteUserRepository
 import com.tasneem.safwa.core.domain.repository.SessionPreferencesRepository
+import com.tasneem.safwa.core.util.NetworkStatusProvider
+import com.tasneem.safwa.core.util.NetworkStatusProviderImpl
 import com.tasneem.safwa.features.settings.languageandcurrency.data.repository.CurrencyRepositoryImpl
 import com.tasneem.safwa.features.settings.languageandcurrency.domain.repository.CurrencyRepository
 import dagger.Binds
@@ -32,4 +34,10 @@ abstract class CoreRepositoryModule {
     abstract fun bindCurrencyRepository(
         impl: CurrencyRepositoryImpl
     ): CurrencyRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindNetworkStatusProvider(
+        impl: NetworkStatusProviderImpl
+    ): NetworkStatusProvider
 }
