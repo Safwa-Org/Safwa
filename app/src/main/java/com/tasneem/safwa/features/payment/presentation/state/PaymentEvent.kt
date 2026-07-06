@@ -16,9 +16,5 @@ sealed interface PaymentEvent {
         val verificationValue: String
     ) : PaymentEvent
     data object ContinueClicked : PaymentEvent
-    data object PayPalClicked : PaymentEvent
-    /** User confirmed payment inside the in-app PayPal dialog. */
-    data object PayPalDialogConfirmed : PaymentEvent
-    /** User dismissed/cancelled the in-app PayPal dialog. */
-    data object PayPalDialogDismissed : PaymentEvent
+    data object PayMockClicked : PaymentEvent
 }

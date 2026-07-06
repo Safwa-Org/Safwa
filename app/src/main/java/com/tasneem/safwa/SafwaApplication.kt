@@ -7,6 +7,7 @@ import com.google.firebase.appcheck.debug.DebugAppCheckProviderFactory
 import com.google.firebase.appcheck.playintegrity.PlayIntegrityAppCheckProviderFactory
 import dagger.hilt.android.HiltAndroidApp
 
+
 @HiltAndroidApp
 class SafwaApplication : Application() {
 
@@ -23,5 +24,6 @@ class SafwaApplication : Application() {
                 PlayIntegrityAppCheckProviderFactory.getInstance()
             }
         )
+
     }
 }

@@ -6,9 +6,8 @@ import com.tasneem.safwa.R
 import com.tasneem.safwa.features.payment.domain.model.CardDetails
 import com.tasneem.safwa.features.payment.domain.model.PaymentDetails
 import com.tasneem.safwa.features.payment.domain.model.PaymentMethodType
-import com.tasneem.safwa.features.payment.domain.usecase.CapturePayPalPaymentUseCase
 import com.tasneem.safwa.features.payment.domain.usecase.GetSavedCardsUseCase
-import com.tasneem.safwa.features.payment.domain.usecase.InitiatePayPalPaymentUseCase
+import com.tasneem.safwa.features.payment.domain.usecase.ProcessPayMockPaymentUseCase
 import com.tasneem.safwa.features.payment.domain.usecase.ProcessPaymentUseCase
 import com.tasneem.safwa.features.payment.domain.usecase.SaveCardUseCase
 import com.tasneem.safwa.features.cart.domain.usecase.GetCartUseCase
@@ -32,8 +31,7 @@ class PaymentViewModel @Inject constructor(
     private val getSavedCardsUseCase: GetSavedCardsUseCase,
     private val saveCardUseCase: SaveCardUseCase,
     private val processPaymentUseCase: ProcessPaymentUseCase,
-    private val initiatePayPalPaymentUseCase: InitiatePayPalPaymentUseCase,
-    private val capturePayPalPaymentUseCase: CapturePayPalPaymentUseCase
+    private val processPayMockPaymentUseCase: ProcessPayMockPaymentUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(PaymentState())
@@ -105,12 +103,12 @@ class PaymentViewModel @Inject constructor(
             is PaymentEvent.ContinueClicked -> {
                 val currentMethod = _state.value.selectedMethod ?: return
                 when (currentMethod) {
-                    PaymentMethodType.PAYPAL -> onEvent(PaymentEvent.PayPalClicked)
-                    PaymentMethodType.CASH_ON_DELIVERY,
+                    PaymentMethodType.PAYMOCK -> onEvent(PaymentEvent.PayMockClicked)
+                    PaymentMethodType.CASH_ON_DELIVERY -> {
+                        // Logic removed as requested
+                    }
                     PaymentMethodType.VISA -> {
-                        if (currentMethod == PaymentMethodType.CASH_ON_DELIVERY ||
-                            (currentMethod == PaymentMethodType.VISA && _state.value.selectedCardId != null)
-                        ) {
+                        if (_state.value.selectedCardId != null) {
                             viewModelScope.launch {
                                 _state.update { it.copy(isLoading = true) }
                                 val cartResource = getCartUseCase()
@@ -137,63 +135,32 @@ class PaymentViewModel @Inject constructor(
                     }
                 }
             }
-            is PaymentEvent.PayPalClicked -> {
+            is PaymentEvent.PayMockClicked -> {
                 viewModelScope.launch {
                     _state.update { it.copy(isLoading = true) }
                     val cartResource = getCartUseCase()
                     if (cartResource is Resource.Success && cartResource.data != null) {
                         val cart = cartResource.data
                         val totalAmount = cart.totalAmount.toDoubleOrNull() ?: 0.0
-                        initiatePayPalPaymentUseCase(cart.id, totalAmount).collect { result ->
-                            result.onSuccess { (_, paypalOrderId) ->
+                        processPayMockPaymentUseCase(totalAmount).collect { result ->
+                            result.onSuccess { mockId ->
                                 _state.update {
                                     it.copy(
                                         isLoading = false,
-                                        pendingPayPalOrderId = paypalOrderId,
-                                        showPayPalDialog = true
+                                        isSuccess = true
                                     )
                                 }
+                                _effect.send(PaymentEffect.ShowSnackBar(R.string.payment_successful))
+                                _effect.send(PaymentEffect.NavigateToHome)
                             }.onFailure { err ->
                                 _state.update { it.copy(isLoading = false, errorMessage = err.message) }
-                                _effect.send(PaymentEffect.ShowSnackBar(R.string.paypal_failed))
+                                _effect.send(PaymentEffect.ShowSnackBar(R.string.payment_failed))
                             }
                         }
                     } else {
                         _state.update { it.copy(isLoading = false, errorMessage = "Cart not found") }
-                        _effect.send(PaymentEffect.ShowSnackBar(R.string.paypal_failed))
+                        _effect.send(PaymentEffect.ShowSnackBar(R.string.payment_failed))
                     }
-                }
-            }
-            is PaymentEvent.PayPalDialogConfirmed -> {
-                viewModelScope.launch {
-                    val orderId = _state.value.pendingPayPalOrderId
-                    if (orderId != null) {
-                        _state.update { it.copy(isLoading = true, showPayPalDialog = false) }
-                        capturePayPalPaymentUseCase(orderId).collect { result ->
-                            result.onSuccess {
-                                _state.update {
-                                    it.copy(
-                                        isLoading = false,
-                                        isSuccess = true,
-                                        pendingPayPalOrderId = null
-                                    )
-                                }
-                                _effect.send(PaymentEffect.ShowSnackBar(R.string.paypal_success))
-                                _effect.send(PaymentEffect.NavigateToHome)
-                            }.onFailure { err ->
-                                _state.update { it.copy(isLoading = false, errorMessage = err.message) }
-                                _effect.send(PaymentEffect.ShowSnackBar(R.string.paypal_failed))
-                            }
-                        }
-                    }
-                }
-            }
-            is PaymentEvent.PayPalDialogDismissed -> {
-                _state.update {
-                    it.copy(
-                        showPayPalDialog = false,
-                        pendingPayPalOrderId = null
-                    )
                 }
             }
         }

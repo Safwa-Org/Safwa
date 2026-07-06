@@ -10,7 +10,5 @@ data class PaymentState(
     val selectedCardId: String? = null,
     val isSuccess: Boolean = false,
     val errorMessage: String? = null,
-    val showAddCardDialog: Boolean = false,
-    val pendingPayPalOrderId: String? = null,
-    val showPayPalDialog: Boolean = false
+    val showAddCardDialog: Boolean = false
 )
