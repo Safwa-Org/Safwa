@@ -10,8 +10,6 @@ import com.tasneem.safwa.features.payment.domain.usecase.GetSavedCardsUseCase
 import com.tasneem.safwa.features.payment.domain.usecase.ProcessPayMockPaymentUseCase
 import com.tasneem.safwa.features.payment.domain.usecase.ProcessPaymentUseCase
 import com.tasneem.safwa.features.payment.domain.usecase.SaveCardUseCase
-import com.tasneem.safwa.features.cart.domain.usecase.GetCartUseCase
-import com.tasneem.safwa.core.util.Resource
 import com.tasneem.safwa.features.payment.presentation.state.PaymentEffect
 import com.tasneem.safwa.features.payment.presentation.state.PaymentEvent
 import com.tasneem.safwa.features.payment.presentation.state.PaymentState
@@ -142,7 +140,6 @@ class PaymentViewModel @Inject constructor(
                     }
                 }
             }
-<<<<<<< HEAD
             is PaymentEvent.ShopifyClicked -> {
                 viewModelScope.launch {
                     val checkoutUrl = _state.value.checkoutUrl
@@ -164,7 +161,6 @@ class PaymentViewModel @Inject constructor(
                     }
                 }
             }
-            else -> {}
             is PaymentEvent.PayMockClicked -> {
                 viewModelScope.launch {
                     _state.update { it.copy(isLoading = true) }
