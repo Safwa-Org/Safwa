@@ -1,7 +1,7 @@
 package com.tasneem.safwa.features.payment.presentation.state
 
 import android.net.Uri
-import android.util.Log
+
 import androidx.activity.ComponentActivity
 import com.shopify.checkoutsheetkit.CheckoutException
 import com.shopify.checkoutsheetkit.DefaultCheckoutEventProcessor
@@ -10,14 +10,21 @@ import com.shopify.checkoutsheetkit.pixelevents.PixelEvent
 
 class CheckoutEventProcessorImpl(
     activity: ComponentActivity,
-    private val onCheckoutCompletedAction: () -> Unit
+    private val onCheckoutCompletedAction: (orderId: String, totalAmount: String) -> Unit,
+    private val onCheckoutFailedAction: (CheckoutException) -> Unit
 ) : DefaultCheckoutEventProcessor(activity) {
 
     override fun onCheckoutCompleted(checkoutCompletedEvent: CheckoutCompletedEvent) {
-        onCheckoutCompletedAction()
+        val rawOrderId = checkoutCompletedEvent.orderDetails.id
+        val orderId = rawOrderId.substringAfterLast("/")
+        val amount = checkoutCompletedEvent.orderDetails.cart.price.total?.amount?.toString() ?: ""
+        val currency = checkoutCompletedEvent.orderDetails.cart.price.total?.currencyCode ?: "USD"
+        val price = if (amount.isNotBlank()) "$currency $amount" else ""
+        onCheckoutCompletedAction(orderId, price)
     }
 
     override fun onCheckoutFailed(error: CheckoutException) {
+        onCheckoutFailedAction(error)
     }
 
     override fun onCheckoutCanceled() {

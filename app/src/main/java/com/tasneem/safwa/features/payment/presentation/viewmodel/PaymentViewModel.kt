@@ -126,10 +126,10 @@ class PaymentViewModel @Inject constructor(
                                     result.onSuccess {
                                         clearCartUseCase()
                                         _state.update { it.copy(isLoading = false, isSuccess = true) }
-                                        _effect.send(PaymentEffect.ShowSnackBar(R.string.payment_successful))
-                                        _effect.send(PaymentEffect.NavigateToHome)
+                                        _effect.send(PaymentEffect.NavigateToOrderConfirmed())
                                     }.onFailure { err ->
                                         _state.update { it.copy(isLoading = false, errorMessage = err.message) }
+                                        _effect.send(PaymentEffect.NavigateToOrderFailed)
                                     }
                                 }
                             }
@@ -152,10 +152,9 @@ class PaymentViewModel @Inject constructor(
                     if (event.success) {
                         clearCartUseCase()
                         _state.update { it.copy(isSuccess = true) }
-                        _effect.send(PaymentEffect.ShowSnackBar(R.string.payment_successful))
-                        _effect.send(PaymentEffect.NavigateToHome)
+                        _effect.send(PaymentEffect.NavigateToOrderConfirmed(event.orderId, event.totalAmount))
                     } else {
-                        _effect.send(PaymentEffect.ShowSnackBar(R.string.unknown_error))
+                        _effect.send(PaymentEffect.NavigateToOrderFailed)
                     }
                 }
             }
@@ -194,22 +193,20 @@ class PaymentViewModel @Inject constructor(
                                             pendingPayPalOrderId = null
                                         )
                                     }
-                                    _effect.send(PaymentEffect.ShowSnackBar(R.string.paypal_success))
-                                    _effect.send(PaymentEffect.NavigateToHome)
+                                    _effect.send(PaymentEffect.NavigateToOrderConfirmed())
                                 }.onFailure { err ->
                                     _state.update { it.copy(isLoading = false, errorMessage = err.message) }
-                                    _effect.send(PaymentEffect.ShowSnackBar(R.string.paypal_failed))
+                                    _effect.send(PaymentEffect.NavigateToOrderFailed)
                                 }
                             }
                         } else {
                             clearCartUseCase()
                             _state.update { it.copy(isSuccess = true) }
-                            _effect.send(PaymentEffect.ShowSnackBar(R.string.paypal_success))
-                            _effect.send(PaymentEffect.NavigateToHome)
+                            _effect.send(PaymentEffect.NavigateToOrderConfirmed())
                         }
                     } else {
                         _state.update { it.copy(pendingPayPalOrderId = null) }
-                        _effect.send(PaymentEffect.ShowSnackBar(R.string.paypal_failed))
+                        _effect.send(PaymentEffect.NavigateToOrderFailed)
                     }
                 }
             }

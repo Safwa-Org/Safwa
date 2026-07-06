@@ -66,7 +66,9 @@ import androidx.core.net.toUri
 fun PaymentScreen(
     viewModel: PaymentViewModel = hiltViewModel(),
     onNavigateBack: () -> Unit = {},
-    onNavigateToHome: () -> Unit = {}
+    onNavigateToHome: () -> Unit = {},
+    onNavigateToOrderConfirmed: (String, String) -> Unit = { _, _ -> },
+    onNavigateToOrderFailed: () -> Unit = {}
 ) {
     val uiState by viewModel.state.collectAsStateWithLifecycle()
     val snackBarHostState = remember { SnackbarHostState() }
@@ -78,6 +80,8 @@ fun PaymentScreen(
             when (effect) {
                 PaymentEffect.NavigateBack -> onNavigateBack()
                 PaymentEffect.NavigateToHome -> onNavigateToHome()
+                is PaymentEffect.NavigateToOrderConfirmed -> onNavigateToOrderConfirmed(effect.orderId ?: "", effect.totalAmount ?: "")
+                PaymentEffect.NavigateToOrderFailed -> onNavigateToOrderFailed()
                 is PaymentEffect.ShowSnackBar -> {
                     scope.launch {
                         snackBarHostState.showSnackbar(context.getString(effect.messageRes))
@@ -107,9 +111,15 @@ fun PaymentScreen(
                         ShopifyCheckoutSheetKit.present(
                             effect.url,
                             context as ComponentActivity,
-                            CheckoutEventProcessorImpl(context) {
-                                viewModel.onEvent(PaymentEvent.ShopifyPaymentCompleted(true))
-                            }
+                            CheckoutEventProcessorImpl(
+                                activity = context as ComponentActivity,
+                                onCheckoutCompletedAction = { orderId, totalAmount ->
+                                    viewModel.onEvent(PaymentEvent.ShopifyPaymentCompleted(true, orderId, totalAmount))
+                                },
+                                onCheckoutFailedAction = {
+                                    viewModel.onEvent(PaymentEvent.ShopifyPaymentCompleted(false))
+                                }
+                            )
                         )
                     } catch (e: Exception) {
                         scope.launch {
