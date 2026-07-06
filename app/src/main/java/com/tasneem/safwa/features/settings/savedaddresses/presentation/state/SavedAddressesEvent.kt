@@ -15,9 +15,11 @@ sealed interface SavedAddressesEvent {
     data class SuggestionSelected(val candidate: AddressCandidate) : SavedAddressesEvent
 
     data class SaveAddress(
-        val label: String,
-        val recipientName: String,
-        val mobileNumber: String
+        val firstName: String,
+        val lastName: String,
+        val mobileNumber: String,
+        val apartment: String,
+        val setAsDefault: Boolean
     ) : SavedAddressesEvent
 
     data object ConfirmDeleteAddress : SavedAddressesEvent
