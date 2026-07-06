@@ -8,6 +8,9 @@ import com.tasneem.network.interceptor.CurrencyProvider
 import com.tasneem.safwa.core.data.source.local.PreferencesKeys
 import com.tasneem.safwa.core.di.ApplicationScope
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -25,34 +28,25 @@ class CurrencyRateManager @Inject constructor(
     private val dataStore: DataStore<Preferences>,
     @ApplicationScope private val appScope: CoroutineScope
 ) : CurrencyProvider {
+
     companion object {
         const val STORE_BASE_CURRENCY = "USD"
         private const val RATE_TTL_MS = 24 * 60 * 60 * 1000L
     }
 
+    private val _displayCurrency = MutableStateFlow(STORE_BASE_CURRENCY)
+    val displayCurrency: StateFlow<String> = _displayCurrency.asStateFlow()
+
     @Volatile private var rates: Map<String, Double> = emptyMap()
-    @Volatile private var displayCurrency: String = STORE_BASE_CURRENCY
 
     init {
-        appScope.launch { bootstrap() }
-    }
-
-    private suspend fun bootstrap() {
-        val prefs = dataStore.data.first()
-        displayCurrency = prefs[PreferencesKeys.CURRENCY_CODE] ?: STORE_BASE_CURRENCY
-        prefs[PreferencesKeys.RATES_JSON]?.let { json ->
-            runCatching { Json.decodeFromString<Map<String, Double>>(json) }
-                .onSuccess { rates = it }
-        }
-
         appScope.launch {
             dataStore.data
                 .map { it[PreferencesKeys.CURRENCY_CODE] ?: STORE_BASE_CURRENCY }
                 .distinctUntilChanged()
-                .collect { displayCurrency = it }
+                .collect { _displayCurrency.value = it }
         }
-
-        refreshIfStale()
+        appScope.launch { refreshIfStale() }
     }
 
     suspend fun refreshIfStale(force: Boolean = false) {
@@ -72,11 +66,12 @@ class CurrencyRateManager @Inject constructor(
             }
     }
 
-    override fun currentDisplayCurrency(): String = displayCurrency
+    override fun currentDisplayCurrency(): String = _displayCurrency.value
 
     override fun convertFromBase(amount: BigDecimal): BigDecimal {
-        if (displayCurrency == STORE_BASE_CURRENCY) return amount
-        val rate = rates[displayCurrency] ?: return amount
+        val currency = _displayCurrency.value
+        if (currency == STORE_BASE_CURRENCY) return amount
+        val rate = rates[currency] ?: return amount
         return amount.multiply(BigDecimal.valueOf(rate)).setScale(2, RoundingMode.HALF_UP)
     }
 

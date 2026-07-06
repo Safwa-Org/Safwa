@@ -5,8 +5,10 @@ import com.tasneem.safwa.features.wishlist.data.datasource.firebase.WishlistRemo
 import com.tasneem.safwa.features.wishlist.data.datasource.local.WishlistDao
 import com.tasneem.safwa.features.wishlist.data.datasource.local.toEntity
 import com.tasneem.safwa.features.core.domain.model.Product
+import com.tasneem.safwa.features.settings.languageandcurrency.data.CurrencyRateManager
 import com.tasneem.safwa.features.wishlist.domain.repository.WishlistRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -14,15 +16,25 @@ import javax.inject.Inject
 class WishlistRepositoryImpl @Inject constructor(
     private val localDataSource: WishlistDao,
     private val remoteDataSource: WishlistRemoteDataSource,
-    private val getCurrentUserIdUseCase: GetCurrentUserIdUseCase
+    private val getCurrentUserIdUseCase: GetCurrentUserIdUseCase,
+    private val currencyRateManager: CurrencyRateManager
 ) : WishlistRepository {
 
     override fun getWishlist(): Flow<List<Product>> {
-        return localDataSource.getWishlist().map { entities ->
-            entities.map { it.toDomainModel() }
+        return combine(
+            localDataSource.getWishlist(),
+            currencyRateManager.displayCurrency
+        ) { entities, _ ->
+            entities.map { entity ->
+                val product = entity.toDomainModel()
+                val baseAmount = product.price.toBigDecimalOrNull() ?: return@map product
+                product.copy(
+                    price = currencyRateManager.convertFromBase(baseAmount).toPlainString(),
+                    currency = currencyRateManager.currentDisplayCurrency()
+                )
+            }
         }
     }
-
     override suspend fun toggleFavorite(product: Product) {
         val currentWishlist = localDataSource.getWishlist().firstOrNull() ?: emptyList()
         val isFavorite = currentWishlist.any { it.id == product.id }
