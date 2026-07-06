@@ -27,10 +27,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.tasneem.safwa.R
 import com.tasneem.safwa.features.settings.savedaddresses.domain.model.Address
 
 @Composable
@@ -43,14 +41,20 @@ fun AddressCard(
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
-        Column(modifier = Modifier.padding(20.dp)) {
+        Column(
+            modifier = Modifier.padding(20.dp)
+        ) {
+            // Header Row: Icon, Label, Badge, Edit/Delete Buttons
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                // Location Icon
                 Box(
                     modifier = Modifier
                         .size(40.dp)
@@ -68,30 +72,17 @@ fun AddressCard(
 
                 Spacer(modifier = Modifier.width(12.dp))
 
+                // Label (HOME/OFFICE)
                 Text(
-                    text = "${address.firstName} ${address.lastName}".trim(),
-                    style = MaterialTheme.typography.titleMedium,
+                    text = address.label.uppercase(),
+                    style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
                     color = MaterialTheme.colorScheme.onBackground
                 )
 
-                if (address.isDefault) {
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(MaterialTheme.colorScheme.primaryContainer)
-                            .padding(horizontal = 8.dp, vertical = 2.dp)
-                    ) {
-                        Text(
-                            text = stringResource(R.string.badge_default),
-                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                }
 
                 Spacer(modifier = Modifier.weight(1f))
 
+                // Edit Button
                 IconButton(
                     onClick = onEditClick,
                     modifier = Modifier.size(36.dp),
@@ -100,6 +91,7 @@ fun AddressCard(
                     Icon(Icons.Rounded.Edit, contentDescription = "Edit", modifier = Modifier.size(20.dp))
                 }
 
+                // Delete Button
                 IconButton(
                     onClick = onDeleteClick,
                     modifier = Modifier.size(36.dp),
@@ -111,25 +103,31 @@ fun AddressCard(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            if (address.street.isNotBlank()) {
-                Text(
-                    text = if (address.apartment.isNotBlank()) "${address.street}, ${address.apartment}" else address.street,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.secondary
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-            }
-
+            // Recipient Name
             Text(
-                text = listOfNotNull(address.city.ifBlank { null }, address.zip.ifBlank { null }).joinToString(", "),
+                text = address.recipientName,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+
+            // Address Details
+            Text(
+
+                text = address.street,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.secondary
             )
-
+            Text(
+                text = address.cityAndZip,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.secondary
+            )
             Spacer(modifier = Modifier.height(8.dp))
 
+            // Mobile Number
             Text(
-                text = address.phone,
+                text = address.mobileNumber,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.secondary
             )

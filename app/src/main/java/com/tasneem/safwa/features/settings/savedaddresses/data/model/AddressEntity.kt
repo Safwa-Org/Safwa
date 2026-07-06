@@ -1,7 +1,9 @@
-package com.tasneem.safwa.features.settings.savedaddresses.domain.model
+package com.tasneem.safwa.features.settings.savedaddresses.data.model
 
+import kotlinx.serialization.Serializable
 
-data class Address(
+@Serializable
+data class AddressEntity(
     val id: String = "",
     val label: String = "",
     val recipientName: String = "",

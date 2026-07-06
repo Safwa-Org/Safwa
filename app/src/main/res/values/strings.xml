@@ -238,15 +238,4 @@
     <string name="hint_no_street_level_results">No street found — try adding a street or building name</string>
     <string name="logout_confirm_title">Log Out?</string>
     <string name="logout_confirm_message">You\'ll need to sign in again to access your account.</string>
-
-    <string name="address_first_name">First Name</string>
-    <string name="address_last_name">Last Name</string>
-    <string name="address_apartment">Apartment / Floor (optional)</string>
-    <string name="address_set_as_default">Set as default address</string>
-    <string name="badge_default">DEFAULT</string>
-    <string name="err_first_name_empty">First name is required</string>
-    <string name="err_sign_in_required">Please sign in to manage your addresses</string>
-    <string name="err_load_addresses_failed">Could not load your addresses</string>
-    <string name="err_offline_no_cache">You\'re offline and no saved addresses are cached yet. Connect once to load them.</string>
-    <string name="msg_offline_showing_cached">You\'re offline — showing your last saved addresses. Changes need an internet connection.</string>
 </resources>

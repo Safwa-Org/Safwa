@@ -12,6 +12,9 @@ class GetUserSessionUseCase @Inject constructor(private val repo: SessionPrefere
 class SaveUserSessionUseCase @Inject constructor(private val repo: SessionPreferencesRepository) {
     suspend operator fun invoke(user: User) = repo.saveUserSession(user)
 }
+class LogoutUseCase @Inject constructor(private val repo: SessionPreferencesRepository) {
+    suspend operator fun invoke() = repo.clearSession()
+}
 
 class GetAppPreferencesUseCase @Inject constructor(private val repo: SessionPreferencesRepository) {
     operator fun invoke(): Flow<AppPreferences> = repo.appPreferences

@@ -1,4 +1,4 @@
-package com.tasneem.safwa.core.data.repository
+package com.tasneem.safwa.features.settings.savedaddresses.data.repository
 
 import com.tasneem.network.datasource.location.AddressValidationRemoteDataSource
 import com.tasneem.safwa.features.settings.savedaddresses.domain.model.AddressCandidate
@@ -25,6 +25,7 @@ class AddressLookupRepositoryImpl @Inject constructor(
             .filter { it.type !in nonDeliverableTypes }
             .map { dto ->
                 val addr = dto.address
+
                 val street = addr?.road
                     ?.let { road -> listOfNotNull(addr.houseNumber, road).joinToString(" ") }
                     ?: dto.displayName.substringBefore(",").trim().ifBlank { null }
@@ -33,8 +34,7 @@ class AddressLookupRepositoryImpl @Inject constructor(
                     id = dto.placeId,
                     displayLabel = dto.displayName,
                     street = street,
-                    city = addr?.city.orEmpty(),
-                    zip = addr?.postcode.orEmpty(),
+                    cityAndZip = listOfNotNull(addr?.city, addr?.postcode).joinToString(", "),
                     countryCode = addr?.countryCode?.uppercase() ?: "",
                     latitude = dto.lat.toDoubleOrNull() ?: 0.0,
                     longitude = dto.lon.toDoubleOrNull() ?: 0.0

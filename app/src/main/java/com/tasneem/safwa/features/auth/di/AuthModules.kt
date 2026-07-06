@@ -27,7 +27,6 @@ import com.tasneem.safwa.features.auth.domain.usecase.SendVerificationEmailUseCa
 import com.tasneem.safwa.features.auth.domain.usecase.SyncUserSessionUseCase
 import com.tasneem.safwa.features.core.domain.usecase.ClearWishlistUseCase
 import com.tasneem.safwa.features.settings.orderhistory.domain.repository.OrderRepository
-import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -97,11 +96,62 @@ object AuthDataModule {
 
 @Module
 @InstallIn(SingletonComponent::class)
-abstract class AuthUseCaseModule {
+object AuthUseCaseModule {
 
-    @Binds
+    @Provides
     @Singleton
-    abstract fun bindGetCurrentUserIdUseCase(
-        impl: GetCurrentUserIdUseCaseImpl
-    ): GetCurrentUserIdUseCase
+    fun provideLoginUseCase(
+        authRepository: AuthRepository,
+        sessionPreferencesRepository: SessionPreferencesRepository
+    ): LoginUseCase = LoginUseCase(authRepository, sessionPreferencesRepository)
+
+    @Provides
+    @Singleton
+    fun provideGoogleLoginUseCase(
+        authRepository: AuthRepository,
+        sessionPreferencesRepository: SessionPreferencesRepository
+    ): GoogleLoginUseCase = GoogleLoginUseCase(authRepository, sessionPreferencesRepository)
+
+    @Provides
+    @Singleton
+    fun provideGuestLoginUseCase(
+        authRepository: AuthRepository,
+        sessionPreferencesRepository: SessionPreferencesRepository
+    ): GuestLoginUseCase = GuestLoginUseCase(authRepository, sessionPreferencesRepository)
+
+    @Provides
+    @Singleton
+    fun provideLogoutUseCase(
+        authRepository: AuthRepository,
+        sessionPreferencesRepository: SessionPreferencesRepository,
+        clearWishlistUseCase: ClearWishlistUseCase,
+        orderRepository: OrderRepository
+    ): LogoutUseCase = LogoutUseCase(authRepository,clearWishlistUseCase ,sessionPreferencesRepository, orderRepository)
+
+    @Provides
+    @Singleton
+    fun provideSyncUserSessionUseCase(
+        authRepository: AuthRepository,
+        sessionPreferencesRepository: SessionPreferencesRepository
+    ): SyncUserSessionUseCase = SyncUserSessionUseCase(authRepository, sessionPreferencesRepository)
+
+    @Provides
+    @Singleton
+    fun provideGetCurrentUserUseCase(repository: AuthRepository): GetCurrentUserUseCase =
+        GetCurrentUserUseCase(repository)
+
+    @Provides
+    @Singleton
+    fun provideRegisterUseCase(repository: AuthRepository): RegisterUseCase =
+        RegisterUseCase(repository)
+
+    @Provides
+    @Singleton
+    fun provideSendVerificationEmailUseCase(repository: AuthRepository): SendVerificationEmailUseCase =
+        SendVerificationEmailUseCase(repository)
+
+    @Provides
+    @Singleton
+    fun provideGetCurrentUserIdUseCase(authDataSource: FirebaseAuthDataSource): GetCurrentUserIdUseCase =
+        GetCurrentUserIdUseCaseImpl(authDataSource)
 }
