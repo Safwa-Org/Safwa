@@ -249,4 +249,11 @@
     <string name="err_load_addresses_failed">Could not load your addresses</string>
     <string name="err_offline_no_cache">You\'re offline and no saved addresses are cached yet. Connect once to load them.</string>
     <string name="msg_offline_showing_cached">You\'re offline — showing your last saved addresses. Changes need an internet connection.</string>
+    <string name="ai_chat_title">Safwa AI</string>
+    <string name="ai_chat_subtitle">PERSONAL SHOPPER · ONLINE</string>
+    <string name="ai_chat_input_placeholder">Ask Safwa AI…</string>
+    <string name="ai_chat_send">Send message</string>
+    <string name="ai_chat_close">Close chat</string>
+    <string name="ai_chat_fab_desc">Open Safwa AI chat</string>
 </resources>
+
