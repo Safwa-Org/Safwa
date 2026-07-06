@@ -99,4 +99,5 @@ dependencies {
     implementation("io.coil-kt.coil3:coil-network-okhttp:3.5.0")
 
     implementation("androidx.browser:browser:1.8.0")
+    implementation(libs.shopify.checkout.sheet.kit)
 }

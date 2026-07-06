@@ -1,7 +1,9 @@
 package com.tasneem.safwa.features.payment.presentation.view
 
+import android.annotation.SuppressLint
 import android.content.res.Configuration
 import android.net.Uri
+import androidx.activity.ComponentActivity
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
@@ -10,7 +12,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -33,7 +34,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -41,6 +41,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.shopify.checkoutsheetkit.ShopifyCheckoutSheetKit
 import com.tasneem.safwa.R
 import kotlinx.coroutines.launch
 import com.tasneem.safwa.core.shared_component.CustomButon
@@ -51,17 +52,23 @@ import com.tasneem.safwa.features.payment.presentation.state.PaymentEvent
 import com.tasneem.safwa.features.payment.domain.model.PaymentMethodType
 import com.tasneem.safwa.features.payment.presentation.state.PaymentState
 import com.tasneem.safwa.features.payment.domain.model.SavedCard
+import com.tasneem.safwa.features.payment.presentation.state.CheckoutEventProcessorImpl
 import com.tasneem.safwa.features.payment.presentation.view.component.AddCardDialog
 import com.tasneem.safwa.features.payment.presentation.view.component.PaymentOptionCard
 import com.tasneem.safwa.features.payment.presentation.view.component.SavedCardItem
 import com.tasneem.safwa.features.payment.presentation.viewmodel.PaymentViewModel
+import androidx.core.graphics.toColorInt
+import androidx.core.net.toUri
 
 
+@SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 fun PaymentScreen(
     viewModel: PaymentViewModel = hiltViewModel(),
     onNavigateBack: () -> Unit = {},
-    onNavigateToHome: () -> Unit = {}
+    onNavigateToHome: () -> Unit = {},
+    onNavigateToOrderConfirmed: (String, String) -> Unit = { _, _ -> },
+    onNavigateToOrderFailed: () -> Unit = {}
 ) {
     val uiState by viewModel.state.collectAsStateWithLifecycle()
     val snackBarHostState = remember { SnackbarHostState() }
@@ -73,6 +80,8 @@ fun PaymentScreen(
             when (effect) {
                 PaymentEffect.NavigateBack -> onNavigateBack()
                 PaymentEffect.NavigateToHome -> onNavigateToHome()
+                is PaymentEffect.NavigateToOrderConfirmed -> onNavigateToOrderConfirmed(effect.orderId ?: "", effect.totalAmount ?: "")
+                PaymentEffect.NavigateToOrderFailed -> onNavigateToOrderFailed()
                 is PaymentEffect.ShowSnackBar -> {
                     scope.launch {
                         snackBarHostState.showSnackbar(context.getString(effect.messageRes))
@@ -84,11 +93,11 @@ fun PaymentScreen(
                             .setShowTitle(true)
                             .setDefaultColorSchemeParams(
                                 androidx.browser.customtabs.CustomTabColorSchemeParams.Builder()
-                                    .setToolbarColor(android.graphics.Color.parseColor("#003087"))
+                                    .setToolbarColor("#003087".toColorInt())
                                     .build()
                             )
                             .build()
-                            .launchUrl(context, Uri.parse(effect.url))
+                            .launchUrl(context, effect.url.toUri())
                     } catch (e: Exception) {
                         scope.launch {
                             snackBarHostState.showSnackbar(
@@ -97,7 +106,34 @@ fun PaymentScreen(
                         }
                     }
                 }
+                is PaymentEffect.LaunchShopifyCheckout -> {
+                    try {
+                        ShopifyCheckoutSheetKit.present(
+                            effect.url,
+                            context as ComponentActivity,
+                            CheckoutEventProcessorImpl(
+                                activity = context as ComponentActivity,
+                                onCheckoutCompletedAction = { orderId, totalAmount ->
+                                    viewModel.onEvent(PaymentEvent.ShopifyPaymentCompleted(true, orderId, totalAmount))
+                                },
+                                onCheckoutFailedAction = {
+                                    viewModel.onEvent(PaymentEvent.ShopifyPaymentCompleted(false))
+                                }
+                            )
+                        )
+                    } catch (e: Exception) {
+                        scope.launch {
+                            snackBarHostState.showSnackbar(context.getString(R.string.unknown_error))
+                        }
+                    }
+                }
             }
+        }
+    }
+
+    LaunchedEffect(uiState.checkoutUrl) {
+        uiState.checkoutUrl?.let { url ->
+            ShopifyCheckoutSheetKit.preload(url, context as ComponentActivity)
         }
     }
 
@@ -117,7 +153,8 @@ fun PaymentContent(
 ) {
     val showContinue = state.selectedMethod == PaymentMethodType.CASH_ON_DELIVERY ||
             (state.selectedMethod == PaymentMethodType.VISA && state.selectedCardId != null) ||
-            state.selectedMethod == PaymentMethodType.PAYPAL
+            state.selectedMethod == PaymentMethodType.PAYPAL ||
+            state.selectedMethod == PaymentMethodType.SHOPIFY
 
     Scaffold(
         topBar = {
@@ -212,6 +249,12 @@ fun PaymentContent(
                         title = stringResource(R.string.paypal),
                         isSelected = state.selectedMethod == PaymentMethodType.PAYPAL,
                         onClick = { onEvent(PaymentEvent.MethodSelected(PaymentMethodType.PAYPAL)) }
+                    )
+
+                    PaymentOptionCard(
+                        title = "Pay using Shopify",
+                        isSelected = state.selectedMethod == PaymentMethodType.SHOPIFY,
+                        onClick = { onEvent(PaymentEvent.MethodSelected(PaymentMethodType.SHOPIFY)) }
                     )
 
                     Spacer(modifier = Modifier.height(24.dp))
