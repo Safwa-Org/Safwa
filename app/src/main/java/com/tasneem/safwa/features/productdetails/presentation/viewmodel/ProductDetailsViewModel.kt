@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.tasneem.safwa.R
+import com.tasneem.safwa.core.domain.usecase.preferences.PreferencesUseCases
 import com.tasneem.safwa.core.exception.DomainException
 import com.tasneem.safwa.core.navigation.ScreenRoute
 import com.tasneem.safwa.core.presentation.mapper.toUiError
@@ -21,11 +22,15 @@ import com.tasneem.safwa.features.productdetails.presentation.state.ProductDetai
 import com.tasneem.safwa.features.productdetails.presentation.state.ProductDetailsEvent
 import com.tasneem.safwa.features.productdetails.presentation.state.ProductDetailsState
 import com.tasneem.safwa.features.productdetails.presentation.state.mapper.toUiModel
+import com.tasneem.safwa.features.reviews.domain.model.Review
+import com.tasneem.safwa.features.reviews.domain.usecase.GetProductReviewsUseCase
+import com.tasneem.safwa.features.reviews.domain.usecase.SubmitReviewUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -37,6 +42,9 @@ class ProductDetailsViewModel @Inject constructor(
     private val getWishlistUseCase: GetWishlistUseCase,
     private val toggleFavoriteUseCase: ToggleFavoriteUseCase,
     private val addToCartUseCase: AddToCartUseCase,
+    private val getProductReviewsUseCase: GetProductReviewsUseCase,
+    private val submitReviewUseCase: SubmitReviewUseCase,
+    private val preferencesUseCases: PreferencesUseCases,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
@@ -53,8 +61,15 @@ class ProductDetailsViewModel @Inject constructor(
 
     init {
         loadProduct(productHandle)
+        observeCurrentUserId()
     }
-
+    private fun observeCurrentUserId() {
+        viewModelScope.launch {
+            preferencesUseCases.getUserSession().collect { user ->
+                _state.update { it.copy(currentUserId = user?.id) }
+            }
+        }
+    }
     private fun loadProduct(handle: String) {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true, error = null) }
@@ -82,8 +97,15 @@ class ProductDetailsViewModel @Inject constructor(
             )
         }
         observeWishlistStatus(product.id)
+        observeReviews(product.id)
     }
-
+    private fun observeReviews(productId: String) {
+        viewModelScope.launch {
+            getProductReviewsUseCase(productId).collect { reviews ->
+                _state.update { it.copy(reviews = reviews) }
+            }
+        }
+    }
     private fun onLoadError(error: UiError) {
         _state.update { it.copy(isLoading = false, error = error) }
     }
@@ -111,9 +133,45 @@ class ProductDetailsViewModel @Inject constructor(
 
             is ProductDetailsEvent.ShareClicked -> onShare()
             is ProductDetailsEvent.AddToCartClicked -> onAddToCart()
+            is ProductDetailsEvent.ReviewRatingChanged -> {
+                _state.update { it.copy(newReviewRating = event.rating) }
+            }
+            is ProductDetailsEvent.ReviewCommentChanged -> {
+                _state.update { it.copy(newReviewComment = event.comment) }
+            }
+            is ProductDetailsEvent.SubmitReviewClicked -> onSubmitReview()
         }
     }
+    private fun onSubmitReview() {
+        val product = loadedProduct ?: return
+        viewModelScope.launch {
+            val user = preferencesUseCases.getUserSession().first()
+            if (user == null || user.isGuest) {
+                _effect.send(ProductDetailsEffect.ShowSnackBar("Please sign in to leave a review"))
+                return@launch
+            }
 
+            _state.update { it.copy(isSubmittingReview = true) }
+
+            val review = Review(
+                productId = product.id,
+                userId = user.id,
+                userName = "${user.firstName} ${user.lastName}".trim().ifBlank { "Anonymous" },
+                rating = _state.value.newReviewRating,
+                comment = _state.value.newReviewComment.trim()
+            )
+
+            val result = submitReviewUseCase(review)
+            _state.update { it.copy(isSubmittingReview = false) }
+
+            result.onSuccess {
+                _state.update { it.copy(newReviewRating = 0, newReviewComment = "") }
+                _effect.send(ProductDetailsEffect.ShowSnackBar("Review submitted"))
+            }.onFailure { error ->
+                _effect.send(ProductDetailsEffect.ShowSnackBar(error.message ?: "Could not submit review"))
+            }
+        }
+    }
     private fun onAddToCart() {
         val product = loadedProduct ?: return
         val matchedVariant = findMatchingVariant(product, _state.value.selectedOptions) ?: return

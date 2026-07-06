@@ -7,4 +7,9 @@ sealed interface ProductDetailsEvent {
     object BackClicked : ProductDetailsEvent
     object ShareClicked : ProductDetailsEvent
     object RetryClicked : ProductDetailsEvent
+
+    // Reviews
+    data class ReviewRatingChanged(val rating: Int) : ProductDetailsEvent
+    data class ReviewCommentChanged(val comment: String) : ProductDetailsEvent
+    object SubmitReviewClicked : ProductDetailsEvent
 }

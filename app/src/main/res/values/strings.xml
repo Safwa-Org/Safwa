@@ -249,4 +249,11 @@
     <string name="err_load_addresses_failed">Could not load your addresses</string>
     <string name="err_offline_no_cache">You\'re offline and no saved addresses are cached yet. Connect once to load them.</string>
     <string name="msg_offline_showing_cached">You\'re offline — showing your last saved addresses. Changes need an internet connection.</string>
+    <string name="reviews">Reviews</string>
+    <string name="update_your_review">Update your review</string>
+    <string name="write_a_review">Write a review</string>
+    <string name="share_your_thoughts_about_this_product">Share your thoughts about this product</string>
+    <string name="update_review">Update Review</string>
+    <string name="submit_review">Submit Review</string>
+    <string name="no_reviews_yet">No reviews yet — be the first to share your thoughts.</string>
 </resources>

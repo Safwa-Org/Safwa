@@ -5,6 +5,7 @@ import android.content.res.Configuration
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -38,6 +39,7 @@ import com.tasneem.safwa.features.productdetails.presentation.view.component.Pro
 import com.tasneem.safwa.features.productdetails.presentation.view.component.ProductInfoSection
 import com.tasneem.safwa.features.productdetails.presentation.view.component.StickyBottomActionBar
 import com.tasneem.safwa.features.productdetails.presentation.viewmodel.ProductDetailsViewModel
+import com.tasneem.safwa.features.reviews.presentation.ReviewsSection
 import kotlinx.coroutines.launch
 
 @Composable
@@ -124,6 +126,7 @@ fun ProductDetailsContent(
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
+                            .imePadding()
                             .verticalScroll(rememberScrollState()),
                     ) {
                         ProductImageHeader(
@@ -152,6 +155,16 @@ fun ProductDetailsContent(
                         if (product.description.isNotEmpty()) {
                             ProductDescriptionSection(description = product.description)
                         }
+                        ReviewsSection(
+                            reviews = state.reviews,
+                            currentUserId = state.currentUserId,
+                            newReviewRating = state.newReviewRating,
+                            newReviewComment = state.newReviewComment,
+                            isSubmittingReview = state.isSubmittingReview,
+                            onRatingChanged = { onEvent(ProductDetailsEvent.ReviewRatingChanged(it)) },
+                            onCommentChanged = { onEvent(ProductDetailsEvent.ReviewCommentChanged(it)) },
+                            onSubmit = { onEvent(ProductDetailsEvent.SubmitReviewClicked) },
+                        )
                     }
                 }
             }
