@@ -20,4 +20,5 @@ data class ProductDetailsState(
     val newReviewRating: Int = 0,
     val newReviewComment: String = "",
     val isSubmittingReview: Boolean = false,
+    val isReviewFormVisible: Boolean = false,
 )

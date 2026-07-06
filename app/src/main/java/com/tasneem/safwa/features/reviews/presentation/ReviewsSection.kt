@@ -40,8 +40,11 @@ fun ReviewsSection(
     newReviewRating: Int,
     newReviewComment: String,
     isSubmittingReview: Boolean,
+    isReviewFormVisible: Boolean,
     onRatingChanged: (Int) -> Unit,
     onCommentChanged: (String) -> Unit,
+    onWriteReviewClicked: () -> Unit,
+    onCancelReviewClicked: () -> Unit,
     onSubmit: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -76,53 +79,78 @@ fun ReviewsSection(
             }
         }
 
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(16.dp))
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Text(
-                text = if (existingReviewFromUser != null) stringResource(R.string.update_your_review)
-                else stringResource(R.string.write_a_review),
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface
-            )
+        if (isReviewFormVisible) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(16.dp))
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = if (existingReviewFromUser != null) stringResource(R.string.update_your_review)
+                        else stringResource(R.string.write_a_review),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
 
-            Row {
-                for (star in 1..5) {
-                    IconButton(onClick = { onRatingChanged(star) }) {
-                        Icon(
-                            imageVector = if (star <= newReviewRating) Icons.Filled.Star else Icons.Outlined.StarOutline,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary
+                    androidx.compose.material3.TextButton(onClick = onCancelReviewClicked) {
+                        Text(stringResource(android.R.string.cancel))
+                    }
+                }
+
+                Row {
+                    for (star in 1..5) {
+                        IconButton(onClick = { onRatingChanged(star) }) {
+                            Icon(
+                                imageVector = if (star <= newReviewRating) Icons.Filled.Star else Icons.Outlined.StarOutline,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
+                }
+
+                OutlinedTextField(
+                    value = newReviewComment,
+                    onValueChange = onCommentChanged,
+                    label = { Text(stringResource(R.string.share_your_thoughts_about_this_product)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    minLines = 3,
+                    shape = RoundedCornerShape(16.dp)
+                )
+
+                Button(
+                    onClick = onSubmit,
+                    enabled = !isSubmittingReview,
+                    shape = RoundedCornerShape(16.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    if (isSubmittingReview) {
+                        CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
+                    } else {
+                        Text(
+                            if (existingReviewFromUser != null) stringResource(R.string.update_review)
+                            else stringResource(R.string.submit_review)
                         )
                     }
                 }
             }
-
-            OutlinedTextField(
-                value = newReviewComment,
-                onValueChange = onCommentChanged,
-                label = { Text(stringResource(R.string.share_your_thoughts_about_this_product)) },
-                modifier = Modifier.fillMaxWidth(),
-                minLines = 3,
-                shape = RoundedCornerShape(16.dp)
-            )
-
+        } else {
             Button(
-                onClick = onSubmit,
-                enabled = !isSubmittingReview,
+                onClick = onWriteReviewClicked,
                 shape = RoundedCornerShape(16.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                if (isSubmittingReview) {
-                    CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
-                } else {
-                    Text(if (existingReviewFromUser != null) stringResource(R.string.update_review)
-                    else stringResource(R.string.submit_review))
-                }
+                Text(
+                    text = if (existingReviewFromUser != null) stringResource(R.string.update_your_review)
+                    else stringResource(R.string.write_a_review)
+                )
             }
         }
 
@@ -142,7 +170,6 @@ fun ReviewsSection(
         }
     }
 }
-
 @Composable
 private fun ReviewItem(review: Review) {
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {

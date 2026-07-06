@@ -161,8 +161,11 @@ fun ProductDetailsContent(
                             newReviewRating = state.newReviewRating,
                             newReviewComment = state.newReviewComment,
                             isSubmittingReview = state.isSubmittingReview,
+                            isReviewFormVisible = state.isReviewFormVisible,
                             onRatingChanged = { onEvent(ProductDetailsEvent.ReviewRatingChanged(it)) },
                             onCommentChanged = { onEvent(ProductDetailsEvent.ReviewCommentChanged(it)) },
+                            onWriteReviewClicked = { onEvent(ProductDetailsEvent.WriteReviewClicked) },
+                            onCancelReviewClicked = { onEvent(ProductDetailsEvent.CancelReviewClicked) },
                             onSubmit = { onEvent(ProductDetailsEvent.SubmitReviewClicked) },
                         )
                     }

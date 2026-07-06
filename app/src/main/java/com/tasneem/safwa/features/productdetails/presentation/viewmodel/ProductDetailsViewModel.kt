@@ -133,15 +133,35 @@ class ProductDetailsViewModel @Inject constructor(
 
             is ProductDetailsEvent.ShareClicked -> onShare()
             is ProductDetailsEvent.AddToCartClicked -> onAddToCart()
+
             is ProductDetailsEvent.ReviewRatingChanged -> {
                 _state.update { it.copy(newReviewRating = event.rating) }
             }
             is ProductDetailsEvent.ReviewCommentChanged -> {
                 _state.update { it.copy(newReviewComment = event.comment) }
             }
+            is ProductDetailsEvent.WriteReviewClicked -> onWriteReviewClicked()
+            is ProductDetailsEvent.CancelReviewClicked -> {
+                _state.update {
+                    it.copy(isReviewFormVisible = false, newReviewRating = 0, newReviewComment = "")
+                }
+            }
             is ProductDetailsEvent.SubmitReviewClicked -> onSubmitReview()
         }
     }
+    private fun onWriteReviewClicked() {
+        val currentUserId = _state.value.currentUserId
+        val existingReview = _state.value.reviews.firstOrNull { it.userId == currentUserId }
+
+        _state.update {
+            it.copy(
+                isReviewFormVisible = true,
+                newReviewRating = existingReview?.rating ?: 0,
+                newReviewComment = existingReview?.comment ?: ""
+            )
+        }
+    }
+
     private fun onSubmitReview() {
         val product = loadedProduct ?: return
         viewModelScope.launch {
@@ -165,14 +185,15 @@ class ProductDetailsViewModel @Inject constructor(
             _state.update { it.copy(isSubmittingReview = false) }
 
             result.onSuccess {
-                _state.update { it.copy(newReviewRating = 0, newReviewComment = "") }
+                _state.update {
+                    it.copy(newReviewRating = 0, newReviewComment = "", isReviewFormVisible = false)
+                }
                 _effect.send(ProductDetailsEffect.ShowSnackBar("Review submitted"))
             }.onFailure { error ->
                 _effect.send(ProductDetailsEffect.ShowSnackBar(error.message ?: "Could not submit review"))
             }
         }
-    }
-    private fun onAddToCart() {
+    }    private fun onAddToCart() {
         val product = loadedProduct ?: return
         val matchedVariant = findMatchingVariant(product, _state.value.selectedOptions) ?: return
         

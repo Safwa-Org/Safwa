@@ -12,4 +12,6 @@ sealed interface ProductDetailsEvent {
     data class ReviewRatingChanged(val rating: Int) : ProductDetailsEvent
     data class ReviewCommentChanged(val comment: String) : ProductDetailsEvent
     object SubmitReviewClicked : ProductDetailsEvent
+    data object WriteReviewClicked : ProductDetailsEvent
+    data object CancelReviewClicked : ProductDetailsEvent
 }
