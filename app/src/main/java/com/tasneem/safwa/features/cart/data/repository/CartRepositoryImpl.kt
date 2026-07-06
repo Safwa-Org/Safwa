@@ -74,4 +74,8 @@ class CartRepositoryImpl @Inject constructor(
             Resource.Error(e.localizedMessage ?: "Failed to apply discount code")
         }
     }
+
+    override suspend fun clearCartLocal() {
+        _cartItemCount.value = 0
+    }
 }

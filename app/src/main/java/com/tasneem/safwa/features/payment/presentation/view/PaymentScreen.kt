@@ -1,8 +1,8 @@
 package com.tasneem.safwa.features.payment.presentation.view
 
+import android.annotation.SuppressLint
 import android.content.res.Configuration
-import android.net.Uri
-import androidx.browser.customtabs.CustomTabsIntent
+import androidx.activity.ComponentActivity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -33,7 +32,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -41,63 +39,78 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.shopify.checkoutsheetkit.ShopifyCheckoutSheetKit
 import com.tasneem.safwa.R
-import kotlinx.coroutines.launch
 import com.tasneem.safwa.core.shared_component.CustomButon
 import com.tasneem.safwa.core.shared_component.SafwaTopAppBar
 import com.tasneem.safwa.core.theme.SafwaTheme
+import com.tasneem.safwa.features.payment.domain.model.PaymentMethodType
+import com.tasneem.safwa.features.payment.domain.model.SavedCard
 import com.tasneem.safwa.features.payment.presentation.state.PaymentEffect
 import com.tasneem.safwa.features.payment.presentation.state.PaymentEvent
-import com.tasneem.safwa.features.payment.domain.model.PaymentMethodType
 import com.tasneem.safwa.features.payment.presentation.state.PaymentState
-import com.tasneem.safwa.features.payment.domain.model.SavedCard
+import com.tasneem.safwa.features.payment.presentation.state.CheckoutEventProcessorImpl
 import com.tasneem.safwa.features.payment.presentation.view.component.AddCardDialog
 import com.tasneem.safwa.features.payment.presentation.view.component.PaymentOptionCard
 import com.tasneem.safwa.features.payment.presentation.view.component.SavedCardItem
 import com.tasneem.safwa.features.payment.presentation.viewmodel.PaymentViewModel
+import kotlinx.coroutines.launch
 
 
+@SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 fun PaymentScreen(
     viewModel: PaymentViewModel = hiltViewModel(),
     onNavigateBack: () -> Unit = {},
-    onNavigateToHome: () -> Unit = {}
+    onNavigateToHome: () -> Unit = {},
+    onNavigateToOrderConfirmed: (String, String) -> Unit = { _, _ -> },
+    onNavigateToOrderFailed: () -> Unit = {}
 ) {
     val uiState by viewModel.state.collectAsStateWithLifecycle()
     val snackBarHostState = remember { SnackbarHostState() }
-    val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val context = androidx.compose.ui.platform.LocalContext.current
 
     LaunchedEffect(Unit) {
         viewModel.effect.collect { effect ->
             when (effect) {
                 PaymentEffect.NavigateBack -> onNavigateBack()
                 PaymentEffect.NavigateToHome -> onNavigateToHome()
+                is PaymentEffect.NavigateToOrderConfirmed -> onNavigateToOrderConfirmed(effect.orderId ?: "", effect.totalAmount ?: "")
+                PaymentEffect.NavigateToOrderFailed -> onNavigateToOrderFailed()
                 is PaymentEffect.ShowSnackBar -> {
                     scope.launch {
                         snackBarHostState.showSnackbar(context.getString(effect.messageRes))
                     }
                 }
-                is PaymentEffect.LaunchPayPalUrl -> {
+                is PaymentEffect.LaunchShopifyCheckout -> {
                     try {
-                        CustomTabsIntent.Builder()
-                            .setShowTitle(true)
-                            .setDefaultColorSchemeParams(
-                                androidx.browser.customtabs.CustomTabColorSchemeParams.Builder()
-                                    .setToolbarColor(android.graphics.Color.parseColor("#003087"))
-                                    .build()
+                        ShopifyCheckoutSheetKit.present(
+                            effect.url,
+                            context as ComponentActivity,
+                            CheckoutEventProcessorImpl(
+                                activity = context as ComponentActivity,
+                                onCheckoutCompletedAction = { orderId, totalAmount ->
+                                    viewModel.onEvent(PaymentEvent.ShopifyPaymentCompleted(true, orderId, totalAmount))
+                                },
+                                onCheckoutFailedAction = {
+                                    viewModel.onEvent(PaymentEvent.ShopifyPaymentCompleted(false))
+                                }
                             )
-                            .build()
-                            .launchUrl(context, Uri.parse(effect.url))
+                        )
                     } catch (e: Exception) {
                         scope.launch {
-                            snackBarHostState.showSnackbar(
-                                context.getString(R.string.paypal_failed)
-                            )
+                            snackBarHostState.showSnackbar(context.getString(R.string.unknown_error))
                         }
                     }
                 }
             }
+        }
+    }
+
+    LaunchedEffect(uiState.checkoutUrl) {
+        uiState.checkoutUrl?.let { url ->
+            ShopifyCheckoutSheetKit.preload(url, context as ComponentActivity)
         }
     }
 
@@ -117,7 +130,8 @@ fun PaymentContent(
 ) {
     val showContinue = state.selectedMethod == PaymentMethodType.CASH_ON_DELIVERY ||
             (state.selectedMethod == PaymentMethodType.VISA && state.selectedCardId != null) ||
-            state.selectedMethod == PaymentMethodType.PAYPAL
+            state.selectedMethod == PaymentMethodType.SHOPIFY ||
+            state.selectedMethod == PaymentMethodType.PAYMOCK
 
     Scaffold(
         topBar = {
@@ -209,9 +223,15 @@ fun PaymentContent(
                     }
 
                     PaymentOptionCard(
-                        title = stringResource(R.string.paypal),
-                        isSelected = state.selectedMethod == PaymentMethodType.PAYPAL,
-                        onClick = { onEvent(PaymentEvent.MethodSelected(PaymentMethodType.PAYPAL)) }
+                        title = stringResource(R.string.paymock),
+                        isSelected = state.selectedMethod == PaymentMethodType.PAYMOCK,
+                        onClick = { onEvent(PaymentEvent.MethodSelected(PaymentMethodType.PAYMOCK)) }
+                    )
+
+                    PaymentOptionCard(
+                        title = "Pay using Shopify",
+                        isSelected = state.selectedMethod == PaymentMethodType.SHOPIFY,
+                        onClick = { onEvent(PaymentEvent.MethodSelected(PaymentMethodType.SHOPIFY)) }
                     )
 
                     Spacer(modifier = Modifier.height(24.dp))
@@ -219,6 +239,7 @@ fun PaymentContent(
             }
         }
     }
+
 
     if (state.showAddCardDialog) {
         AddCardDialog(
@@ -248,7 +269,7 @@ private fun PaymentContentPreview() {
                     SavedCard("1", "Visa", "4242", "Aisha Al-Marri", "08/28", true),
                     SavedCard("2", "Mada", "1187", "Aisha Al-Marri", "11/27", false)
                 ),
-                selectedMethod = PaymentMethodType.PAYPAL
+                selectedMethod = PaymentMethodType.VISA
             ),
             onEvent = {}
         )

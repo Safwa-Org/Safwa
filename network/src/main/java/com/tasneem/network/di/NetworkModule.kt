@@ -4,8 +4,8 @@ import com.apollographql.apollo.ApolloClient
 import com.tasneem.network.datasource.brand.BrandRemoteDataSource
 import com.tasneem.network.datasource.brand.BrandRemoteDataSourceImpl
 import com.tasneem.network.datasource.cart.CartRemoteDataSource
-import com.tasneem.network.datasource.payment.IPayPalRemoteDataSource
-import com.tasneem.network.datasource.payment.PayPalRemoteDataSource
+import com.tasneem.network.datasource.payment.IPayMockRemoteDataSource
+import com.tasneem.network.datasource.payment.PayMockRemoteDataSource
 import com.tasneem.network.datasource.cart.CartRemoteDataSourceImpl
 import com.tasneem.network.datasource.order.OrderRemoteDataSource
 import com.tasneem.network.datasource.order.OrderRemoteDataSourceImpl
@@ -16,7 +16,7 @@ import com.tasneem.network.datasource.product.ProductRemoteDataSource
 import com.tasneem.network.datasource.product.ProductRemoteDataSourceImpl
 import com.tasneem.network.datasource.payment.PaymentRemoteDataSource
 import com.tasneem.network.datasource.payment.PaymentRemoteDataSourceImpl
-import com.tasneem.network.datasource.payment.PayPalApiService
+import com.tasneem.network.datasource.payment.PayMockApiService
 import com.tasneem.network.datasource.payment.ShopifyDepositApi
 import okhttp3.logging.HttpLoggingInterceptor
 import com.tasneem.network.datasource.auth.AuthRemoteDataSource
@@ -32,7 +32,12 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import okhttp3.Interceptor
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
+import okhttp3.Protocol
+import okhttp3.Response
+import okhttp3.ResponseBody.Companion.toResponseBody
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
@@ -51,6 +56,22 @@ object NetworkModule {
         }
         return OkHttpClient.Builder()
             .addInterceptor(logging)
+            .addInterceptor { chain ->
+                val request = chain.request()
+                if (request.url.toString().contains("api/v1/payments")) {
+                    val jsonString = """{"id": "mock_id_123", "status": "approved"}"""
+                    Response.Builder()
+                        .code(200)
+                        .message("OK")
+                        .request(request)
+                        .protocol(Protocol.HTTP_1_1)
+                        .body(jsonString.toResponseBody("application/json".toMediaTypeOrNull()))
+                        .addHeader("content-type", "application/json")
+                        .build()
+                } else {
+                    chain.proceed(request)
+                }
+            }
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
             .writeTimeout(30, TimeUnit.SECONDS)
@@ -100,13 +121,13 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun providePayPalApiService(okHttpClient: OkHttpClient): PayPalApiService {
+    fun providePayMockApiService(okHttpClient: OkHttpClient): PayMockApiService {
         return Retrofit.Builder()
-            .baseUrl(BuildConfig.PAYPAL_BASE_URL)
+            .baseUrl("http://192.168.1.29:8080/")
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
-            .create(PayPalApiService::class.java)
+            .create(PayMockApiService::class.java)
     }
 }
 
@@ -154,8 +175,8 @@ abstract class DataSourceModule {
     ): AddressValidationRemoteDataSource
 
     @Binds
-    abstract fun bindPayPalRemoteDataSource(
-        impl: PayPalRemoteDataSource
-    ): IPayPalRemoteDataSource
+    abstract fun bindPayMockRemoteDataSource(
+        impl: PayMockRemoteDataSource
+    ): IPayMockRemoteDataSource
 
 }

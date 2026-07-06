@@ -4,7 +4,7 @@ import com.tasneem.safwa.features.payment.data.datasource.local.SavedCardDao
 import com.tasneem.safwa.features.payment.data.datasource.local.toEntity
 import com.tasneem.network.dto.PaymentRequestDto
 import com.tasneem.network.datasource.payment.PaymentRemoteDataSource
-import com.tasneem.network.datasource.payment.PayPalRemoteDataSource
+import com.tasneem.network.datasource.payment.IPayMockRemoteDataSource
 import com.tasneem.safwa.features.payment.domain.model.CardDetails
 import com.tasneem.safwa.features.payment.domain.model.PaymentDetails
 import com.tasneem.safwa.features.payment.domain.model.SavedCard
@@ -16,7 +16,7 @@ import javax.inject.Inject
 
 class PaymentRepositoryImpl @Inject constructor(
     private val remoteDataSource: PaymentRemoteDataSource,
-    private val payPalRemoteDataSource: PayPalRemoteDataSource,
+    private val payMockRemoteDataSource: IPayMockRemoteDataSource,
     private val savedCardDao: SavedCardDao
 ) : PaymentRepository {
 
@@ -60,13 +60,15 @@ class PaymentRepositoryImpl @Inject constructor(
 
     override fun processPayment(
         orderId: String,
+        amount: Double,
         paymentDetails: PaymentDetails
     ): Flow<Result<Unit>> = flow {
         try {
             val response = remoteDataSource.processPayment(
                 PaymentRequestDto(
                     orderId = orderId,
-                    paymentMethodId = paymentDetails.cardId
+                    paymentMethodId = paymentDetails.cardId,
+                    amount = amount
                 )
             )
             if (response.success) {
@@ -79,28 +81,19 @@ class PaymentRepositoryImpl @Inject constructor(
         }
     }
 
-    override fun initiatePayPalPayment(
-        orderId: String,
-        amount: Double
-    ): Flow<Result<Pair<String, String>>> = flow {
-        try {
-            val (approvalUrl, paypalOrderId) = payPalRemoteDataSource.createOrder(amount)
-            emit(Result.success(Pair(approvalUrl, paypalOrderId)))
-        } catch (e: Exception) {
-            emit(Result.failure(e))
-        }
-    }
-
-    override fun capturePayPalPayment(paypalOrderId: String): Flow<Result<Unit>> = flow {
-        try {
-            val response = payPalRemoteDataSource.captureOrder(paypalOrderId)
-            if (response.status == "COMPLETED") {
-                emit(Result.success(Unit))
-            } else {
-                emit(Result.failure(Exception("Capture status: ${response.status}")))
+    override fun processPayMockPayment(amount: Double): Flow<Result<String>> = flow {
+        val result = payMockRemoteDataSource.createPayment(amount)
+        result.fold(
+            onSuccess = { response ->
+                if (response.status == "approved") {
+                    emit(Result.success(response.id ?: "mock_id"))
+                } else {
+                    emit(Result.failure(Exception("PayMock failed with status: ${response.status}")))
+                }
+            },
+            onFailure = { error ->
+                emit(Result.failure(error))
             }
-        } catch (e: Exception) {
-            emit(Result.failure(e))
-        }
+        )
     }
 }

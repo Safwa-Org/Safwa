@@ -16,6 +16,7 @@ sealed interface PaymentEvent {
         val verificationValue: String
     ) : PaymentEvent
     data object ContinueClicked : PaymentEvent
-    data object PayPalClicked : PaymentEvent
-    data class PayPalPaymentCompleted(val success: Boolean) : PaymentEvent
+    data object ShopifyClicked : PaymentEvent
+    data class ShopifyPaymentCompleted(val success: Boolean, val orderId: String? = null, val totalAmount: String? = null) : PaymentEvent
+    data object PayMockClicked : PaymentEvent
 }

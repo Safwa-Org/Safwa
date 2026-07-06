@@ -3,7 +3,8 @@ package com.tasneem.safwa.features.payment.domain.model
 enum class PaymentMethodType {
     CASH_ON_DELIVERY,
     VISA,
-    PAYPAL
+    SHOPIFY,
+    PAYMOCK
 }
 
 data class SavedCard(

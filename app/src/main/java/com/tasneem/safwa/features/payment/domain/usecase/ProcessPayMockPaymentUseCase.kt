@@ -4,10 +4,10 @@ import com.tasneem.safwa.features.payment.domain.repository.PaymentRepository
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
-class CapturePayPalPaymentUseCase @Inject constructor(
+class ProcessPayMockPaymentUseCase @Inject constructor(
     private val repository: PaymentRepository
 ) {
-    operator fun invoke(paypalOrderId: String): Flow<Result<Unit>> {
-        return repository.capturePayPalPayment(paypalOrderId)
+    operator fun invoke(amount: Double): Flow<Result<String>> {
+        return repository.processPayMockPayment(amount)
     }
 }

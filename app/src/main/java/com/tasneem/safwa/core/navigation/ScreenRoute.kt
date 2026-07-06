@@ -45,7 +45,10 @@ sealed class ScreenRoute {
     object Payment : ScreenRoute()
 
     @Serializable
-    object OrderConfirmation : ScreenRoute()
+    data class OrderConfirmation(val orderId: String = "", val totalAmount: String = "") : ScreenRoute()
+
+    @Serializable
+    object OrderFailed : ScreenRoute()
 
     @Serializable
     object OrderHistory : ScreenRoute()
