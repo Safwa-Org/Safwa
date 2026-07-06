@@ -1,4 +1,4 @@
-package com.tasneem.safwa.features.settings.savedaddresses.data.sync
+package com.tasneem.safwa.core.data.sync
 
 import com.tasneem.safwa.core.di.ApplicationScope
 import com.tasneem.safwa.core.domain.repository.RemoteUserRepository

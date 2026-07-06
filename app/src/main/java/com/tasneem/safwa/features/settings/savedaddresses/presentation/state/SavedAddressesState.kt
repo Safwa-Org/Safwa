@@ -10,7 +10,6 @@ data class SavedAddressesState(
     val addressToEdit: Address? = null,
     val addressToDelete: Address? = null,
     val showEditDialog: Boolean = false,
-    val errorMessage: String? = null,
 
     val countries: List<Country> = emptyList(),
     val selectedCountry: Country? = null,
@@ -19,10 +18,12 @@ data class SavedAddressesState(
     val suggestions: List<AddressCandidate> = emptyList(),
     val isSearchingAddress: Boolean = false,
     val selectedCandidate: AddressCandidate? = null,
+    val isOffline: Boolean = false,
 
-    val recipientNameErrorResId: Int? = null,
+    val firstNameErrorResId: Int? = null,
+    val lastNameErrorResId: Int? = null,
     val mobileNumberErrorResId: Int? = null,
     val addressErrorResId: Int? = null,
 
-    val isOffline: Boolean = false
+    val isShowingCachedAddresses: Boolean = false
 )
