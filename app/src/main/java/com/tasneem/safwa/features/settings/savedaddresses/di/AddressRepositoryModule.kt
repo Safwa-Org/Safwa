@@ -1,10 +1,14 @@
 package com.tasneem.safwa.features.settings.savedaddresses.di
 
+import com.tasneem.safwa.core.data.repository.AddressLookupRepositoryImpl
 import com.tasneem.safwa.features.settings.savedaddresses.data.datasource.CountryLocalDataSource
 import com.tasneem.safwa.features.settings.savedaddresses.data.datasource.CountryLocalDataSourceImpl
-import com.tasneem.safwa.features.settings.savedaddresses.data.repository.AddressLookupRepositoryImpl
+import com.tasneem.safwa.features.settings.savedaddresses.data.local.AddressLocalDataSource
+import com.tasneem.safwa.features.settings.savedaddresses.data.local.AddressLocalDataSourceImpl
+import com.tasneem.safwa.features.settings.savedaddresses.data.repository.AddressRepositoryImpl
 import com.tasneem.safwa.features.settings.savedaddresses.data.repository.CountryRepositoryImpl
 import com.tasneem.safwa.features.settings.savedaddresses.domain.repository.AddressLookupRepository
+import com.tasneem.safwa.features.settings.savedaddresses.domain.repository.AddressRepository
 import com.tasneem.safwa.features.settings.savedaddresses.domain.repository.CountryRepository
 import dagger.Binds
 import dagger.Module
@@ -14,7 +18,13 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-abstract class CoreRepositoryModule {
+abstract class AddressRepositoryModule {
+    @Binds
+    @Singleton
+    abstract fun bindAddressRepository(
+        impl: AddressRepositoryImpl
+    ): AddressRepository
+
     @Binds
     @Singleton
     abstract fun bindAddressLookupRepository(
@@ -32,4 +42,10 @@ abstract class CoreRepositoryModule {
     abstract fun bindCountryLocalDataSource(
         impl: CountryLocalDataSourceImpl
     ): CountryLocalDataSource
+
+    @Binds
+    @Singleton
+    abstract fun bindAddressLocalDataSource(
+        impl: AddressLocalDataSourceImpl
+    ): AddressLocalDataSource
 }

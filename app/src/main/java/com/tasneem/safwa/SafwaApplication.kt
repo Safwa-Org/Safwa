@@ -6,6 +6,9 @@ import com.google.firebase.appcheck.FirebaseAppCheck
 import com.google.firebase.appcheck.debug.DebugAppCheckProviderFactory
 import com.google.firebase.appcheck.playintegrity.PlayIntegrityAppCheckProviderFactory
 import dagger.hilt.android.HiltAndroidApp
+import com.shopify.checkoutsheetkit.ColorScheme
+import com.shopify.checkoutsheetkit.ShopifyCheckoutSheetKit
+
 
 
 @HiltAndroidApp
@@ -25,5 +28,8 @@ class SafwaApplication : Application() {
             }
         )
 
+        ShopifyCheckoutSheetKit.configure {
+            it.colorScheme = ColorScheme.Automatic()
+        }
     }
 }

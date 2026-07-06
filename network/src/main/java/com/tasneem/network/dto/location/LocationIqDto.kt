@@ -2,11 +2,13 @@ package com.tasneem.network.dto.location
 
 import com.google.gson.annotations.SerializedName
 
+
 data class LocationIqSuggestionDto(
     @SerializedName("place_id") val placeId: String = "",
     @SerializedName("display_name") val displayName: String = "",
     @SerializedName("lat") val lat: String = "",
     @SerializedName("lon") val lon: String = "",
+    @SerializedName("type") val type: String? = null,      // e.g. "residential", "city", "house" — tells us what kind of place this IS
     @SerializedName("address") val address: LocationIqAddressDto? = null
 )
 

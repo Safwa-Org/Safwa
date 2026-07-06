@@ -28,6 +28,8 @@ import com.tasneem.safwa.features.settings.languageandcurrency.presentation.view
 import com.tasneem.safwa.features.settings.orderhistory.presentation.view.OrderHistoryScreen
 import com.tasneem.safwa.features.settings.savedaddresses.presentation.view.SavedAddressesScreen
 import com.tasneem.safwa.features.wishlist.presentation.WishlistScreen
+import com.tasneem.safwa.features.payment.presentation.view.OrderConfirmedScreen
+import com.tasneem.safwa.features.payment.presentation.view.OrderFailedScreen
 
 @Composable
 fun SafwaNavHost(
@@ -182,12 +184,49 @@ fun SafwaNavHost(
                     navController.navigate(ScreenRoute.Home) {
                         popUpTo(ScreenRoute.Checkout) { inclusive = true }
                     }
+                },
+                onNavigateToOrderConfirmed = { orderId, totalAmount ->
+                    navController.navigate(ScreenRoute.OrderConfirmation(orderId, totalAmount)) {
+                        popUpTo(ScreenRoute.Payment) { inclusive = true }
+                    }
+                },
+                onNavigateToOrderFailed = {
+                    navController.navigate(ScreenRoute.OrderFailed) {
+                        popUpTo(ScreenRoute.Payment) { inclusive = true }
+                    }
                 }
             )
         }
 
-        composable<ScreenRoute.OrderConfirmation> {
-            // Order Confirmation implementation
+        composable<ScreenRoute.OrderConfirmation> { backStackEntry ->
+            val args = backStackEntry.toRoute<ScreenRoute.OrderConfirmation>()
+            OrderConfirmedScreen(
+                orderId = args.orderId,
+                totalAmount = args.totalAmount,
+                onTrackOrder = {
+                    navController.navigate(ScreenRoute.OrderHistory) {
+                        popUpTo(ScreenRoute.Home)
+                    }
+                },
+                onContinueShopping = {
+                    navController.navigate(ScreenRoute.Home) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        composable<ScreenRoute.OrderFailed> {
+            OrderFailedScreen(
+                onRetryPayment = {
+                    navController.popBackStack()
+                },
+                onContactSupport = {
+                    navController.navigate(ScreenRoute.Home) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                }
+            )
         }
 
         composable<ScreenRoute.OrderHistory> {

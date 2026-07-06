@@ -74,7 +74,7 @@ fun SavedAddressesScreen(
     if (uiState.showEditDialog) {
         AddressEditDialog(
             initialAddress = uiState.addressToEdit,
-            nameErrorResId = uiState.recipientNameErrorResId,
+            firstNameErrorResId = uiState.firstNameErrorResId,
             mobileErrorResId = uiState.mobileNumberErrorResId,
             addressErrorResId = uiState.addressErrorResId,
             countries = uiState.countries,
@@ -87,17 +87,26 @@ fun SavedAddressesScreen(
             onAddressQueryChange = { viewModel.onEvent(SavedAddressesEvent.AddressQueryChanged(it)) },
             onSuggestionSelected = { viewModel.onEvent(SavedAddressesEvent.SuggestionSelected(it)) },
             onDismiss = { viewModel.onEvent(SavedAddressesEvent.DismissDialogs) },
-            onSave = { label, recipientName, mobileNumber ->
-                viewModel.onEvent(SavedAddressesEvent.SaveAddress(label, recipientName, mobileNumber))
+            onSave = { firstName, lastName, mobileNumber, apartment, setAsDefault ->
+                viewModel.onEvent(SavedAddressesEvent.SaveAddress(firstName, lastName, mobileNumber, apartment, setAsDefault))
             }
-        )
-    }
+        )    }
     if (uiState.addressToDelete != null) {
         ConfirmDeleteDialog(
             onDismiss = { viewModel.onEvent(SavedAddressesEvent.DismissDialogs) },
             onConfirm = { viewModel.onEvent(SavedAddressesEvent.ConfirmDeleteAddress) }
         )
     }
+
+    if (uiState.isShowingCachedAddresses) {
+        Text(
+            text = stringResource(R.string.msg_offline_showing_cached),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
+        )
+    }
+
 }
 
 @Composable

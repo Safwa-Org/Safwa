@@ -33,8 +33,8 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     buildFeatures {
         compose = true
@@ -49,7 +49,6 @@ dependencies {
     implementation(libs.hilt.android)
     implementation(libs.hilt.navigation.compose)
     ksp(libs.hilt.android.compiler)
-    ksp("org.jetbrains.kotlin:kotlin-metadata-jvm:2.4.0")
     implementation(libs.androidx.compose.foundation.layout)
     val room_version = "2.8.4"
     implementation("androidx.room:room-runtime:$room_version")
@@ -98,4 +97,6 @@ dependencies {
     implementation("io.coil-kt.coil3:coil-compose:3.5.0")
     implementation("io.coil-kt.coil3:coil-network-okhttp:3.5.0")
 
+    implementation("androidx.browser:browser:1.8.0")
+    implementation(libs.shopify.checkout.sheet.kit)
 }

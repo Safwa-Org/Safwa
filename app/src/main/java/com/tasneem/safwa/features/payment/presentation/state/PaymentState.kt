@@ -10,5 +10,6 @@ data class PaymentState(
     val selectedCardId: String? = null,
     val isSuccess: Boolean = false,
     val errorMessage: String? = null,
-    val showAddCardDialog: Boolean = false
+    val showAddCardDialog: Boolean = false,
+    val checkoutUrl: String? = null
 )

@@ -11,4 +11,9 @@
         <!-- Set the theme of the Activity that directly follows your splash screen. -->
         <item name="postSplashScreenTheme">@style/Theme.Safwa</item>
     </style>
+
+    <style name="CheckoutSheetKitDialog" parent="Theme.AppCompat.Light.Dialog">
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:windowBackground">@drawable/checkout_dialog_bg</item>
+    </style>
 </resources>

@@ -16,6 +16,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -41,7 +42,7 @@ import com.tasneem.safwa.features.settings.savedaddresses.domain.model.Country
 @Composable
 fun AddressEditDialog(
     initialAddress: Address?,
-    nameErrorResId: Int?,
+    firstNameErrorResId: Int?,
     mobileErrorResId: Int?,
     addressErrorResId: Int?,
     countries: List<Country>,
@@ -54,11 +55,13 @@ fun AddressEditDialog(
     onAddressQueryChange: (String) -> Unit,
     onSuggestionSelected: (AddressCandidate) -> Unit,
     onDismiss: () -> Unit,
-    onSave: (label: String, recipientName: String, mobileNumber: String) -> Unit
+    onSave: (firstName: String, lastName: String, mobileNumber: String, apartment: String, setAsDefault: Boolean) -> Unit
 ) {
-    var label by remember { mutableStateOf(initialAddress?.label ?: "") }
-    var recipientName by remember { mutableStateOf(initialAddress?.recipientName ?: "") }
-    var mobileNumber by remember { mutableStateOf(initialAddress?.mobileNumber ?: "") }
+    var firstName by remember { mutableStateOf(initialAddress?.firstName ?: "") }
+    var lastName by remember { mutableStateOf(initialAddress?.lastName ?: "") }
+    var mobileNumber by remember { mutableStateOf(initialAddress?.phone ?: "") }
+    var apartment by remember { mutableStateOf(initialAddress?.apartment ?: "") }
+    var setAsDefault by remember { mutableStateOf(initialAddress?.isDefault ?: false) }
 
     var isNameDirty by remember { mutableStateOf(false) }
     var isMobileDirty by remember { mutableStateOf(false) }
@@ -107,30 +110,33 @@ fun AddressEditDialog(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                OutlinedTextField(
-                    value = label,
-                    onValueChange = { label = it },
-                    label = { Text(stringResource(R.string.address_label)) },
+                Row(
                     modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    shape = textFieldShape
-                )
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    val hasNameError = firstNameErrorResId != null && !isNameDirty
+                    OutlinedTextField(
+                        value = firstName,
+                        onValueChange = { firstName = it; isNameDirty = true },
+                        label = { Text(stringResource(R.string.address_first_name)) },
+                        modifier = Modifier.weight(1f),
+                        singleLine = true,
+                        isError = hasNameError,
+                        supportingText = if (hasNameError && firstNameErrorResId != null) {
+                            { Text(stringResource(firstNameErrorResId)) }
+                        } else null,
+                        shape = textFieldShape
+                    )
 
-                Spacer(modifier = Modifier.height(12.dp))
-
-                val hasNameError = nameErrorResId != null && !isNameDirty
-                OutlinedTextField(
-                    value = recipientName,
-                    onValueChange = { recipientName = it; isNameDirty = true },
-                    label = { Text(stringResource(R.string.address_recipient_name)) },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    isError = hasNameError,
-                    supportingText = if (hasNameError && nameErrorResId != null) {
-                        { Text(stringResource(nameErrorResId)) }
-                    } else null,
-                    shape = textFieldShape
-                )
+                    OutlinedTextField(
+                        value = lastName,
+                        onValueChange = { lastName = it },
+                        label = { Text(stringResource(R.string.address_last_name)) },
+                        modifier = Modifier.weight(1f),
+                        singleLine = true,
+                        shape = textFieldShape
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(12.dp))
 
@@ -169,7 +175,7 @@ fun AddressEditDialog(
                     modifier = Modifier.fillMaxWidth()
                 )
 
-           val showNoStreetHint = selectedCountry != null &&
+                val showNoStreetHint = selectedCountry != null &&
                         addressQuery.length >= 3 &&
                         suggestions.isEmpty() &&
                         !isSearchingAddress &&
@@ -194,6 +200,32 @@ fun AddressEditDialog(
                     )
                 }
 
+                Spacer(modifier = Modifier.height(12.dp))
+
+                OutlinedTextField(
+                    value = apartment,
+                    onValueChange = { apartment = it },
+                    label = { Text(stringResource(R.string.address_apartment)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    shape = textFieldShape
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = stringResource(R.string.address_set_as_default),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Switch(checked = setAsDefault, onCheckedChange = { setAsDefault = it })
+                }
+
                 Spacer(modifier = Modifier.height(32.dp))
 
                 Row(
@@ -212,7 +244,7 @@ fun AddressEditDialog(
                         onClick = {
                             isNameDirty = false
                             isMobileDirty = false
-                            onSave(label.ifBlank { "Address" }, recipientName, mobileNumber)
+                            onSave(firstName, lastName, mobileNumber, apartment, setAsDefault)
                         },
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(16.dp)

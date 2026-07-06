@@ -25,12 +25,16 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+import com.tasneem.safwa.features.cart.domain.usecase.GetCartUseCase
+import com.tasneem.safwa.features.cart.domain.usecase.ClearCartUseCase
+
 @HiltViewModel
 class PaymentViewModel @Inject constructor(
     private val getCartUseCase: GetCartUseCase,
     private val getSavedCardsUseCase: GetSavedCardsUseCase,
     private val saveCardUseCase: SaveCardUseCase,
     private val processPaymentUseCase: ProcessPaymentUseCase,
+    private val clearCartUseCase: ClearCartUseCase,
     private val processPayMockPaymentUseCase: ProcessPayMockPaymentUseCase
 ) : ViewModel() {
 
@@ -47,8 +51,11 @@ class PaymentViewModel @Inject constructor(
     private fun loadData() {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
+            val cartResource = getCartUseCase()
+            val checkoutUrl = (cartResource as? com.tasneem.safwa.core.util.Resource.Success)?.data?.checkoutUrl
+            
             getSavedCardsUseCase().collect { cards ->
-                _state.update { it.copy(savedCards = cards, isLoading = false) }
+                _state.update { it.copy(savedCards = cards, isLoading = false, checkoutUrl = checkoutUrl) }
             }
         }
     }
@@ -104,34 +111,55 @@ class PaymentViewModel @Inject constructor(
                 val currentMethod = _state.value.selectedMethod ?: return
                 when (currentMethod) {
                     PaymentMethodType.PAYMOCK -> onEvent(PaymentEvent.PayMockClicked)
-                    PaymentMethodType.CASH_ON_DELIVERY -> {
-                        // Logic removed as requested
-                    }
+                    PaymentMethodType.SHOPIFY -> onEvent(PaymentEvent.ShopifyClicked)
+                    PaymentMethodType.CASH_ON_DELIVERY,
                     PaymentMethodType.VISA -> {
                         if (_state.value.selectedCardId != null) {
                             viewModelScope.launch {
                                 _state.update { it.copy(isLoading = true) }
                                 val cartResource = getCartUseCase()
-                                if (cartResource is Resource.Success && cartResource.data != null) {
+                                if (cartResource is com.tasneem.safwa.core.util.Resource.Success && cartResource.data != null) {
                                     processPaymentUseCase(
                                         cartResource.data.id,
                                         cartResource.data.totalAmount.toDoubleOrNull() ?: 0.0,
                                         PaymentDetails(currentMethod, _state.value.selectedCardId)
                                     ).collect { result ->
                                         result.onSuccess {
+                                            clearCartUseCase()
                                             _state.update { it.copy(isLoading = false, isSuccess = true) }
-                                            _effect.send(PaymentEffect.ShowSnackBar(R.string.payment_successful))
+                                            _effect.send(PaymentEffect.NavigateToOrderConfirmed())
                                         }.onFailure { err ->
                                             _state.update { it.copy(isLoading = false, errorMessage = err.message) }
-                                            _effect.send(PaymentEffect.ShowSnackBar(R.string.payment_failed))
+                                            _effect.send(PaymentEffect.NavigateToOrderFailed)
                                         }
                                     }
                                 } else {
                                     _state.update { it.copy(isLoading = false, errorMessage = "Cart not found") }
-                                    _effect.send(PaymentEffect.ShowSnackBar(R.string.payment_failed))
+                                    _effect.send(PaymentEffect.NavigateToOrderFailed)
                                 }
                             }
                         }
+                    }
+                }
+            }
+            is PaymentEvent.ShopifyClicked -> {
+                viewModelScope.launch {
+                    val checkoutUrl = _state.value.checkoutUrl
+                    if (checkoutUrl != null) {
+                        _effect.send(PaymentEffect.LaunchShopifyCheckout(checkoutUrl))
+                    } else {
+                        _effect.send(PaymentEffect.ShowSnackBar(R.string.unknown_error))
+                    }
+                }
+            }
+            is PaymentEvent.ShopifyPaymentCompleted -> {
+                viewModelScope.launch {
+                    if (event.success) {
+                        clearCartUseCase()
+                        _state.update { it.copy(isSuccess = true) }
+                        _effect.send(PaymentEffect.NavigateToOrderConfirmed(event.orderId, event.totalAmount))
+                    } else {
+                        _effect.send(PaymentEffect.NavigateToOrderFailed)
                     }
                 }
             }
@@ -139,27 +167,27 @@ class PaymentViewModel @Inject constructor(
                 viewModelScope.launch {
                     _state.update { it.copy(isLoading = true) }
                     val cartResource = getCartUseCase()
-                    if (cartResource is Resource.Success && cartResource.data != null) {
+                    if (cartResource is com.tasneem.safwa.core.util.Resource.Success && cartResource.data != null) {
                         val cart = cartResource.data
                         val totalAmount = cart.totalAmount.toDoubleOrNull() ?: 0.0
                         processPayMockPaymentUseCase(totalAmount).collect { result ->
                             result.onSuccess { mockId ->
+                                clearCartUseCase()
                                 _state.update {
                                     it.copy(
                                         isLoading = false,
                                         isSuccess = true
                                     )
                                 }
-                                _effect.send(PaymentEffect.ShowSnackBar(R.string.payment_successful))
-                                _effect.send(PaymentEffect.NavigateToHome)
+                                _effect.send(PaymentEffect.NavigateToOrderConfirmed())
                             }.onFailure { err ->
                                 _state.update { it.copy(isLoading = false, errorMessage = err.message) }
-                                _effect.send(PaymentEffect.ShowSnackBar(R.string.payment_failed))
+                                _effect.send(PaymentEffect.NavigateToOrderFailed)
                             }
                         }
                     } else {
                         _state.update { it.copy(isLoading = false, errorMessage = "Cart not found") }
-                        _effect.send(PaymentEffect.ShowSnackBar(R.string.payment_failed))
+                        _effect.send(PaymentEffect.NavigateToOrderFailed)
                     }
                 }
             }
