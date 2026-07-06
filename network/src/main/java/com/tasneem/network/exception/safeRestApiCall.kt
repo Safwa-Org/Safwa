@@ -9,7 +9,7 @@ suspend fun <T> safeRestApiCall(apiCall: suspend () -> T): T {
         if (com.tasneem.safwa.network.BuildConfig.DEBUG) {
             android.util.Log.d("JSON_RESPONSE", response.toString())
         }
-        response  // was calling apiCall() again here, doubling the network hit
+        response
     } catch (e: HttpException) {
         if (com.tasneem.safwa.network.BuildConfig.DEBUG) {
             android.util.Log.e("API_ERROR", "HTTP Code: ${e.code()}, Message: ${e.message()}")

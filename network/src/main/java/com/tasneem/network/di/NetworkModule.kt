@@ -20,6 +20,7 @@ import com.tasneem.network.datasource.payment.PaymentRemoteDataSource
 import com.tasneem.network.datasource.payment.PaymentRemoteDataSourceImpl
 import com.tasneem.network.datasource.payment.PayMockApiService
 import com.tasneem.network.datasource.payment.ShopifyDepositApi
+import com.tasneem.network.interceptor.PriceConversionInterceptor
 import okhttp3.logging.HttpLoggingInterceptor
 import com.tasneem.network.datasource.auth.AuthRemoteDataSource
 import com.tasneem.network.datasource.auth.AuthRemoteDataSourceImpl
@@ -27,6 +28,13 @@ import com.tasneem.network.datasource.location.AddressValidationRemoteDataSource
 import com.tasneem.network.datasource.location.AddressValidationRemoteDataSourceImpl
 import com.tasneem.network.datasource.location.LocationIqApi
 import com.tasneem.safwa.network.BuildConfig
+import android.content.Context
+import com.apollographql.apollo.network.http.DefaultHttpEngine
+import com.apollographql.cache.normalized.normalizedCache
+import com.apollographql.cache.normalized.sql.SqlNormalizedCacheFactory
+import com.apollographql.cache.normalized.api.DefaultCacheKeyGenerator
+import com.apollographql.cache.normalized.api.DefaultCacheResolver
+import dagger.hilt.android.qualifiers.ApplicationContext
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import dagger.Binds
@@ -41,7 +49,12 @@ import okhttp3.Protocol
 import okhttp3.Response
 import okhttp3.ResponseBody.Companion.toResponseBody
 import java.util.concurrent.TimeUnit
+import javax.inject.Qualifier
 import javax.inject.Singleton
+
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class BasicOkHttpClient
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -49,7 +62,8 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(): OkHttpClient {
+    @BasicOkHttpClient
+    fun provideBaseOkHttpClient(): OkHttpClient {
         val logging = HttpLoggingInterceptor().apply {
             level = if (BuildConfig.DEBUG)
                 HttpLoggingInterceptor.Level.BODY
@@ -82,11 +96,32 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideApolloClient(): ApolloClient =
-        ApolloClient.Builder()
+    fun provideOkHttpClient(
+        @BasicOkHttpClient baseClient: OkHttpClient,
+        priceConversionInterceptor: PriceConversionInterceptor
+    ): OkHttpClient {
+        return baseClient.newBuilder()
+            .addInterceptor(priceConversionInterceptor)
+            .build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideApolloClient(@ApplicationContext context: Context,    okHttpClient: OkHttpClient
+    ): ApolloClient {
+        val sqliteFactory = SqlNormalizedCacheFactory(context, "apollo.db")
+        return ApolloClient.Builder()
             .serverUrl(BuildConfig.SHOPIFY_ENDPOINT)
             .addHttpHeader("X-Shopify-Storefront-Access-Token", BuildConfig.STOREFRONT_TOKEN)
+            .httpEngine(DefaultHttpEngine(okHttpClient))
+
+            .normalizedCache(
+                normalizedCacheFactory = sqliteFactory,
+                cacheKeyGenerator = DefaultCacheKeyGenerator,
+                cacheResolver = DefaultCacheResolver
+            )
             .build()
+    }
 
     @Provides
     @Singleton
@@ -101,7 +136,7 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideExchangeRateApi(okHttpClient: OkHttpClient): ExchangeRateApi {
+    fun provideExchangeRateApi(@BasicOkHttpClient okHttpClient: OkHttpClient): ExchangeRateApi {
         return Retrofit.Builder()
             .baseUrl(BuildConfig.Currency_Exchange_BASE_URL)
             .client(okHttpClient)
