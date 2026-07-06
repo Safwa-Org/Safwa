@@ -9,6 +9,7 @@ import dagger.hilt.android.HiltAndroidApp
 import com.shopify.checkoutsheetkit.ColorScheme
 import com.shopify.checkoutsheetkit.ShopifyCheckoutSheetKit
 
+
 @HiltAndroidApp
 class SafwaApplication : Application() {
 

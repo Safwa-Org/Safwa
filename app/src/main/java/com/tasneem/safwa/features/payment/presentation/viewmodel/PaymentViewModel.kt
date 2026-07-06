@@ -7,6 +7,7 @@ import com.tasneem.safwa.features.payment.domain.model.CardDetails
 import com.tasneem.safwa.features.payment.domain.model.PaymentDetails
 import com.tasneem.safwa.features.payment.domain.model.PaymentMethodType
 import com.tasneem.safwa.features.payment.domain.usecase.GetSavedCardsUseCase
+import com.tasneem.safwa.features.payment.domain.usecase.ProcessPayMockPaymentUseCase
 import com.tasneem.safwa.features.payment.domain.usecase.ProcessPaymentUseCase
 import com.tasneem.safwa.features.payment.domain.usecase.SaveCardUseCase
 import com.tasneem.safwa.features.cart.domain.usecase.GetCartUseCase
@@ -33,8 +34,8 @@ class PaymentViewModel @Inject constructor(
     private val getSavedCardsUseCase: GetSavedCardsUseCase,
     private val saveCardUseCase: SaveCardUseCase,
     private val processPaymentUseCase: ProcessPaymentUseCase,
-    private val getCartUseCase: GetCartUseCase,
-    private val clearCartUseCase: ClearCartUseCase
+    private val clearCartUseCase: ClearCartUseCase,
+    private val processPayMockPaymentUseCase: ProcessPayMockPaymentUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(PaymentState())
@@ -109,12 +110,11 @@ class PaymentViewModel @Inject constructor(
             is PaymentEvent.ContinueClicked -> {
                 val currentMethod = _state.value.selectedMethod ?: return
                 when (currentMethod) {
+                    PaymentMethodType.PAYMOCK -> onEvent(PaymentEvent.PayMockClicked)
                     PaymentMethodType.SHOPIFY -> onEvent(PaymentEvent.ShopifyClicked)
                     PaymentMethodType.CASH_ON_DELIVERY,
                     PaymentMethodType.VISA -> {
-                        if (currentMethod == PaymentMethodType.CASH_ON_DELIVERY ||
-                            (currentMethod == PaymentMethodType.VISA && _state.value.selectedCardId != null)
-                        ) {
+                        if (_state.value.selectedCardId != null) {
                             viewModelScope.launch {
                                 _state.update { it.copy(isLoading = true) }
                                 val cartResource = getCartUseCase()
@@ -142,6 +142,7 @@ class PaymentViewModel @Inject constructor(
                     }
                 }
             }
+<<<<<<< HEAD
             is PaymentEvent.ShopifyClicked -> {
                 viewModelScope.launch {
                     val checkoutUrl = _state.value.checkoutUrl
@@ -164,6 +165,34 @@ class PaymentViewModel @Inject constructor(
                 }
             }
             else -> {}
+            is PaymentEvent.PayMockClicked -> {
+                viewModelScope.launch {
+                    _state.update { it.copy(isLoading = true) }
+                    val cartResource = getCartUseCase()
+                    if (cartResource is com.tasneem.safwa.core.util.Resource.Success && cartResource.data != null) {
+                        val cart = cartResource.data
+                        val totalAmount = cart.totalAmount.toDoubleOrNull() ?: 0.0
+                        processPayMockPaymentUseCase(totalAmount).collect { result ->
+                            result.onSuccess { mockId ->
+                                clearCartUseCase()
+                                _state.update {
+                                    it.copy(
+                                        isLoading = false,
+                                        isSuccess = true
+                                    )
+                                }
+                                _effect.send(PaymentEffect.NavigateToOrderConfirmed())
+                            }.onFailure { err ->
+                                _state.update { it.copy(isLoading = false, errorMessage = err.message) }
+                                _effect.send(PaymentEffect.NavigateToOrderFailed)
+                            }
+                        }
+                    } else {
+                        _state.update { it.copy(isLoading = false, errorMessage = "Cart not found") }
+                        _effect.send(PaymentEffect.NavigateToOrderFailed)
+                    }
+                }
+            }
         }
     }
 }

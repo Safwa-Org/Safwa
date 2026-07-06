@@ -130,8 +130,8 @@ fun PaymentContent(
 ) {
     val showContinue = state.selectedMethod == PaymentMethodType.CASH_ON_DELIVERY ||
             (state.selectedMethod == PaymentMethodType.VISA && state.selectedCardId != null) ||
-            state.selectedMethod == PaymentMethodType.PAYPAL ||
-            state.selectedMethod == PaymentMethodType.SHOPIFY
+            state.selectedMethod == PaymentMethodType.SHOPIFY ||
+            state.selectedMethod == PaymentMethodType.PAYMOCK
 
     Scaffold(
         topBar = {
@@ -223,9 +223,9 @@ fun PaymentContent(
                     }
 
                     PaymentOptionCard(
-                        title = stringResource(R.string.paypal),
-                        isSelected = state.selectedMethod == PaymentMethodType.PAYPAL,
-                        onClick = { onEvent(PaymentEvent.MethodSelected(PaymentMethodType.PAYPAL)) }
+                        title = stringResource(R.string.paymock),
+                        isSelected = state.selectedMethod == PaymentMethodType.PAYMOCK,
+                        onClick = { onEvent(PaymentEvent.MethodSelected(PaymentMethodType.PAYMOCK)) }
                     )
 
                     PaymentOptionCard(
@@ -239,6 +239,7 @@ fun PaymentContent(
             }
         }
     }
+
 
     if (state.showAddCardDialog) {
         AddCardDialog(
@@ -268,7 +269,7 @@ private fun PaymentContentPreview() {
                     SavedCard("1", "Visa", "4242", "Aisha Al-Marri", "08/28", true),
                     SavedCard("2", "Mada", "1187", "Aisha Al-Marri", "11/27", false)
                 ),
-                selectedMethod = PaymentMethodType.PAYPAL
+                selectedMethod = PaymentMethodType.VISA
             ),
             onEvent = {}
         )

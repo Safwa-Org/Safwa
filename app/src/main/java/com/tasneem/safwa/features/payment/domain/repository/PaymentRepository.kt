@@ -9,4 +9,5 @@ interface PaymentRepository {
     fun getSavedCards(): Flow<List<SavedCard>>
     fun saveNewCard(cardDetails: CardDetails): Flow<Result<SavedCard>>
     fun processPayment(orderId: String, amount: Double, paymentDetails: PaymentDetails): Flow<Result<Unit>>
+    fun processPayMockPayment(amount: Double): Flow<Result<String>>
 }

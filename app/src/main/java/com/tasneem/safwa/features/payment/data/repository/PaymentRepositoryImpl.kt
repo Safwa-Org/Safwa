@@ -4,6 +4,7 @@ import com.tasneem.safwa.features.payment.data.datasource.local.SavedCardDao
 import com.tasneem.safwa.features.payment.data.datasource.local.toEntity
 import com.tasneem.network.dto.PaymentRequestDto
 import com.tasneem.network.datasource.payment.PaymentRemoteDataSource
+import com.tasneem.network.datasource.payment.IPayMockRemoteDataSource
 import com.tasneem.safwa.features.payment.domain.model.CardDetails
 import com.tasneem.safwa.features.payment.domain.model.PaymentDetails
 import com.tasneem.safwa.features.payment.domain.model.SavedCard
@@ -15,6 +16,7 @@ import javax.inject.Inject
 
 class PaymentRepositoryImpl @Inject constructor(
     private val remoteDataSource: PaymentRemoteDataSource,
+    private val payMockRemoteDataSource: IPayMockRemoteDataSource,
     private val savedCardDao: SavedCardDao
 ) : PaymentRepository {
 
@@ -79,4 +81,19 @@ class PaymentRepositoryImpl @Inject constructor(
         }
     }
 
+    override fun processPayMockPayment(amount: Double): Flow<Result<String>> = flow {
+        val result = payMockRemoteDataSource.createPayment(amount)
+        result.fold(
+            onSuccess = { response ->
+                if (response.status == "approved") {
+                    emit(Result.success(response.id ?: "mock_id"))
+                } else {
+                    emit(Result.failure(Exception("PayMock failed with status: ${response.status}")))
+                }
+            },
+            onFailure = { error ->
+                emit(Result.failure(error))
+            }
+        )
+    }
 }
