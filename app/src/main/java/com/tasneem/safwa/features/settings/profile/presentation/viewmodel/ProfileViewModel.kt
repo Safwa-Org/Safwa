@@ -103,16 +103,29 @@ class ProfileViewModel @Inject constructor(
 
                 viewModelScope.launch {
                     preferencesUseCases.getUserSession().collect { user ->
-                        if (user != null) {
+                        if (user != null && !user.isGuest) {
                             _state.update {
                                 it.copy(
                                     isLoading = false,
+                                    isGuest = false,
                                     firstName = user.firstName,
                                     lastName = user.lastName,
                                     email = user.email ?: "",
                                     photoUrl = user.photoUrl,
                                     isElite = true,
                                     points = 2400
+                                )
+                            }
+                        } else {
+                            _state.update {
+                                it.copy(
+                                    isLoading = false,
+                                    isGuest = true,
+                                    firstName = "",
+                                    lastName = "",
+                                    email = "",
+                                    photoUrl = null,
+                                    isElite = false
                                 )
                             }
                         }
@@ -158,15 +171,25 @@ class ProfileViewModel @Inject constructor(
             is ProfileEvent.ConfirmLogout -> {
                 _state.update { it.copy(showLogoutConfirmDialog = false) }
                 viewModelScope.launch {
-                    _state.update { it.copy(isLoading = true) }
+                    _state.update { it.copy(isLoggingOut = true) }
                     logoutUseCase()
-                    _state.update { it.copy(isLoading = false) }
-                    _effect.send(ProfileEffect.NavigateToLogin)
+                    _state.update { it.copy(isLoggingOut = false) }
+                    // No navigation: logout transitions the session to an
+                    // anonymous guest, and this screen re-renders as the guest
+                    // profile from the observed session state.
                 }
             }
 
             is ProfileEvent.DismissLogoutDialog -> {
                 _state.update { it.copy(showLogoutConfirmDialog = false) }
+            }
+
+            is ProfileEvent.SignInClicked -> {
+                viewModelScope.launch { _effect.send(ProfileEffect.NavigateToLogin) }
+            }
+
+            is ProfileEvent.CreateAccountClicked -> {
+                viewModelScope.launch { _effect.send(ProfileEffect.NavigateToCreateAccount) }
             }
         }
     }

@@ -2,6 +2,7 @@ package com.tasneem.safwa.features.auth.presentation.register.view
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -39,6 +40,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.tasneem.safwa.R
 import com.tasneem.safwa.core.shared_component.CustomButon
+import com.tasneem.safwa.core.shared_component.LoadingOverlay
 import com.tasneem.safwa.core.shared_component.SafwaLogo
 import com.tasneem.safwa.features.auth.presentation.components.CustomTextField
 import com.tasneem.safwa.features.auth.presentation.components.ErrorText
@@ -72,11 +74,13 @@ fun RegisterScreen(
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { innerPadding ->
-        RegisterContent(
-            state = state,
-            onEvent = viewModel::onEvent,
-            modifier = Modifier.padding(innerPadding)
-        )
+        Box(modifier = Modifier.padding(innerPadding)) {
+            RegisterContent(
+                state = state,
+                onEvent = viewModel::onEvent
+            )
+            LoadingOverlay(visible = state.isLoading)
+        }
     }
 }
 

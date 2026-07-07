@@ -1,6 +1,8 @@
 package com.tasneem.safwa.features.auth.data.datasource.auth
 
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.google.firebase.auth.AuthCredential
+import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import kotlinx.coroutines.channels.awaitClose
@@ -25,6 +27,16 @@ class FirebaseAuthDataSourceImpl @Inject constructor(
     override suspend fun signInAnonymously() =
         firebaseAuth.signInAnonymously().await()
 
+    override suspend fun linkWithCredential(credential: AuthCredential): AuthResult {
+        val user = firebaseAuth.currentUser
+            ?: throw IllegalStateException("No signed-in user to link")
+        return user.linkWithCredential(credential).await()
+    }
+
+    override suspend fun unlinkProvider(providerId: String) {
+        firebaseAuth.currentUser?.unlink(providerId)?.await()
+    }
+
     override suspend fun signOut() {
         firebaseAuth.signOut()
         try {
@@ -38,6 +50,8 @@ class FirebaseAuthDataSourceImpl @Inject constructor(
     override fun getCurrentUserId(): String? = firebaseAuth.currentUser?.uid
 
     override fun getCurrentUserEmail(): String? = firebaseAuth.currentUser?.email
+
+    override fun isAnonymous(): Boolean = firebaseAuth.currentUser?.isAnonymous == true
 
     override suspend fun sendEmailVerification(user: com.google.firebase.auth.FirebaseUser?) {
         val targetUser = user ?: firebaseAuth.currentUser ?: throw Exception("No user signed in")
