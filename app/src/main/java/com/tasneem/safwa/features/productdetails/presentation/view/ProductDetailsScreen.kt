@@ -151,9 +151,11 @@ fun ProductDetailsContent(
                                 onEvent(ProductDetailsEvent.OptionSelected(name, value))
                             },
                         )
-
                         if (product.description.isNotEmpty()) {
-                            ProductDescriptionSection(description = product.description)
+                            ProductDescriptionSection(
+                                description = product.description,
+                                isAiGenerated = state.isDescriptionAiGenerated,
+                            )
                         }
                         ReviewsSection(
                             reviews = state.reviews,
