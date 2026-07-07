@@ -133,6 +133,9 @@ class ProductDetailsViewModel @Inject constructor(
 
             is ProductDetailsEvent.ShareClicked -> onShare()
             is ProductDetailsEvent.AddToCartClicked -> onAddToCart()
+            is ProductDetailsEvent.CartClicked -> viewModelScope.launch {
+                _effect.send(ProductDetailsEffect.NavigateToCart)
+            }
 
             is ProductDetailsEvent.ReviewRatingChanged -> {
                 _state.update { it.copy(newReviewRating = event.rating) }

@@ -39,6 +39,7 @@ import com.tasneem.safwa.core.theme.SafwaTheme
 fun StickyBottomActionBar(
     priceFormatted: String,
     onAddToCart: () -> Unit,
+    onCartClick: () -> Unit,
     modifier: Modifier = Modifier,
     isAvailable: Boolean = true,
     isAddingToCart: Boolean = false,
@@ -57,9 +58,9 @@ fun StickyBottomActionBar(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // Opens the cart; adding the product is the primary button's job.
             IconButton(
-                onClick = onAddToCart,
-                enabled = isAvailable && !isAddingToCart,
+                onClick = onCartClick,
                 modifier = Modifier
                     .size(width = 44.dp, height = 56.dp)
                     .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(36.dp))
@@ -134,7 +135,8 @@ private fun StickyBottomActionBarPreview() {
             bottomBar = {
                 StickyBottomActionBar(
                     priceFormatted = "$149.99",
-                    onAddToCart = {}
+                    onAddToCart = {},
+                    onCartClick = {}
                 )
             }
         ) { innerPadding ->
