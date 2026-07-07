@@ -1,6 +1,12 @@
 package com.tasneem.network.di
 
+import android.content.Context
 import com.apollographql.apollo.ApolloClient
+import com.apollographql.apollo.network.http.DefaultHttpEngine
+import com.apollographql.cache.normalized.api.DefaultCacheKeyGenerator
+import com.apollographql.cache.normalized.api.DefaultCacheResolver
+import com.apollographql.cache.normalized.normalizedCache
+import com.apollographql.cache.normalized.sql.SqlNormalizedCacheFactory
 import com.google.firebase.appcheck.FirebaseAppCheck
 import com.tasneem.network.datasource.address.CustomerAddressRemoteDataSource
 import com.tasneem.network.datasource.address.CustomerAddressRemoteDataSourceImpl
@@ -29,11 +35,13 @@ import com.tasneem.network.datasource.payment.PaymentRemoteDataSourceImpl
 import com.tasneem.network.datasource.payment.ShopifyDepositApi
 import com.tasneem.network.datasource.product.ProductRemoteDataSource
 import com.tasneem.network.datasource.product.ProductRemoteDataSourceImpl
+import com.tasneem.network.interceptor.PriceConversionInterceptor
 import com.tasneem.safwa.network.BuildConfig
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
@@ -44,15 +52,25 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
+import javax.inject.Qualifier
 import javax.inject.Singleton
+
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class BasicOkHttpClient
 
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
+    // ---------------------------------------------------------------
+    // Base client: logging + payment mock interceptor. NO price
+    // conversion here. This is what every Retrofit service should use.
+    // ---------------------------------------------------------------
     @Provides
     @Singleton
-    fun provideOkHttpClient(): OkHttpClient {
+    @BasicOkHttpClient
+    fun provideBaseOkHttpClient(): OkHttpClient {
         val logging = HttpLoggingInterceptor().apply {
             level = if (BuildConfig.DEBUG)
                 HttpLoggingInterceptor.Level.BODY
@@ -85,15 +103,40 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideApolloClient(): ApolloClient =
-        ApolloClient.Builder()
-            .serverUrl(BuildConfig.SHOPIFY_ENDPOINT)
-            .addHttpHeader("X-Shopify-Storefront-Access-Token", BuildConfig.STOREFRONT_TOKEN)
+    fun provideShopifyOkHttpClient(
+        @BasicOkHttpClient baseClient: OkHttpClient,
+        priceConversionInterceptor: PriceConversionInterceptor
+    ): OkHttpClient {
+        return baseClient.newBuilder()
+            .addInterceptor(priceConversionInterceptor)
             .build()
+    }
 
     @Provides
     @Singleton
-    fun provideShopifyDepositApi(okHttpClient: OkHttpClient): ShopifyDepositApi {
+    fun provideApolloClient(
+        @ApplicationContext context: Context,
+         okHttpClient: OkHttpClient
+    ): ApolloClient {
+        val sqliteFactory = SqlNormalizedCacheFactory(context, "apollo.db")
+        return ApolloClient.Builder()
+            .serverUrl(BuildConfig.SHOPIFY_ENDPOINT)
+            .addHttpHeader("X-Shopify-Storefront-Access-Token", BuildConfig.STOREFRONT_TOKEN)
+            .httpEngine(DefaultHttpEngine(okHttpClient))
+            .normalizedCache(
+                normalizedCacheFactory = sqliteFactory,
+                cacheKeyGenerator = DefaultCacheKeyGenerator,
+                cacheResolver = DefaultCacheResolver
+            )
+            .build()
+    }
+
+
+    @Provides
+    @Singleton
+    fun provideShopifyDepositApi(
+        @BasicOkHttpClient okHttpClient: OkHttpClient
+    ): ShopifyDepositApi {
         return Retrofit.Builder()
             .baseUrl(BuildConfig.SHOPIFY_DEPOSIT_BASE_URL)
             .client(okHttpClient)
@@ -104,7 +147,9 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideExchangeRateApi(okHttpClient: OkHttpClient): ExchangeRateApi {
+    fun provideExchangeRateApi(
+        @BasicOkHttpClient okHttpClient: OkHttpClient
+    ): ExchangeRateApi {
         return Retrofit.Builder()
             .baseUrl(BuildConfig.Currency_Exchange_BASE_URL)
             .client(okHttpClient)
@@ -115,7 +160,9 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideLocationIqApi(okHttpClient: OkHttpClient): LocationIqApi =
+    fun provideLocationIqApi(
+        @BasicOkHttpClient okHttpClient: OkHttpClient
+    ): LocationIqApi =
         Retrofit.Builder()
             .baseUrl(BuildConfig.Location_BASE_URL)
             .client(okHttpClient)
@@ -140,7 +187,9 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun providePayMockApiService(okHttpClient: OkHttpClient): PayMockApiService {
+    fun providePayMockApiService(
+        @BasicOkHttpClient okHttpClient: OkHttpClient
+    ): PayMockApiService {
         return Retrofit.Builder()
             .baseUrl("http://192.168.1.29:8080/")
             .client(okHttpClient)

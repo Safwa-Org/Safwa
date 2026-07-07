@@ -9,4 +9,5 @@ sealed interface ProfileEvent {
     data object LogoutClicked : ProfileEvent
     data object ConfirmLogout : ProfileEvent
     data object DismissLogoutDialog : ProfileEvent
+    data object Refresh : ProfileEvent
 }

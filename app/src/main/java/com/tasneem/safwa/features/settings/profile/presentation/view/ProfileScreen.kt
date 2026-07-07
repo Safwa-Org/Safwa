@@ -33,6 +33,8 @@ import com.tasneem.safwa.features.settings.profile.presentation.view.component.S
 import androidx.compose.foundation.clickable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.tasneem.safwa.features.settings.profile.presentation.state.ProfileEffect
 import com.tasneem.safwa.features.settings.profile.presentation.state.ProfileEvent
@@ -62,7 +64,9 @@ fun ProfileScreen(
             }
         }
     }
-
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+        viewModel.onEvent(ProfileEvent.Refresh)
+    }
     ProfileContent(
         state = uiState,
         onEvent = viewModel::onEvent
