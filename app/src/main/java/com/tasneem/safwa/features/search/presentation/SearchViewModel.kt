@@ -19,6 +19,8 @@ import android.util.Log
 import com.tasneem.safwa.features.search.domain.usecase.SearchProductsUseCase
 import com.tasneem.safwa.features.core.domain.usecase.GetCategoriesUseCase
 import com.tasneem.safwa.features.category.domain.model.Category
+import com.tasneem.safwa.features.settings.languageandcurrency.data.CurrencyRateManager
+import kotlinx.coroutines.flow.drop
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -27,7 +29,8 @@ class SearchViewModel @Inject constructor(
     private val toggleFavoriteUseCase: ToggleFavoriteUseCase,
     private val getWishlistUseCase: GetWishlistUseCase,
     private val searchProductsUseCase: SearchProductsUseCase,
-    private val getCategoriesUseCase: GetCategoriesUseCase
+    private val getCategoriesUseCase: GetCategoriesUseCase,
+    private val currencyRateManager: CurrencyRateManager
 ) : ViewModel() {
     private val _state = MutableStateFlow(SearchState())
     val state: StateFlow<SearchState> = _state.asStateFlow()
@@ -36,15 +39,26 @@ class SearchViewModel @Inject constructor(
     val effect = _effect.receiveAsFlow()
 
     private var searchJob: Job? = null
+    private var lastSearchedQuery: String? = null
 
     init {
         _state.update { it.copy(
-            isLoading = false
+            isLoading = false,
+            currentCurrency = currencyRateManager.currentDisplayCurrency()
         ) }
-        
+
         observeWishlist()
         loadCategories()
-        performSearch("")
+        executeSearch("")
+
+        viewModelScope.launch {
+            currencyRateManager.displayCurrency
+                .drop(1)
+                .collect { newCurrency ->
+                    _state.update { it.copy(currentCurrency = newCurrency) }
+                    executeSearch(_state.value.searchQuery)
+                }
+        }
     }
 
     private fun loadCategories() {
@@ -73,19 +87,15 @@ class SearchViewModel @Inject constructor(
     fun onIntent(intent: SearchIntent) {
         when (intent) {
             is SearchIntent.QueryChanged -> {
-                _state.update { currentState ->
-                    currentState.copy(searchQuery = intent.query)
-                }
+                _state.update { it.copy(searchQuery = intent.query) }
                 searchJob?.cancel()
                 searchJob = viewModelScope.launch {
                     delay(500.milliseconds)
-                    performSearch(intent.query)
+                    executeSearch(intent.query)
                 }
             }
             is SearchIntent.FilterSelected -> {
-                _state.update { currentState ->
-                    currentState.copy(selectedCategory = intent.category)
-                }
+                _state.update { it.copy(selectedCategory = intent.category) }
                 filterProducts()
             }
             is SearchIntent.ToggleFavorite -> {
@@ -99,34 +109,89 @@ class SearchViewModel @Inject constructor(
                 }
             }
             is SearchIntent.ExecuteSearch -> {
-                searchJob?.cancel()
-                performSearch(_state.value.searchQuery)
+                executeSearch(_state.value.searchQuery)
+            }
+            is SearchIntent.ToggleFilterSheet -> {
+                _state.update { it.copy(showFilterSheet = intent.show) }
+            }
+            is SearchIntent.UpdateSortOption -> {
+                _state.update { it.copy(selectedSortOption = intent.option) }
+            }
+            is SearchIntent.ToggleBrandFilter -> {
+                _state.update { currentState ->
+                    val newBrands = currentState.selectedBrands.toMutableSet()
+                    if (newBrands.contains(intent.brand)) newBrands.remove(intent.brand) else newBrands.add(intent.brand)
+                    currentState.copy(selectedBrands = newBrands)
+                }
+            }
+            is SearchIntent.ToggleSubCategoryFilter -> {
+                _state.update { currentState ->
+                    val newSubCategories = currentState.selectedSubCategories.toMutableSet()
+                    if (newSubCategories.contains(intent.subCategory)) newSubCategories.remove(intent.subCategory) else newSubCategories.add(intent.subCategory)
+                    currentState.copy(selectedSubCategories = newSubCategories)
+                }
+            }
+            is SearchIntent.ToggleGroupBySubCategory -> {
+                _state.update { it.copy(isGroupedBySubCategory = intent.enable) }
+            }
+            is SearchIntent.UpdatePriceRange -> {
+                _state.update { it.copy(selectedPriceRange = intent.range) }
+            }
+            is SearchIntent.ApplyFilters -> {
+                filterProducts()
+                _state.update { it.copy(showFilterSheet = false) }
+            }
+            is SearchIntent.ClearFilters -> {
+                _state.update { 
+                    it.copy(
+                        selectedBrands = emptySet(),
+                        selectedSubCategories = emptySet(),
+                        selectedSortOption = SortOption.NONE,
+                        isGroupedBySubCategory = false,
+                        selectedPriceRange = 0f..it.maxPrice
+                    )
+                }
+                filterProducts()
             }
         }
     }
 
-    private fun performSearch(query: String) {
+    private fun executeSearch(query: String) {
+        searchJob?.cancel()
+
         if (query.isBlank()) {
-            _state.update { 
+            lastSearchedQuery = null
+            _state.update {
                 it.copy(
-                    products = emptyList(), 
+                    products = emptyList(),
                     filteredProducts = emptyList()
-                ) 
+                )
             }
             return
         }
-        viewModelScope.launch {
+
+        searchJob = viewModelScope.launch {
             searchProductsUseCase(query).collect { result ->
                 when (result) {
                     is Resource.Loading -> _state.update { it.copy(isLoading = true) }
                     is Resource.Success -> {
-                        _state.update { 
-                            it.copy(
-                                isLoading = false, 
+                        val availableBrands = result.data.map { it.vendor }.distinct().filter { it.isNotBlank() }
+                        val availableSubCategories = result.data.flatMap { it.tags }.distinct().filter { it.isNotBlank() }
+                        val productsMaxPrice = result.data.maxOfOrNull { it.price.toFloatOrNull() ?: 0f } ?: 1000f
+
+                        _state.update { currentState ->
+                            val effectiveMax = maxOf(productsMaxPrice, currentState.selectedPriceRange.endInclusive)
+
+                            currentState.copy(
+                                isLoading = false,
                                 products = result.data,
-                                categories =  it.categories
-                            ) 
+                                categories = currentState.categories,
+                                availableBrands = availableBrands,
+                                availableSubCategories = availableSubCategories,
+                                maxPrice = effectiveMax
+                            )
                         }
+                        lastSearchedQuery = query
                         filterProducts()
                     }
                     is Resource.Error -> {
@@ -141,9 +206,27 @@ class SearchViewModel @Inject constructor(
     private fun filterProducts() {
         _state.update { currentState ->
             val category = currentState.selectedCategory
-            val filtered = currentState.products.filter { product ->
-                if (category?.handle == "all") true else product.productType == category?.handle
+            val selectedBrands = currentState.selectedBrands
+            val selectedSubCategories = currentState.selectedSubCategories
+            
+            var filtered = currentState.products.filter { product ->
+                val matchesCategory = if (category?.handle == "all" || category == null) true else product.productType == category.handle
+                val matchesBrand = if (selectedBrands.isEmpty()) true else selectedBrands.contains(product.vendor)
+                val matchesSubCategory = if (selectedSubCategories.isEmpty()) true else product.tags.any { selectedSubCategories.contains(it) }
+                
+                val productPrice = product.price.toFloatOrNull() ?: 0f
+                val matchesPrice = productPrice in currentState.selectedPriceRange
+                
+                matchesCategory && matchesBrand && matchesSubCategory && matchesPrice
             }
+            
+            filtered = when (currentState.selectedSortOption) {
+                SortOption.PRICE_LOW_TO_HIGH -> filtered.sortedBy { it.price.toDoubleOrNull() ?: 0.0 }
+                SortOption.PRICE_HIGH_TO_LOW -> filtered.sortedByDescending { it.price.toDoubleOrNull() ?: 0.0 }
+                SortOption.BEST_SELLER -> filtered.shuffled() // Placeholder for Best Seller
+                SortOption.NONE -> filtered
+            }
+            
             currentState.copy(filteredProducts = filtered)
         }
     }

@@ -7,6 +7,7 @@ query SearchProducts($query: String!, $first: Int!) {
         handle
         vendor
         productType
+        tags
         description
         priceRange {
           minVariantPrice {
