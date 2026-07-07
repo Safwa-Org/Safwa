@@ -1,6 +1,7 @@
 package com.tasneem.network.datasource.checkout
 
-import com.tasneem.network.dto.checkout.AdminGraphQLRequest
+import com.google.firebase.appcheck.FirebaseAppCheck
+import com.google.firebase.auth.FirebaseAuth
 import com.tasneem.network.dto.checkout.CompletedDraftOrderDto
 import com.tasneem.network.dto.checkout.DraftOrderDto
 import com.tasneem.network.dto.checkout.DraftOrderInputDto
@@ -8,21 +9,26 @@ import com.tasneem.network.dto.checkout.GraphQLResponseDto
 import com.tasneem.network.dto.checkout.UserErrorDto
 import com.tasneem.network.exception.EmptyResponseException
 import com.tasneem.network.exception.GraphQlException
+import com.tasneem.network.exception.NetworkException
+import com.tasneem.network.exception.UnauthenticatedException
+import com.tasneem.network.exception.UnknownException
 import com.tasneem.network.exception.UserErrorException
-import com.tasneem.network.exception.safeRestApiCall
+import kotlinx.coroutines.tasks.await
+import retrofit2.HttpException
 import javax.inject.Inject
 
 class CheckoutRemoteDataSourceImpl @Inject constructor(
-    private val adminApi: ShopifyAdminApi
+    private val adminProxyApi: AdminProxyApi,
+    private val firebaseAuth: FirebaseAuth,
+    private val appCheck: FirebaseAppCheck
 ) : CheckoutRemoteDataSource {
 
     override suspend fun createDraftOrder(input: DraftOrderInputDto): DraftOrderDto {
-        val response = safeRestApiCall {
-            adminApi.draftOrderCreate(
-                AdminGraphQLRequest(
-                    query = DRAFT_ORDER_CREATE,
-                    variables = mapOf("input" to input)
-                )
+        val response = safeAdminCall {
+            adminProxyApi.draftOrderCreate(
+                authorizationHeader(),
+                appCheckHeader(),
+                mapOf("input" to input)
             )
         }
         val payload = response.dataOrThrow().draftOrderCreate
@@ -35,15 +41,11 @@ class CheckoutRemoteDataSourceImpl @Inject constructor(
         draftOrderId: String,
         paymentPending: Boolean
     ): CompletedDraftOrderDto {
-        val response = safeRestApiCall {
-            adminApi.draftOrderComplete(
-                AdminGraphQLRequest(
-                    query = DRAFT_ORDER_COMPLETE,
-                    variables = mapOf(
-                        "id" to draftOrderId,
-                        "paymentPending" to paymentPending
-                    )
-                )
+        val response = safeAdminCall {
+            adminProxyApi.draftOrderComplete(
+                authorizationHeader(),
+                appCheckHeader(),
+                mapOf("id" to draftOrderId, "paymentPending" to paymentPending)
             )
         }
         val payload = response.dataOrThrow().draftOrderComplete
@@ -53,12 +55,11 @@ class CheckoutRemoteDataSourceImpl @Inject constructor(
     }
 
     override suspend fun markOrderAsPaid(orderId: String) {
-        val response = safeRestApiCall {
-            adminApi.orderMarkAsPaid(
-                AdminGraphQLRequest(
-                    query = ORDER_MARK_AS_PAID,
-                    variables = mapOf("input" to mapOf("id" to orderId))
-                )
+        val response = safeAdminCall {
+            adminProxyApi.orderMarkAsPaid(
+                authorizationHeader(),
+                appCheckHeader(),
+                mapOf("id" to orderId)
             )
         }
         val payload = response.dataOrThrow().orderMarkAsPaid
@@ -67,23 +68,44 @@ class CheckoutRemoteDataSourceImpl @Inject constructor(
     }
 
     override suspend fun cancelOrder(orderId: String, notifyCustomer: Boolean) {
-        val response = safeRestApiCall {
-            adminApi.orderCancel(
-                AdminGraphQLRequest(
-                    query = ORDER_CANCEL,
-                    variables = mapOf(
-                        "orderId" to orderId,
-                        "notifyCustomer" to notifyCustomer,
-                        "refund" to true,
-                        "restock" to true,
-                        "reason" to "CUSTOMER"
-                    )
-                )
+        val response = safeAdminCall {
+            adminProxyApi.orderCancel(
+                authorizationHeader(),
+                appCheckHeader(),
+                mapOf("orderId" to orderId, "notifyCustomer" to notifyCustomer)
             )
         }
         val payload = response.dataOrThrow().orderCancel
             ?: throw EmptyResponseException()
         (payload.orderCancelUserErrors + payload.userErrors).throwIfNotEmpty()
+    }
+
+    private suspend fun authorizationHeader(): String {
+        val user = firebaseAuth.currentUser ?: throw UnauthenticatedException()
+        val idToken = user.getIdToken(false).await().token ?: throw UnauthenticatedException()
+        return "Bearer $idToken"
+    }
+
+    private suspend fun appCheckHeader(): String =
+        appCheck.getAppCheckToken(false).await().token
+
+    private suspend fun <T> safeAdminCall(apiCall: suspend () -> T): T {
+        return try {
+            apiCall()
+        } catch (e: UnauthenticatedException) {
+            android.util.Log.e("CheckoutAdminProxy", "Not signed in / no ID token", e)
+            throw e
+        } catch (e: HttpException) {
+            android.util.Log.e(
+                "CheckoutAdminProxy",
+                "HTTP ${e.code()} from admin proxy: ${e.response()?.errorBody()?.string()}",
+                e
+            )
+            throw NetworkException()
+        } catch (e: Exception) {
+            android.util.Log.e("CheckoutAdminProxy", "Admin proxy call failed: ${e::class.java.simpleName}", e)
+            throw UnknownException(e)
+        }
     }
 
     private fun <T> GraphQLResponseDto<T>.dataOrThrow(): T {
@@ -95,67 +117,5 @@ class CheckoutRemoteDataSourceImpl @Inject constructor(
 
     private fun List<UserErrorDto>.throwIfNotEmpty() {
         if (isNotEmpty()) throw UserErrorException(map { it.message })
-    }
-
-    private companion object {
-
-        val DRAFT_ORDER_CREATE = $$"""
-            mutation draftOrderCreate($input: DraftOrderInput!) {
-              draftOrderCreate(input: $input) {
-                draftOrder {
-                  id
-                  invoiceUrl
-                  subtotalPriceSet { shopMoney { amount currencyCode } }
-                  totalTaxSet { shopMoney { amount currencyCode } }
-                  totalShippingPriceSet { shopMoney { amount currencyCode } }
-                  totalPriceSet { shopMoney { amount currencyCode } }
-                }
-                userErrors { field message }
-              }
-            }
-        """.trimIndent()
-
-        val DRAFT_ORDER_COMPLETE = $$"""
-            mutation draftOrderComplete($id: ID!, $paymentPending: Boolean) {
-              draftOrderComplete(id: $id, paymentPending: $paymentPending) {
-                draftOrder {
-                  id
-                  order { id name }
-                }
-                userErrors { field message }
-              }
-            }
-        """.trimIndent()
-
-        val ORDER_MARK_AS_PAID = $$"""
-            mutation orderMarkAsPaid($input: OrderMarkAsPaidInput!) {
-              orderMarkAsPaid(input: $input) {
-                order { id name }
-                userErrors { field message }
-              }
-            }
-        """.trimIndent()
-
-        val ORDER_CANCEL = $$"""
-            mutation orderCancel(
-              $orderId: ID!,
-              $notifyCustomer: Boolean,
-              $refund: Boolean!,
-              $restock: Boolean!,
-              $reason: OrderCancelReason!
-            ) {
-              orderCancel(
-                orderId: $orderId,
-                notifyCustomer: $notifyCustomer,
-                refund: $refund,
-                restock: $restock,
-                reason: $reason
-              ) {
-                job { id done }
-                orderCancelUserErrors { field message }
-                userErrors { field message }
-              }
-            }
-        """.trimIndent()
     }
 }
