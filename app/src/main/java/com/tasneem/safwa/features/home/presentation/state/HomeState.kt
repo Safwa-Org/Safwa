@@ -20,5 +20,7 @@ data class HomeState(
     val selectedCategory: Category? = null,
     val brands: List<String> = emptyList(),
     val cartItemCount: Int = 0,
+    val aiRecommendations: List<Product> = emptyList(),
+    val isAiLoading: Boolean = false,
     val errorMessage: String? = null
 )
