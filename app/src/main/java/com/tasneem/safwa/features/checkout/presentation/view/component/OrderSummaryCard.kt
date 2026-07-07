@@ -14,14 +14,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.tasneem.safwa.R
-import com.tasneem.safwa.features.checkout.presentation.state.CheckoutState
+import com.tasneem.safwa.features.checkout.presentation.state.OrderSummaryUiModel
 
 @Composable
 fun OrderSummaryCard(
-    state: CheckoutState,
+    summary: OrderSummaryUiModel,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -34,18 +35,32 @@ fun OrderSummaryCard(
     ) {
         SummaryItemRow(
             label = stringResource(id = R.string.checkout_subtotal),
-            value = state.subtotal,
-            isBoldValue = true
+            value = summary.subtotal
         )
+
+        summary.discount?.let { discount ->
+            SummaryItemRow(
+                label = summary.discountCode
+                    ?.let { stringResource(id = R.string.checkout_discount_with_code, it) }
+                    ?: stringResource(id = R.string.checkout_discount),
+                value = discount,
+                valueColor = MaterialTheme.colorScheme.primary
+            )
+        }
+
         SummaryItemRow(
             label = stringResource(id = R.string.checkout_shipping),
-            value = if (state.isShippingFree) stringResource(id = R.string.checkout_shipping_free) else state.shippingFee,
-            isBoldValue = true
+            value = when {
+                summary.isShippingFree -> stringResource(id = R.string.checkout_shipping_free)
+                summary.shippingFee != null -> summary.shippingFee
+                else -> stringResource(id = R.string.checkout_calculated_later)
+            }
         )
+
         SummaryItemRow(
             label = stringResource(id = R.string.checkout_vat),
-            value = state.vatAmount,
-            isBoldValue = true
+            value = summary.vatAmount
+                ?: stringResource(id = R.string.checkout_calculated_later)
         )
 
         HorizontalDivider(
@@ -67,7 +82,7 @@ fun OrderSummaryCard(
                 color = MaterialTheme.colorScheme.secondary
             )
             Text(
-                text = state.totalAmount,
+                text = summary.totalAmount,
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontFamily = MaterialTheme.typography.displayMedium.fontFamily
                 ),
@@ -81,7 +96,7 @@ fun OrderSummaryCard(
 private fun SummaryItemRow(
     label: String,
     value: String,
-    isBoldValue: Boolean
+    valueColor: Color = MaterialTheme.colorScheme.onSurface
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -95,10 +110,10 @@ private fun SummaryItemRow(
         )
         Text(
             text = value,
-            style = if (isBoldValue) MaterialTheme.typography.bodyMedium.copy(
+            style = MaterialTheme.typography.bodyMedium.copy(
                 fontFamily = MaterialTheme.typography.titleMedium.fontFamily
-            ) else MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurface
+            ),
+            color = valueColor
         )
     }
 }

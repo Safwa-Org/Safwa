@@ -167,7 +167,6 @@ fun SafwaNavHost(
         }
 
         composable<ScreenRoute.Cart> {
-            // Cart implementation
             CartScreen(
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToCheckout = { navController.navigate(ScreenRoute.Payment) }
@@ -178,7 +177,11 @@ fun SafwaNavHost(
             CheckoutScreen(
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToSavedAddresses = { navController.navigate(ScreenRoute.SavedAddresses) },
-                onNavigateToPayment = { navController.navigate(ScreenRoute.Payment) },
+                onNavigateToOrderConfirmed = { orderId, totalAmount ->
+                    navController.navigate(ScreenRoute.OrderConfirmation(orderId, totalAmount)) {
+                        popUpTo(ScreenRoute.Home)
+                    }
+                },
             )
         }
 
@@ -187,8 +190,11 @@ fun SafwaNavHost(
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToHome = {
                     navController.navigate(ScreenRoute.Home) {
-                        popUpTo(ScreenRoute.Checkout) { inclusive = true }
+                        popUpTo(ScreenRoute.Payment) { inclusive = true }
                     }
+                },
+                onNavigateToCheckout = { methodId ->
+                    navController.navigate(ScreenRoute.Checkout(methodId))
                 },
                 onNavigateToOrderConfirmed = { orderId, totalAmount ->
                     navController.navigate(ScreenRoute.OrderConfirmation(orderId, totalAmount)) {
