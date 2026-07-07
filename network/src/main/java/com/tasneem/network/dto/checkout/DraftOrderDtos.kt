@@ -18,7 +18,9 @@ data class DraftOrderLineItemInputDto(
 
 data class MailingAddressInputDto(
     val address1: String? = null,
+    val address2: String? = null,
     val city: String? = null,
+    val province: String? = null,
     val country: String? = null,
     val zip: String? = null,
     val firstName: String? = null,

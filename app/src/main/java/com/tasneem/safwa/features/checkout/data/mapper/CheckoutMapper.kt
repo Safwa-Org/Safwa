@@ -37,17 +37,17 @@ fun DraftOrderRequest.toDto(): DraftOrderInputDto = DraftOrderInputDto(
     tags = listOf("safwa-android")
 )
 
-private fun Address.toMailingAddressInput(): MailingAddressInputDto {
-    val nameParts = recipientName.trim().split(" ", limit = 2)
-    return MailingAddressInputDto(
-        address1 = street.takeIf { it.isNotBlank() },
-        city = cityAndZip.takeIf { it.isNotBlank() },
-        country = countryCode.takeIf { it.isNotBlank() },
-        firstName = nameParts.firstOrNull(),
-        lastName = nameParts.getOrNull(1),
-        phone = mobileNumber.takeIf { it.isNotBlank() }
-    )
-}
+private fun Address.toMailingAddressInput(): MailingAddressInputDto = MailingAddressInputDto(
+    address1 = street.takeIf { it.isNotBlank() },
+    address2 = apartment.takeIf { it.isNotBlank() },
+    city = city.takeIf { it.isNotBlank() },
+    province = province.takeIf { it.isNotBlank() },
+    country = countryName.takeIf { it.isNotBlank() },
+    zip = zip.takeIf { it.isNotBlank() },
+    firstName = firstName.takeIf { it.isNotBlank() },
+    lastName = lastName.takeIf { it.isNotBlank() },
+    phone = phone.takeIf { it.isNotBlank() }
+)
 
 fun DraftOrderDto.toDomain(): DraftOrder = DraftOrder(
     id = id,

@@ -33,11 +33,13 @@ object PaymentMethodIds {
 
 fun Address.toUiModel() = AddressUiModel(
     id = id,
-    tag = label.ifBlank { "Address" },
-    recipientName = recipientName,
-    detailedAddress = listOf(street, cityAndZip)
-        .filter { it.isNotBlank() }
-        .joinToString(", ")
+    tag = if (isDefault) "Default" else "Address",
+    recipientName = "$firstName $lastName".trim(),
+    detailedAddress = listOfNotNull(
+        street.takeIf { it.isNotBlank() },
+        apartment.takeIf { it.isNotBlank() },
+        listOf(city, zip).filter { it.isNotBlank() }.joinToString(" ").takeIf { it.isNotBlank() }
+    ).joinToString(", ")
 )
 
 fun CartLine.toUiModel() = CheckoutItemUiModel(
