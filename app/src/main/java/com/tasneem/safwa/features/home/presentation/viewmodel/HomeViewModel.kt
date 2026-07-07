@@ -3,23 +3,23 @@ package com.tasneem.safwa.features.home.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tasneem.safwa.core.domain.model.AuthState
+import com.tasneem.safwa.core.presentation.mapper.toUiError
 import com.tasneem.safwa.core.util.NetworkStatusProvider
 import com.tasneem.safwa.core.util.Resource
 import com.tasneem.safwa.features.auth.domain.usecase.ObserveAuthStateUseCase
-import com.tasneem.safwa.features.cart.domain.repository.CartRepository
-import com.tasneem.safwa.features.home.domain.model.PromoBanner
 import com.tasneem.safwa.features.brand.domain.usecase.GetBrandsUseCase
+import com.tasneem.safwa.features.cart.domain.repository.CartRepository
 import com.tasneem.safwa.features.cart.domain.usecase.GetCartUseCase
+import com.tasneem.safwa.features.core.domain.usecase.GetCategoriesUseCase
+import com.tasneem.safwa.features.core.domain.usecase.GetWishlistUseCase
+import com.tasneem.safwa.features.core.domain.usecase.ToggleFavoriteUseCase
+import com.tasneem.safwa.features.home.domain.model.PromoBanner
 import com.tasneem.safwa.features.home.domain.usecase.GetAiRecommendationsUseCase
 import com.tasneem.safwa.features.home.domain.usecase.GetProductsUseCase
 import com.tasneem.safwa.features.home.presentation.state.GreetingType
 import com.tasneem.safwa.features.home.presentation.state.HomeEffect
 import com.tasneem.safwa.features.home.presentation.state.HomeEvent
 import com.tasneem.safwa.features.home.presentation.state.HomeState
-import com.tasneem.safwa.features.category.domain.model.Category
-import com.tasneem.safwa.features.core.domain.usecase.GetCategoriesUseCase
-import com.tasneem.safwa.features.core.domain.usecase.GetWishlistUseCase
-import com.tasneem.safwa.features.core.domain.usecase.ToggleFavoriteUseCase
 import com.tasneem.safwa.features.settings.languageandcurrency.data.CurrencyRateManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
@@ -105,16 +105,22 @@ class HomeViewModel @Inject constructor(
             networkStatusProvider.observeConnectivity()
                 .drop(1)
                 .collect { isConnected ->
-                    if (!isConnected) return@collect
-                    val current = _state.value
-                    if (current.errorMessage != null || current.products.isEmpty()) loadProducts()
-                    if (current.brands.isEmpty()) loadBrands()
-                    if (current.categories.isEmpty()) loadCategories()
-                    if (current.aiErrorMessage != null || current.aiRecommendations.isEmpty()) {
-                        loadAiRecommendations()
+                    if (isConnected) {
+                        retryFailedLoads()
+                        loadCartCount()
                     }
-                    loadCartCount()
                 }
+        }
+    }
+
+    /** Re-runs only the loads that failed or never delivered data. */
+    private fun retryFailedLoads() {
+        val current = _state.value
+        if (current.error != null || current.products.isEmpty()) loadProducts()
+        if (current.brands.isEmpty()) loadBrands()
+        if (current.categories.isEmpty()) loadCategories()
+        if (current.aiErrorMessage != null || current.aiRecommendations.isEmpty()) {
+            loadAiRecommendations()
         }
     }
 
@@ -123,8 +129,9 @@ class HomeViewModel @Inject constructor(
             getProductsUseCase().collect { result ->
                 when (result) {
                     is Resource.Loading -> {
-                        _state.update { it.copy(isLoading = true, errorMessage = null) }
+                        _state.update { it.copy(isLoading = true, error = null) }
                     }
+
                     is Resource.Success -> {
                         val products = result.data
                         _state.update {
@@ -132,15 +139,16 @@ class HomeViewModel @Inject constructor(
                                 isLoading = false,
                                 products = products,
                                 filteredProducts = products,
-                                errorMessage = null
+                                error = null
                             )
                         }
                     }
+
                     is Resource.Error -> {
                         _state.update {
                             it.copy(
                                 isLoading = false,
-                                errorMessage = result.message
+                                error = result.throwable.toUiError()
                             )
                         }
                     }
@@ -156,12 +164,24 @@ class HomeViewModel @Inject constructor(
                     is Resource.Loading -> {
                         _state.update { it.copy(isAiLoading = true) }
                     }
+
                     is Resource.Success -> {
-                        _state.update { it.copy(isAiLoading = false, aiRecommendations = result.data) }
+                        _state.update {
+                            it.copy(
+                                isAiLoading = false,
+                                aiRecommendations = result.data
+                            )
+                        }
                     }
+
                     is Resource.Error -> {
                         android.util.Log.e("SafwaAI", "AI Error: ${result.message}")
-                        _state.update { it.copy(isAiLoading = false, aiErrorMessage = result.message) }
+                        _state.update {
+                            it.copy(
+                                isAiLoading = false,
+                                aiErrorMessage = result.message
+                            )
+                        }
                     }
                 }
             }
@@ -194,7 +214,9 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             getWishlistUseCase().collect { result ->
                 if (result is Resource.Success) {
-                    _state.update { it.copy(favoriteProductIds = result.data.map { p -> p.id }.toSet()) }
+                    _state.update {
+                        it.copy(favoriteProductIds = result.data.map { p -> p.id }.toSet())
+                    }
                 }
             }
         }
@@ -217,7 +239,7 @@ class HomeViewModel @Inject constructor(
     fun onEvent(event: HomeEvent) {
         when (event) {
             is HomeEvent.LoadHome -> {
-                loadProducts()
+                retryFailedLoads()
             }
 
             is HomeEvent.CategorySelected -> {
