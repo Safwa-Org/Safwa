@@ -15,6 +15,7 @@ if (localPropertiesFile.exists()) {
     localProperties.load(localPropertiesFile.inputStream())
 }
 val geminiApiKey = localProperties.getProperty("GEMINI_API_KEY") ?: ""
+val openRouterApiKey = localProperties.getProperty("OPEN_ROUTER_API_KEY") ?: ""
 
 
 android {
@@ -35,6 +36,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         
         buildConfigField("String", "GEMINI_API_KEY", "\"$geminiApiKey\"")
+        buildConfigField("String", "OPEN_ROUTER_API_KEY", "\"$openRouterApiKey\"")
     }
 
     buildTypes {

@@ -9,4 +9,12 @@ sealed interface SearchIntent {
     data class ToggleFavorite(val product: Product) : SearchIntent
     data class ProductClicked(val product: Product) : SearchIntent
     data object ExecuteSearch : SearchIntent
+    data class ToggleFilterSheet(val show: Boolean) : SearchIntent
+    data class UpdateSortOption(val option: SortOption) : SearchIntent
+    data class ToggleBrandFilter(val brand: String) : SearchIntent
+    data class ToggleSubCategoryFilter(val subCategory: String) : SearchIntent
+    data class ToggleGroupBySubCategory(val enable: Boolean) : SearchIntent
+    data class UpdatePriceRange(val range: ClosedFloatingPointRange<Float>) : SearchIntent
+    data object ApplyFilters : SearchIntent
+    data object ClearFilters : SearchIntent
 }
