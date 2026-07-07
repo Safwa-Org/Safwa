@@ -7,6 +7,9 @@ import com.tasneem.network.datasource.cart.CartRemoteDataSource
 import com.tasneem.network.datasource.payment.IPayMockRemoteDataSource
 import com.tasneem.network.datasource.payment.PayMockRemoteDataSource
 import com.tasneem.network.datasource.cart.CartRemoteDataSourceImpl
+import com.tasneem.network.datasource.checkout.CheckoutRemoteDataSource
+import com.tasneem.network.datasource.checkout.CheckoutRemoteDataSourceImpl
+import com.tasneem.network.datasource.checkout.ShopifyAdminApi
 import com.tasneem.network.datasource.order.OrderRemoteDataSource
 import com.tasneem.network.datasource.order.OrderRemoteDataSourceImpl
 import com.tasneem.network.datasource.currency.ExchangeRateApi
@@ -121,6 +124,29 @@ object NetworkModule {
 
     @Provides
     @Singleton
+    fun provideShopifyAdminApi(okHttpClient: OkHttpClient): ShopifyAdminApi {
+        val adminClient = okHttpClient.newBuilder()
+            .addInterceptor { chain ->
+                chain.proceed(
+                    chain.request().newBuilder()
+                        .addHeader(
+                            "X-Shopify-Access-Token",
+                            BuildConfig.SHOPIFY_ADMIN_API_ACCESS_TOKEN
+                        )
+                        .build()
+                )
+            }
+            .build()
+        return Retrofit.Builder()
+            .baseUrl(BuildConfig.SHOPIFY_ADMIN_BASE_URL)
+            .client(adminClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(ShopifyAdminApi::class.java)
+    }
+
+    @Provides
+    @Singleton
     fun providePayMockApiService(okHttpClient: OkHttpClient): PayMockApiService {
         return Retrofit.Builder()
             .baseUrl("http://192.168.1.29:8080/")
@@ -178,5 +204,10 @@ abstract class DataSourceModule {
     abstract fun bindPayMockRemoteDataSource(
         impl: PayMockRemoteDataSource
     ): IPayMockRemoteDataSource
+
+    @Binds
+    abstract fun bindCheckoutRemoteDataSource(
+        impl: CheckoutRemoteDataSourceImpl
+    ): CheckoutRemoteDataSource
 
 }
