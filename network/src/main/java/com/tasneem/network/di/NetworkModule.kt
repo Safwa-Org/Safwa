@@ -2,6 +2,8 @@ package com.tasneem.network.di
 
 import com.apollographql.apollo.ApolloClient
 import com.google.firebase.appcheck.FirebaseAppCheck
+import com.tasneem.network.datasource.address.CustomerAddressRemoteDataSource
+import com.tasneem.network.datasource.address.CustomerAddressRemoteDataSourceImpl
 import com.tasneem.network.datasource.auth.AuthRemoteDataSource
 import com.tasneem.network.datasource.auth.AuthRemoteDataSourceImpl
 import com.tasneem.network.datasource.brand.BrandRemoteDataSource
@@ -196,6 +198,11 @@ abstract class DataSourceModule {
     abstract fun bindPayMockRemoteDataSource(
         impl: PayMockRemoteDataSource
     ): IPayMockRemoteDataSource
+
+    @Binds
+    abstract fun bindCustomerAddressRemoteDataSource(
+        impl: CustomerAddressRemoteDataSourceImpl
+    ): CustomerAddressRemoteDataSource
 
     @Binds
     abstract fun bindCheckoutRemoteDataSource(
