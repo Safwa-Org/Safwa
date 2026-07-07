@@ -1,5 +1,7 @@
 package com.tasneem.safwa.core.domain.usecase.preferences
 
+import com.apollographql.apollo.ApolloClient
+import com.apollographql.cache.normalized.apolloStore
 import com.tasneem.safwa.core.domain.model.AppPreferences
 import com.tasneem.safwa.core.domain.model.User
 import com.tasneem.safwa.core.domain.repository.SessionPreferencesRepository
@@ -17,10 +19,18 @@ class GetAppPreferencesUseCase @Inject constructor(private val repo: SessionPref
     operator fun invoke(): Flow<AppPreferences> = repo.appPreferences
 }
 
-class UpdateAppPreferencesUseCase @Inject constructor(private val repo: SessionPreferencesRepository) {
+class UpdateAppPreferencesUseCase @Inject constructor(
+    private val repo: SessionPreferencesRepository,
+    private val apolloClient: ApolloClient
+) {
     suspend fun updateTheme(isDark: Boolean) = repo.updateTheme(isDark)
     suspend fun updateLanguage(lang: String) = repo.updateLanguage(lang)
-    suspend fun updateCurrency(currency: String) = repo.updateCurrency(currency)
+
+    suspend fun updateCurrency(currency: String) {
+        repo.updateCurrency(currency)
+        apolloClient.apolloStore.clearAll()
+    }
+
     suspend fun setOnboardingCompleted(completed: Boolean) = repo.setOnboardingCompleted(completed)
 }
 

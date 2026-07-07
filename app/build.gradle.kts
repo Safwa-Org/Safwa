@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -6,6 +8,14 @@ plugins {
     alias(libs.plugins.google.services)
     alias(libs.plugins.kotlin.serialization)
 }
+
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(localPropertiesFile.inputStream())
+}
+val geminiApiKey = localProperties.getProperty("GEMINI_API_KEY") ?: ""
+
 
 android {
     namespace = "com.tasneem.safwa"
@@ -23,6 +33,8 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        
+        buildConfigField("String", "GEMINI_API_KEY", "\"$geminiApiKey\"")
     }
 
     buildTypes {
@@ -99,4 +111,7 @@ dependencies {
 
     implementation("androidx.browser:browser:1.8.0")
     implementation(libs.shopify.checkout.sheet.kit)
+    
+    // Gemini AI
+    implementation("com.google.ai.client.generativeai:generativeai:0.9.0")
 }

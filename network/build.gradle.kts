@@ -29,11 +29,6 @@ val locationBaseUrl = localProperties.getProperty("Location_BASE_URL")
 val locationApiKey = localProperties.getProperty("LOCATIONIQ_API_KEY")
     ?: throw Exception("Missing LOCATIONIQ_API_KEY in local.properties.")
 
-val paypalClientId = localProperties.getProperty("PAYPAL_CLIENT_ID")
-    ?: throw Exception("Missing PAYPAL_CLIENT_ID in local.properties.")
-
-val paypalSecret = localProperties.getProperty("PAYPAL_SECRET")
-    ?: throw Exception("Missing PAYPAL_SECRET in local.properties.")
 
 val adminProxyBaseUrl = localProperties.getProperty("ADMIN_PROXY_BASE_URL")
     ?: throw Exception(
@@ -54,8 +49,6 @@ android {
         )
 
         buildConfigField("String", "COUNTRIES_BASE_URL", "\"$currencyBaseUrl\"")
-        buildConfigField("String", "PAYPAL_CLIENT_ID", "\"$paypalClientId\"")
-        buildConfigField("String", "PAYPAL_SECRET", "\"$paypalSecret\"")
         buildConfigField("String", "PAYPAL_BASE_URL", "\"https://api-m.sandbox.paypal.com/\"")
         buildConfigField("String", "SHOPIFY_DEPOSIT_BASE_URL", "\"https://elb.deposit.shopifycs.com/\"")
         buildConfigField("String", "Currency_Exchange_BASE_URL", "\"$currencyBaseUrl\"")
@@ -86,6 +79,7 @@ apollo {
 
 dependencies {
     api(libs.apollo.runtime)
+    api(libs.apollo.normalized.cache)
     api(libs.apollo.normalized.cache.sqlite)
     implementation(libs.androidx.core.ktx)
     implementation(libs.hilt.android)

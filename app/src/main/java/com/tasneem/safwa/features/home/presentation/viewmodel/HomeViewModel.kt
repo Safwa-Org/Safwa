@@ -8,6 +8,7 @@ import com.tasneem.safwa.features.cart.domain.repository.CartRepository
 import com.tasneem.safwa.features.home.domain.model.PromoBanner
 import com.tasneem.safwa.features.brand.domain.usecase.GetBrandsUseCase
 import com.tasneem.safwa.features.cart.domain.usecase.GetCartUseCase
+import com.tasneem.safwa.features.home.domain.usecase.GetAiRecommendationsUseCase
 import com.tasneem.safwa.features.home.domain.usecase.GetProductsUseCase
 import com.tasneem.safwa.features.home.presentation.state.GreetingType
 import com.tasneem.safwa.features.home.presentation.state.HomeEffect
@@ -17,11 +18,13 @@ import com.tasneem.safwa.features.category.domain.model.Category
 import com.tasneem.safwa.features.core.domain.usecase.GetCategoriesUseCase
 import com.tasneem.safwa.features.core.domain.usecase.GetWishlistUseCase
 import com.tasneem.safwa.features.core.domain.usecase.ToggleFavoriteUseCase
+import com.tasneem.safwa.features.settings.languageandcurrency.data.CurrencyRateManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -37,7 +40,9 @@ class HomeViewModel @Inject constructor(
     private val getCartUseCase: GetCartUseCase,
     private val cartRepository: CartRepository,
     private val getCurrentUserUseCase: GetCurrentUserUseCase,
-    private val getBrandsUseCase: GetBrandsUseCase
+    private val getBrandsUseCase: GetBrandsUseCase,
+    private val getAiRecommendationsUseCase: GetAiRecommendationsUseCase,
+    private val currencyRateManager: CurrencyRateManager
 ) : ViewModel() {
 
     companion object {
@@ -64,6 +69,14 @@ class HomeViewModel @Inject constructor(
         loadCategories()
         observeCartCount()
         loadCartCount()
+        loadAiRecommendations()
+
+
+        viewModelScope.launch {
+            currencyRateManager.displayCurrency
+                .drop(1)
+                .collect { loadProducts() }
+        }
     }
 
     private fun loadCurrentUser() {
@@ -104,6 +117,25 @@ class HomeViewModel @Inject constructor(
                                 errorMessage = result.message
                             )
                         }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun loadAiRecommendations() {
+        viewModelScope.launch {
+            getAiRecommendationsUseCase().collect { result ->
+                when (result) {
+                    is Resource.Loading -> {
+                        _state.update { it.copy(isAiLoading = true) }
+                    }
+                    is Resource.Success -> {
+                        _state.update { it.copy(isAiLoading = false, aiRecommendations = result.data) }
+                    }
+                    is Resource.Error -> {
+                        android.util.Log.e("SafwaAI", "AI Error: ${result.message}")
+                        _state.update { it.copy(isAiLoading = false, aiErrorMessage = result.message) }
                     }
                 }
             }

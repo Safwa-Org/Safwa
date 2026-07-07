@@ -118,7 +118,7 @@ class ProductRemoteDataSourceImpl @Inject constructor(
                         title = node.title,
                         description = "",
                         vendor = node.vendor,
-                        productType = handle, // Collection handle as product type for now
+                        productType = handle,
                         price = node.priceRange.minVariantPrice.amount.toString(),
                         currency = node.priceRange.minVariantPrice.currencyCode.name,
                         imageUrls = node.images.edges.map { it.node.url.toString() },

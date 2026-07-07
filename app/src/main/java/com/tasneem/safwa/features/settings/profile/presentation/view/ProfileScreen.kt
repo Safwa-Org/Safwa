@@ -2,6 +2,7 @@ package com.tasneem.safwa.features.settings.profile.presentation.view
 
 import android.content.res.Configuration
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -9,10 +10,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Button
@@ -21,14 +22,19 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.tasneem.safwa.R
 import com.tasneem.safwa.core.shared_component.LoadingOverlay
 import com.tasneem.safwa.core.shared_component.SafwaTopAppBar
@@ -37,16 +43,12 @@ import com.tasneem.safwa.features.settings.core.presentation.view.components.Sec
 import com.tasneem.safwa.features.settings.core.presentation.view.components.SettingsDivider
 import com.tasneem.safwa.features.settings.core.presentation.view.components.SettingsGroupCard
 import com.tasneem.safwa.features.settings.core.presentation.view.components.SettingsItem
-import com.tasneem.safwa.features.settings.profile.presentation.view.component.ProfileHeader
-import com.tasneem.safwa.features.settings.profile.presentation.view.component.SettingsSwitchItem
-import androidx.compose.foundation.clickable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.tasneem.safwa.features.settings.profile.presentation.state.ProfileEffect
 import com.tasneem.safwa.features.settings.profile.presentation.state.ProfileEvent
 import com.tasneem.safwa.features.settings.profile.presentation.state.ProfileState
 import com.tasneem.safwa.features.settings.profile.presentation.view.component.LogoutConfirmDialog
+import com.tasneem.safwa.features.settings.profile.presentation.view.component.ProfileHeader
+import com.tasneem.safwa.features.settings.profile.presentation.view.component.SettingsSwitchItem
 import com.tasneem.safwa.features.settings.profile.presentation.viewmodel.ProfileViewModel
 
 @Composable
@@ -72,6 +74,9 @@ fun ProfileScreen(
                 }
             }
         }
+    }
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+        viewModel.onEvent(ProfileEvent.Refresh)
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -134,13 +139,17 @@ fun ProfileContent(
         SettingsGroupCard {
             SettingsItem(
                 title = stringResource(R.string.orderhistory),
-                subtitle = "${state.ordersCount}" + stringResource(R.string.singlespace) + stringResource(R.string.orders),
+                subtitle = "${state.ordersCount}" + stringResource(R.string.singlespace) + stringResource(
+                    R.string.orders
+                ),
                 modifier = Modifier.clickable { onEvent(ProfileEvent.OrderHistoryClicked) }
             )
             SettingsDivider()
             SettingsItem(
                 title = stringResource(R.string.savedaddresses),
-                subtitle = "${state.savedAddressesCount}" + stringResource(R.string.singlespace) + stringResource(R.string.addresses),
+                subtitle = "${state.savedAddressesCount}" + stringResource(R.string.singlespace) + stringResource(
+                    R.string.addresses
+                ),
                 modifier = Modifier.clickable { onEvent(ProfileEvent.SavedAddressesClicked) }
             )
             SettingsDivider()
