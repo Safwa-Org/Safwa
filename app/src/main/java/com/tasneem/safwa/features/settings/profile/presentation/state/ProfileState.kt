@@ -22,5 +22,7 @@ data class ProfileState(
 
     val showLogoutConfirmDialog: Boolean = false,
 
+    val isLoggingOut: Boolean = false,
+
     val errorMessage: String? = null
 )

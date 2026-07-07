@@ -38,6 +38,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.common.api.ApiException
 import com.tasneem.safwa.R
 import com.tasneem.safwa.core.shared_component.CustomButon
+import com.tasneem.safwa.core.shared_component.LoadingOverlay
 import com.tasneem.safwa.core.shared_component.SafwaLogo
 import com.tasneem.safwa.features.auth.presentation.components.CustomTextField
 import com.tasneem.safwa.features.auth.presentation.components.ErrorText
@@ -79,11 +80,14 @@ fun LoginScreen(
         }
     }
 
-    LoginContent(
-        state = state,
-        onEvent = viewModel::onEvent,
-        onGoogleSignInResult = viewModel::handleGoogleLogin
-    )
+    Box(modifier = Modifier.fillMaxSize()) {
+        LoginContent(
+            state = state,
+            onEvent = viewModel::onEvent,
+            onGoogleSignInResult = viewModel::handleGoogleLogin
+        )
+        LoadingOverlay(visible = state.isLoading)
+    }
 }
 
 @Composable

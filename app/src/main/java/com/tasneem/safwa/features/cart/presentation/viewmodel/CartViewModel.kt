@@ -6,14 +6,14 @@ import com.tasneem.safwa.core.domain.model.AuthState
 import com.tasneem.safwa.core.util.Resource
 import com.tasneem.safwa.features.auth.domain.usecase.ObserveAuthStateUseCase
 import com.tasneem.safwa.features.cart.domain.usecase.ApplyDiscountCodeUseCase
+import com.tasneem.safwa.features.cart.domain.usecase.GetCartUseCase
+import com.tasneem.safwa.features.cart.domain.usecase.RemoveFromCartUseCase
+import com.tasneem.safwa.features.cart.domain.usecase.UpdateCartLineUseCase
 import com.tasneem.safwa.features.cart.presentation.state.AppliedDiscountCode
 import com.tasneem.safwa.features.cart.presentation.state.CartEffect
 import com.tasneem.safwa.features.cart.presentation.state.CartEvent
 import com.tasneem.safwa.features.cart.presentation.state.CartItem
 import com.tasneem.safwa.features.cart.presentation.state.CartState
-import com.tasneem.safwa.features.cart.domain.usecase.GetCartUseCase
-import com.tasneem.safwa.features.cart.domain.usecase.RemoveFromCartUseCase
-import com.tasneem.safwa.features.cart.domain.usecase.UpdateCartLineUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -81,7 +81,8 @@ class CartViewModel @Inject constructor(
                         _state.update {
                             it.copy(
                                 isLoading = false,
-                                errorMessage = (result as? com.tasneem.safwa.core.util.Resource.Error)?.message ?: "Failed to load cart"
+                                errorMessage = (result as? com.tasneem.safwa.core.util.Resource.Error)?.message
+                                    ?: "Failed to load cart"
                             )
                         }
                     }
@@ -115,12 +116,13 @@ class CartViewModel @Inject constructor(
             is CartEvent.ApplyQuantityUpdate -> {
                 val itemToUpdate = _state.value.items.find { it.id == event.itemId } ?: return
                 if (itemToUpdate.quantity == itemToUpdate.originalQuantity) return
-                
+
                 val difference = itemToUpdate.quantity - itemToUpdate.originalQuantity
                 _state.update { it.copy(updatingItemIds = it.updatingItemIds + event.itemId) }
-                
+
                 viewModelScope.launch {
-                    val result = updateCartLineUseCase(itemToUpdate.id, itemToUpdate.quantity, difference)
+                    val result =
+                        updateCartLineUseCase(itemToUpdate.id, itemToUpdate.quantity, difference)
                     if (result is Resource.Success) {
                         _state.update { currentState ->
                             val updatedItems = currentState.items.map { item ->
@@ -146,7 +148,8 @@ class CartViewModel @Inject constructor(
                                     if (item.id == event.itemId) item.copy(quantity = item.originalQuantity)
                                     else item
                                 },
-                                errorMessage = (result as? Resource.Error)?.message ?: "Failed to update item"
+                                errorMessage = (result as? Resource.Error)?.message
+                                    ?: "Failed to update item"
                             )
                         }
                         _effect.send(CartEffect.ShowSnackBar("Failed to update quantity"))
@@ -165,19 +168,20 @@ class CartViewModel @Inject constructor(
 
             is CartEvent.ConfirmRemoveItem -> {
                 val itemToRemove = _state.value.itemPendingRemoval ?: return
-                
+
                 _state.update {
                     it.copy(
                         itemPendingRemoval = null,
                         removingItemIds = it.removingItemIds + itemToRemove.id
-                    ) 
+                    )
                 }
-                
+
                 viewModelScope.launch {
                     val result = removeFromCartUseCase(itemToRemove.id, itemToRemove.quantity)
                     if (result is Resource.Success) {
                         _state.update { currentState ->
-                            val updatedItems = currentState.items.filter { it.id != itemToRemove.id }
+                            val updatedItems =
+                                currentState.items.filter { it.id != itemToRemove.id }
                             val newSubtotal = updatedItems.sumOf { it.price * it.quantity }
                             val newTotal = result.data?.toDoubleOrNull() ?: newSubtotal
 
@@ -193,7 +197,8 @@ class CartViewModel @Inject constructor(
                         _state.update {
                             it.copy(
                                 removingItemIds = it.removingItemIds - itemToRemove.id,
-                                errorMessage = (result as? Resource.Error)?.message ?: "Failed to remove item"
+                                errorMessage = (result as? Resource.Error)?.message
+                                    ?: "Failed to remove item"
                             )
                         }
                         _effect.send(CartEffect.ShowSnackBar("Failed to remove item"))
@@ -208,55 +213,62 @@ class CartViewModel @Inject constructor(
             is CartEvent.ApplyPromoCode -> {
                 val code = _state.value.promoCode.trim()
                 if (code.isBlank()) return
-                
-                val currentValidCodes = _state.value.appliedDiscountCodes.filter { it.applicable }.map { it.code }
+
+                val currentValidCodes =
+                    _state.value.appliedDiscountCodes.filter { it.applicable }.map { it.code }
                 if (currentValidCodes.any { it.equals(code, ignoreCase = true) }) {
-                     _state.update { it.copy(promoCodeError = "Code already applied") }
-                     return
+                    _state.update { it.copy(promoCodeError = "Code already applied") }
+                    return
                 }
-                
+
                 val codesToApply = currentValidCodes + code
-                
+
                 _state.update { it.copy(isApplyingPromoCode = true, promoCodeError = null) }
-                
+
                 viewModelScope.launch {
                     val result = applyDiscountCodeUseCase(codesToApply)
                     if (result is Resource.Success) {
                         val appliedCodes = result.data?.discountCodes ?: emptyList()
                         val newCode = appliedCodes.find { it.code.equals(code, ignoreCase = true) }
-                        
-                        val validCodesFromBackend = appliedCodes.filter { it.applicable }.map { discount ->
-                            AppliedDiscountCode(discount.code, discount.applicable)
-                        }
-                        
+
+                        val validCodesFromBackend =
+                            appliedCodes.filter { it.applicable }.map { discount ->
+                                AppliedDiscountCode(discount.code, discount.applicable)
+                            }
+
                         if (newCode != null && newCode.applicable) {
-                            _state.update { 
+                            _state.update {
                                 it.copy(
                                     isApplyingPromoCode = false,
                                     promoCode = "",
                                     appliedDiscountCodes = validCodesFromBackend,
-                                    subtotalAmount = result.data.subtotalAmount.toDoubleOrNull() ?: it.subtotalAmount,
-                                    totalAmount = result.data.totalAmount.toDoubleOrNull() ?: it.totalAmount
-                                ) 
+                                    subtotalAmount = result.data.subtotalAmount.toDoubleOrNull()
+                                        ?: it.subtotalAmount,
+                                    totalAmount = result.data.totalAmount.toDoubleOrNull()
+                                        ?: it.totalAmount
+                                )
                             }
                             _effect.send(CartEffect.ShowSnackBar("Promo code applied!"))
                         } else {
-                             _state.update { 
+                            _state.update {
                                 it.copy(
                                     isApplyingPromoCode = false,
                                     promoCodeError = "Invalid discount code or gift card",
                                     appliedDiscountCodes = validCodesFromBackend,
-                                    subtotalAmount = result.data?.subtotalAmount?.toDoubleOrNull() ?: it.subtotalAmount,
-                                    totalAmount = result.data?.totalAmount?.toDoubleOrNull() ?: it.totalAmount
-                                ) 
+                                    subtotalAmount = result.data?.subtotalAmount?.toDoubleOrNull()
+                                        ?: it.subtotalAmount,
+                                    totalAmount = result.data?.totalAmount?.toDoubleOrNull()
+                                        ?: it.totalAmount
+                                )
                             }
                         }
                     } else {
-                        _state.update { 
+                        _state.update {
                             it.copy(
                                 isApplyingPromoCode = false,
-                                promoCodeError = (result as? Resource.Error)?.message ?: "Failed to apply promo code"
-                            ) 
+                                promoCodeError = (result as? Resource.Error)?.message
+                                    ?: "Failed to apply promo code"
+                            )
                         }
                     }
                 }
@@ -273,7 +285,7 @@ class CartViewModel @Inject constructor(
             is CartEvent.ConfirmRemovePromoCode -> {
                 val codeToRemove = _state.value.promoCodePendingRemoval ?: return
                 _state.update { it.copy(promoCodePendingRemoval = null) }
-                
+
                 val currentValidCodes = _state.value.appliedDiscountCodes
                     .filter { it.applicable && it.code != codeToRemove }
                     .map { it.code }
@@ -282,15 +294,20 @@ class CartViewModel @Inject constructor(
                     val result = applyDiscountCodeUseCase(currentValidCodes)
                     if (result is Resource.Success) {
                         val appliedCodes = result.data?.discountCodes ?: emptyList()
-                        val validCodesFromBackend = appliedCodes.filter { it.applicable }.map { discount ->
-                            AppliedDiscountCode(discount.code, discount.applicable)
-                        }
+                        val validCodesFromBackend =
+                            appliedCodes.filter { it.applicable }.map { discount ->
+                                AppliedDiscountCode(discount.code, discount.applicable)
+                            }
 
-                        _state.update { it.copy(
-                            appliedDiscountCodes = validCodesFromBackend,
-                            subtotalAmount = result.data.subtotalAmount.toDoubleOrNull() ?: it.subtotalAmount,
-                            totalAmount = result.data.totalAmount.toDoubleOrNull() ?: it.totalAmount
-                        )}
+                        _state.update {
+                            it.copy(
+                                appliedDiscountCodes = validCodesFromBackend,
+                                subtotalAmount = result.data.subtotalAmount.toDoubleOrNull()
+                                    ?: it.subtotalAmount,
+                                totalAmount = result.data.totalAmount.toDoubleOrNull()
+                                    ?: it.totalAmount
+                            )
+                        }
                     }
                 }
             }

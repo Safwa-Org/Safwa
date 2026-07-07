@@ -2,6 +2,7 @@ package com.tasneem.safwa.features.settings.profile.presentation.view
 
 import android.content.res.Configuration
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -29,6 +30,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.tasneem.safwa.R
+import com.tasneem.safwa.core.shared_component.LoadingOverlay
 import com.tasneem.safwa.core.shared_component.SafwaTopAppBar
 import com.tasneem.safwa.core.theme.SafwaTheme
 import com.tasneem.safwa.features.settings.core.presentation.view.components.SectionTitle
@@ -72,10 +74,13 @@ fun ProfileScreen(
         }
     }
 
-    ProfileContent(
-        state = uiState,
-        onEvent = viewModel::onEvent
-    )
+    Box(modifier = Modifier.fillMaxSize()) {
+        ProfileContent(
+            state = uiState,
+            onEvent = viewModel::onEvent
+        )
+        LoadingOverlay(visible = uiState.isLoggingOut)
+    }
 
     if (uiState.showLogoutConfirmDialog) {
         LogoutConfirmDialog(
