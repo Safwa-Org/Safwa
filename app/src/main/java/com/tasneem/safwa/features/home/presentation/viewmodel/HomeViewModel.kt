@@ -8,6 +8,7 @@ import com.tasneem.safwa.features.cart.domain.repository.CartRepository
 import com.tasneem.safwa.features.home.domain.model.PromoBanner
 import com.tasneem.safwa.features.brand.domain.usecase.GetBrandsUseCase
 import com.tasneem.safwa.features.cart.domain.usecase.GetCartUseCase
+import com.tasneem.safwa.features.home.domain.usecase.GetAiRecommendationsUseCase
 import com.tasneem.safwa.features.home.domain.usecase.GetProductsUseCase
 import com.tasneem.safwa.features.home.presentation.state.GreetingType
 import com.tasneem.safwa.features.home.presentation.state.HomeEffect
@@ -37,7 +38,8 @@ class HomeViewModel @Inject constructor(
     private val getCartUseCase: GetCartUseCase,
     private val cartRepository: CartRepository,
     private val getCurrentUserUseCase: GetCurrentUserUseCase,
-    private val getBrandsUseCase: GetBrandsUseCase
+    private val getBrandsUseCase: GetBrandsUseCase,
+    private val getAiRecommendationsUseCase: GetAiRecommendationsUseCase
 ) : ViewModel() {
 
     companion object {
@@ -64,6 +66,7 @@ class HomeViewModel @Inject constructor(
         loadCategories()
         observeCartCount()
         loadCartCount()
+        loadAiRecommendations()
     }
 
     private fun loadCurrentUser() {
@@ -104,6 +107,25 @@ class HomeViewModel @Inject constructor(
                                 errorMessage = result.message
                             )
                         }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun loadAiRecommendations() {
+        viewModelScope.launch {
+            getAiRecommendationsUseCase().collect { result ->
+                when (result) {
+                    is Resource.Loading -> {
+                        _state.update { it.copy(isAiLoading = true) }
+                    }
+                    is Resource.Success -> {
+                        _state.update { it.copy(isAiLoading = false, aiRecommendations = result.data) }
+                    }
+                    is Resource.Error -> {
+                        android.util.Log.e("SafwaAI", "AI Error: ${result.message}")
+                        _state.update { it.copy(isAiLoading = false, aiErrorMessage = result.message) }
                     }
                 }
             }

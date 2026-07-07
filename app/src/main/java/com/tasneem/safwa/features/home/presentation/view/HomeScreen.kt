@@ -6,8 +6,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -176,6 +178,62 @@ fun HomeContent(
                                 onClick = { onEvent(HomeEvent.ProductClicked(product)) },
                                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
                             )
+                        }
+
+                        // Always show AI section for debugging
+                        if (true) {
+                            item(span = { GridItemSpan(2) }) {
+                                Spacer(modifier = Modifier.height(24.dp))
+                            }
+                            item(span = { GridItemSpan(2) }) {
+                                SectionHeader(
+                                    title = "AI Recommendations \u2728"
+                                )
+                            }
+                            item(span = { GridItemSpan(2) }) {
+                                Spacer(modifier = Modifier.height(12.dp))
+                            }
+                            item(span = { GridItemSpan(2) }) {
+                                if (state.isAiLoading) {
+                                    Box(
+                                        modifier = Modifier.fillMaxWidth().height(200.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        CircularProgressIndicator()
+                                    }
+                                } else if (state.aiErrorMessage != null) {
+                                    Box(
+                                        modifier = Modifier.fillMaxWidth().height(100.dp).padding(16.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(text = "Error: ${state.aiErrorMessage}", color = androidx.compose.ui.graphics.Color.Red)
+                                    }
+                                } else if (state.aiRecommendations.isEmpty()) {
+                                    Box(
+                                        modifier = Modifier.fillMaxWidth().height(100.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(text = "No recommendations found")
+                                    }
+                                } else {
+                                    androidx.compose.foundation.lazy.LazyRow(
+                                        horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(16.dp),
+                                        contentPadding = PaddingValues(horizontal = 16.dp)
+                                    ) {
+                                        items(count = state.aiRecommendations.size, key = { state.aiRecommendations[it].id }) { index ->
+                                            val product = state.aiRecommendations[index]
+                                            Box(modifier = Modifier.width(160.dp)) {
+                                                ProductCard(
+                                                    product = product,
+                                                    isFavorite = state.favoriteProductIds.contains(product.id),
+                                                    onToggleFavorite = { onEvent(HomeEvent.ToggleFavorite(product)) },
+                                                    onClick = { onEvent(HomeEvent.ProductClicked(product)) }
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
 
                         item(span = { GridItemSpan(2) }) {
