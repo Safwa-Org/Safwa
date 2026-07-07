@@ -32,6 +32,7 @@ fun ProductCard(
     product: Product,
     modifier: Modifier = Modifier,
     isFavorite: Boolean = false,
+    showFavoriteIcon: Boolean = true,
     onToggleFavorite: () -> Unit = {},
     onClick: () -> Unit = {}
 ) {
@@ -55,13 +56,15 @@ fun ProductCard(
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()
                 )
-                HeartIcon(
-                    isFavorite = isFavorite,
-                    onToggleFavorite = onToggleFavorite,
-                    modifier = Modifier.padding(8.dp)
-                        .align(Alignment.TopEnd)
-                        .padding(8.dp)
-                )
+                if (showFavoriteIcon) {
+                    HeartIcon(
+                        isFavorite = isFavorite,
+                        onToggleFavorite = onToggleFavorite,
+                        modifier = Modifier.padding(8.dp)
+                            .align(Alignment.TopEnd)
+                            .padding(8.dp)
+                    )
+                }
             }
             
             Column(modifier = Modifier.padding(12.dp)) {
