@@ -17,19 +17,19 @@ class GetAiRecommendationsUseCase @Inject constructor(
     operator fun invoke(): Flow<Resource<List<Product>>> = flow {
         try {
             emit(Resource.Loading)
-            
+
             val history = getUserShoppingHistoryUseCase()
-            
+
             val aiSearchQuery = try {
                 aiRepository.getRecommendations(history)
             } catch (e: Exception) {
                 AiSearchQuery(query = "", first = 20)
             }
-            
+
             val recommendedProducts = searchRepository.searchProducts(aiSearchQuery.query, aiSearchQuery.first)
-            
+
             emit(Resource.Success(recommendedProducts))
-            
+
         } catch (e: Exception) {
             emit(Resource.Error(e.localizedMessage ?: "Failed to get AI recommendations"))
         }

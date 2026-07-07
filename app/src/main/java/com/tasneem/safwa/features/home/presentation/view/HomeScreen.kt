@@ -201,12 +201,12 @@ fun HomeContent(
                                     ) {
                                         CircularProgressIndicator()
                                     }
-                                } else if (state.errorMessage != null) {
+                                } else if (state.aiErrorMessage != null) {
                                     Box(
                                         modifier = Modifier.fillMaxWidth().height(100.dp).padding(16.dp),
                                         contentAlignment = Alignment.Center
                                     ) {
-                                        Text(text = "Error: ${state.errorMessage}", color = androidx.compose.ui.graphics.Color.Red)
+                                        Text(text = "Error: ${state.aiErrorMessage}", color = androidx.compose.ui.graphics.Color.Red)
                                     }
                                 } else if (state.aiRecommendations.isEmpty()) {
                                     Box(

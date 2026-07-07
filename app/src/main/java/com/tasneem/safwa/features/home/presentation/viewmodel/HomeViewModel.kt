@@ -125,7 +125,7 @@ class HomeViewModel @Inject constructor(
                     }
                     is Resource.Error -> {
                         android.util.Log.e("SafwaAI", "AI Error: ${result.message}")
-                        _state.update { it.copy(isAiLoading = false, errorMessage = result.message) }
+                        _state.update { it.copy(isAiLoading = false, aiErrorMessage = result.message) }
                     }
                 }
             }
