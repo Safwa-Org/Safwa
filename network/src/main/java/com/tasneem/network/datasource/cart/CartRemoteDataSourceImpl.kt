@@ -1,6 +1,9 @@
 package com.tasneem.network.datasource.cart
+
 import com.apollographql.apollo.ApolloClient
 import com.apollographql.apollo.api.Optional
+import com.apollographql.cache.normalized.FetchPolicy
+import com.apollographql.cache.normalized.fetchPolicy
 import com.tasneem.network.dto.ApplyDiscountResultDto
 import com.tasneem.network.dto.CartDto
 import com.tasneem.network.dto.DiscountCodeDto
@@ -38,11 +41,11 @@ class CartRemoteDataSourceImpl @Inject constructor(
             mapper = { data ->
                 val cart = data.cartCreate?.cart
                 val userErrors = data.cartCreate?.userErrors
-                
+
                 if (!userErrors.isNullOrEmpty()) {
                     throw Exception(userErrors.first().message)
                 }
-                
+
                 cart?.id ?: throw Exception("Failed to create cart, ID is null")
             }
         )
@@ -61,7 +64,7 @@ class CartRemoteDataSourceImpl @Inject constructor(
             },
             mapper = { data ->
                 val userErrors = data.cartLinesAdd?.userErrors
-                
+
                 if (!userErrors.isNullOrEmpty()) {
                     throw Exception(userErrors.first().message)
                 }
@@ -72,7 +75,14 @@ class CartRemoteDataSourceImpl @Inject constructor(
     override suspend fun getCart(cartId: String): CartDto {
         return safeApiCall(
             apiCall = {
-                apolloClient.query(GetCartQuery(cartId)).execute()
+                // IMPORTANT: NetworkOnly here. The normalized SQLite cache write from
+                // a preceding mutation is async and not guaranteed to be durable by
+                // the time this query runs on the next screen visit (CacheFirst would
+                // happily return stale data instead of a miss). Cart correctness
+                // matters more than shaving a round trip here.
+                apolloClient.query(GetCartQuery(cartId))
+                    .fetchPolicy(FetchPolicy.NetworkOnly)
+                    .execute()
             },
             mapper = { data ->
                 val cart = data.cart

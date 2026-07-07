@@ -2,6 +2,8 @@ package com.tasneem.network.datasource.address
 
 import com.apollographql.apollo.ApolloClient
 import com.apollographql.apollo.api.ApolloResponse
+import com.apollographql.cache.normalized.FetchPolicy
+import com.apollographql.cache.normalized.fetchPolicy
 import com.tasneem.safwa.network.CustomerAddressCreateMutation
 import com.tasneem.safwa.network.CustomerAddressDeleteMutation
 import com.tasneem.safwa.network.CustomerAddressUpdateMutation
@@ -23,8 +25,9 @@ class CustomerAddressRemoteDataSourceImpl @Inject constructor(
 ) : CustomerAddressRemoteDataSource {
 
     override suspend fun getAddresses(customerAccessToken: String) =
-        apolloClient.query(GetCustomerAddressesQuery(customerAccessToken)).execute()
-
+        apolloClient.query(GetCustomerAddressesQuery(customerAccessToken))
+            .fetchPolicy(FetchPolicy.NetworkOnly)
+            .execute()
     override suspend fun createAddress(customerAccessToken: String, address: MailingAddressInput) =
         apolloClient.mutation(CustomerAddressCreateMutation(customerAccessToken, address)).execute()
 
