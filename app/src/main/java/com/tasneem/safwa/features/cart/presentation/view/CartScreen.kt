@@ -6,11 +6,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -50,7 +48,8 @@ import kotlinx.coroutines.launch
 fun CartScreen(
     viewModel: CartViewModel = hiltViewModel(),
     onNavigateBack: () -> Unit = {},
-    onNavigateToCheckout: () -> Unit = {}
+    onNavigateToCheckout: () -> Unit = {},
+    onNavigateToLogin: () -> Unit = {}
 ) {
     val uiState by viewModel.state.collectAsStateWithLifecycle()
     val snackBarHostState = remember { SnackbarHostState() }
@@ -60,6 +59,7 @@ fun CartScreen(
             when (effect) {
                 CartEffect.NavigateBack -> onNavigateBack()
                 CartEffect.NavigateToCheckout -> onNavigateToCheckout()
+                CartEffect.NavigateToLogin -> onNavigateToLogin()
                 CartEffect.NavigateToWishlist -> {}
                 is CartEffect.ShowSnackBar -> {
                     launch {
@@ -101,7 +101,12 @@ fun CartContent(
                 CustomButon(
                     title = stringResource(id = R.string.proceed_to_checkout),
                     onContinue = { onEvent(CartEvent.ProceedToCheckout) },
-                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 24.dp)
+                    modifier = Modifier.padding(
+                        start = 16.dp,
+                        end = 16.dp,
+                        top = 12.dp,
+                        bottom = 24.dp
+                    )
                 )
             }
         },
@@ -189,7 +194,7 @@ fun CartContent(
                 }
             }
         }
-        
+
         if (state.itemPendingRemoval != null) {
             ConfirmDeleteDialog(
                 title = stringResource(id = R.string.remove_item),
@@ -198,7 +203,7 @@ fun CartContent(
                 onDismiss = { onEvent(CartEvent.CancelRemoveItem) }
             )
         }
-        
+
         if (state.promoCodePendingRemoval != null) {
             ConfirmDeleteDialog(
                 title = stringResource(id = R.string.remove_promo_code),
@@ -224,7 +229,17 @@ private fun CartContentPreview() {
             state = CartState(
                 items = listOf(
                     CartItem("1", "p1", "Nuit d'Or EDP", "50 ml", "MAISON", 480.0, "SAR", 1, ""),
-                    CartItem("2", "p2", "Vermilion Bifold", "Saddle", "ATELIER", 320.0, "SAR", 2, "")
+                    CartItem(
+                        "2",
+                        "p2",
+                        "Vermilion Bifold",
+                        "Saddle",
+                        "ATELIER",
+                        320.0,
+                        "SAR",
+                        2,
+                        ""
+                    )
                 ),
                 subtotalAmount = 1120.0,
                 totalAmount = 1120.0

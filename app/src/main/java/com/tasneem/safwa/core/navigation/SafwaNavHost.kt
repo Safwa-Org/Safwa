@@ -1,7 +1,6 @@
 package com.tasneem.safwa.core.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -10,7 +9,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import com.tasneem.safwa.core.domain.model.AuthState
 import com.tasneem.safwa.core.presentation.mainactivity.viewmodel.MainViewModel
 import com.tasneem.safwa.features.auth.presentation.login.view.LoginScreen
 import com.tasneem.safwa.features.auth.presentation.register.view.RegisterScreen
@@ -37,8 +35,6 @@ fun SafwaNavHost(
     navController: NavHostController = rememberNavController(),
     mainViewModel: MainViewModel = hiltViewModel()
 ) {
-    val authState by mainViewModel.authState.collectAsState()
-    val isAuthenticated = authState is AuthState.Authenticated
     val appStartDestination by mainViewModel.startDestination.collectAsStateWithLifecycle()
 
     val navStartRoute: Any = when (appStartDestination) {
@@ -106,7 +102,6 @@ fun SafwaNavHost(
 
         composable<ScreenRoute.Home> {
             MainScreen(
-                isAuthenticated = isAuthenticated,
                 onNavigateToProductDetails = { handle ->
                     navController.navigate(ScreenRoute.ProductDetails(handle))
                 },
@@ -121,11 +116,6 @@ fun SafwaNavHost(
                 },
                 onNavigateToLanguageAndCurrency = {
                     navController.navigate(ScreenRoute.Language)
-                },
-                onNavigateToLogin = {
-                    navController.navigate(ScreenRoute.Login) {
-                        popUpTo(navController.graph.id) { inclusive = true }
-                    }
                 },
                 onNavigateToCategories = {
                     navController.navigate(ScreenRoute.Categories)
@@ -169,7 +159,8 @@ fun SafwaNavHost(
         composable<ScreenRoute.Cart> {
             CartScreen(
                 onNavigateBack = { navController.popBackStack() },
-                onNavigateToCheckout = { navController.navigate(ScreenRoute.Payment) }
+                onNavigateToCheckout = { navController.navigate(ScreenRoute.Payment) },
+                onNavigateToLogin = { navController.navigate(ScreenRoute.Login) }
             )
         }
 

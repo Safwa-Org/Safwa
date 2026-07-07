@@ -3,7 +3,6 @@ package com.tasneem.safwa.core.shared_component
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -21,7 +20,6 @@ fun SafwaTopAppBar(
     title: String,
     modifier: Modifier = Modifier,
     onBackClick: (() -> Unit)? = null,
-    onCartClick: (() -> Unit)? = null,
     windowInsets: WindowInsets = WindowInsets(0, 0, 0, 0)
 ) {
     CenterAlignedTopAppBar(

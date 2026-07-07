@@ -5,8 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.tasneem.safwa.core.domain.model.AuthState
 import com.tasneem.safwa.core.domain.usecase.preferences.PreferencesUseCases
 import com.tasneem.safwa.core.navigation.StartDestination
-import com.tasneem.safwa.features.auth.domain.usecase.ObserveAuthStateUseCase
-import com.tasneem.safwa.features.auth.domain.usecase.SyncUserSessionUseCase
+import com.tasneem.safwa.features.auth.domain.session.AuthSessionManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -19,9 +18,12 @@ import javax.inject.Inject
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val preferencesUseCases: PreferencesUseCases,
-    syncUserSessionUseCase: SyncUserSessionUseCase,
-    observeAuthStateUseCase: ObserveAuthStateUseCase,
+    private val authSessionManager: AuthSessionManager,
 ) : ViewModel() {
+
+    init {
+        authSessionManager.start()
+    }
 
     val languageCode: StateFlow<String> = preferencesUseCases.getAppPreferences()
         .map { it.languageCode }
@@ -38,15 +40,10 @@ class MainViewModel @Inject constructor(
             initialValue = false
         )
 
-    val authState: StateFlow<AuthState> = observeAuthStateUseCase()
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.Eagerly,
-            initialValue = AuthState.Loading,
-        )
+    val authState: StateFlow<AuthState> = authSessionManager.authState
 
     val startDestination: StateFlow<StartDestination> = combine(
-        observeAuthStateUseCase(),
+        authSessionManager.authState,
         preferencesUseCases.getAppPreferences(),
     ) { auth, prefs ->
         when (auth) {
@@ -62,12 +59,6 @@ class MainViewModel @Inject constructor(
     fun markOnboardingCompleted() {
         viewModelScope.launch {
             preferencesUseCases.updateAppPreferences.setOnboardingCompleted(true)
-        }
-    }
-
-    init {
-        viewModelScope.launch {
-            syncUserSessionUseCase()
         }
     }
 }

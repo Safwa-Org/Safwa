@@ -8,25 +8,16 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.tasneem.network.datasource.auth.AuthRemoteDataSource
 import com.tasneem.safwa.R
-import com.tasneem.safwa.core.domain.repository.SessionPreferencesRepository
 import com.tasneem.safwa.features.auth.data.datasource.auth.FirebaseAuthDataSource
 import com.tasneem.safwa.features.auth.data.datasource.auth.FirebaseAuthDataSourceImpl
-import com.tasneem.safwa.features.core.domain.usecase.GetCurrentUserIdUseCase
-import com.tasneem.safwa.features.auth.domain.usecase.GetCurrentUserIdUseCaseImpl
 import com.tasneem.safwa.features.auth.data.datasource.firestore.FirestoreDataSource
 import com.tasneem.safwa.features.auth.data.datasource.firestore.FirestoreDataSourceImpl
 import com.tasneem.safwa.features.auth.data.repository.AuthRepositoryImpl
+import com.tasneem.safwa.features.auth.data.session.AuthSessionManagerImpl
 import com.tasneem.safwa.features.auth.domain.repository.AuthRepository
-import com.tasneem.safwa.features.auth.domain.usecase.GetCurrentUserUseCase
-import com.tasneem.safwa.features.auth.domain.usecase.GoogleLoginUseCase
-import com.tasneem.safwa.features.auth.domain.usecase.GuestLoginUseCase
-import com.tasneem.safwa.features.auth.domain.usecase.LoginUseCase
-import com.tasneem.safwa.features.auth.domain.usecase.LogoutUseCase
-import com.tasneem.safwa.features.auth.domain.usecase.RegisterUseCase
-import com.tasneem.safwa.features.auth.domain.usecase.SendVerificationEmailUseCase
-import com.tasneem.safwa.features.auth.domain.usecase.SyncUserSessionUseCase
-import com.tasneem.safwa.features.core.domain.usecase.ClearWishlistUseCase
-import com.tasneem.safwa.features.settings.orderhistory.domain.repository.OrderRepository
+import com.tasneem.safwa.features.auth.domain.session.AuthSessionManager
+import com.tasneem.safwa.features.auth.domain.usecase.GetCurrentUserIdUseCaseImpl
+import com.tasneem.safwa.features.core.domain.usecase.GetCurrentUserIdUseCase
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -37,7 +28,7 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-object FirebaseModule  {
+object FirebaseModule {
 
     @Provides
     @Singleton
@@ -72,14 +63,18 @@ object GoogleSignInModule {
         return GoogleSignIn.getClient(context, options)
     }
 }
+
 @Module
 @InstallIn(SingletonComponent::class)
 object AuthDataModule {
 
     @Provides
     @Singleton
-    fun provideAuthDataSource(auth: FirebaseAuth, googleSignInClient: GoogleSignInClient): FirebaseAuthDataSource =
-        FirebaseAuthDataSourceImpl(auth,googleSignInClient)
+    fun provideAuthDataSource(
+        auth: FirebaseAuth,
+        googleSignInClient: GoogleSignInClient
+    ): FirebaseAuthDataSource =
+        FirebaseAuthDataSourceImpl(auth, googleSignInClient)
 
     @Provides
     @Singleton
@@ -92,7 +87,8 @@ object AuthDataModule {
         firebaseAuthDataSource: FirebaseAuthDataSource,
         firestoreDataSource: FirestoreDataSource,
         authRemoteDataSource: AuthRemoteDataSource
-    ): AuthRepository = AuthRepositoryImpl(firebaseAuthDataSource, firestoreDataSource, authRemoteDataSource)
+    ): AuthRepository =
+        AuthRepositoryImpl(firebaseAuthDataSource, firestoreDataSource, authRemoteDataSource)
 }
 
 @Module
@@ -104,4 +100,10 @@ abstract class AuthUseCaseModule {
     abstract fun bindGetCurrentUserIdUseCase(
         impl: GetCurrentUserIdUseCaseImpl
     ): GetCurrentUserIdUseCase
+
+    @Binds
+    @Singleton
+    abstract fun bindAuthSessionManager(
+        impl: AuthSessionManagerImpl
+    ): AuthSessionManager
 }

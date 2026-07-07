@@ -4,7 +4,7 @@ sealed interface AuthState {
 
     object Loading : AuthState
 
-    data class Authenticated(val user: User) : AuthState
+    data class Guest(val user: User) : AuthState
 
-    object Unauthenticated : AuthState
+    data class Authenticated(val user: User) : AuthState
 }

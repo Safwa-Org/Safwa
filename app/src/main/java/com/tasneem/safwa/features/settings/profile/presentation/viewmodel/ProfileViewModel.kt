@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.combine
 import com.tasneem.safwa.core.util.Resource
 import com.tasneem.safwa.features.settings.orderhistory.domain.usecase.GetOrdersUseCase
 import kotlinx.coroutines.launch
@@ -39,6 +40,8 @@ class ProfileViewModel @Inject constructor(
     private val _effect = Channel<ProfileEffect>()
     val effect = _effect.receiveAsFlow()
 
+    private val refreshTrigger = MutableStateFlow(0L)
+
     init {
         onEvent(ProfileEvent.LoadProfile)
         observeOrders()
@@ -51,6 +54,7 @@ class ProfileViewModel @Inject constructor(
             preferencesUseCases.getUserSession()
                 .map { it?.customerAccessToken }
                 .distinctUntilChanged()
+                .combine(refreshTrigger) { token, _ -> token }
                 .flatMapLatest { token ->
                     if (!token.isNullOrEmpty()) {
                         getOrdersUseCase(token)
@@ -66,15 +70,13 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
-    // Addresses now live in Shopify, not the Firestore-synced User object, so the count
-    // has to come from the same GetAddressesUseCase the Saved Addresses screen uses —
-    // it can no longer be read off `user.addresses.size`.
     @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
     private fun observeSavedAddressesCount() {
         viewModelScope.launch {
             preferencesUseCases.getUserSession()
                 .map { it?.customerAccessToken }
                 .distinctUntilChanged()
+                .combine(refreshTrigger) { token, _ -> token }
                 .flatMapLatest { token ->
                     if (!token.isNullOrEmpty()) {
                         flow { emit(getAddressesUseCase(token)) }
@@ -86,32 +88,44 @@ class ProfileViewModel @Inject constructor(
                     result.onSuccess { addresses ->
                         _state.update { it.copy(savedAddressesCount = addresses.size) }
                     }
-                    // On failure, silently leave the last known count in place rather than
-                    // flashing it to 0 — a transient network blip on the profile screen
-                    // shouldn't make it look like the user's addresses disappeared.
                 }
         }
     }
 
     fun onEvent(event: ProfileEvent) {
         when (event) {
+            is ProfileEvent.Refresh -> {
+                refreshTrigger.value = System.currentTimeMillis()
+            }
+
             is ProfileEvent.LoadProfile -> {
                 _state.update { it.copy(isLoading = true) }
 
                 viewModelScope.launch {
                     preferencesUseCases.getUserSession().collect { user ->
-                        if (user != null) {
+                        if (user != null && !user.isGuest) {
                             _state.update {
                                 it.copy(
                                     isLoading = false,
+                                    isGuest = false,
                                     firstName = user.firstName,
                                     lastName = user.lastName,
                                     email = user.email ?: "",
                                     photoUrl = user.photoUrl,
                                     isElite = true,
-                                    ordersCount = 12,
-                                    wishlistCount = 8,
                                     points = 2400
+                                )
+                            }
+                        } else {
+                            _state.update {
+                                it.copy(
+                                    isLoading = false,
+                                    isGuest = true,
+                                    firstName = "",
+                                    lastName = "",
+                                    email = "",
+                                    photoUrl = null,
+                                    isElite = false
                                 )
                             }
                         }
@@ -132,21 +146,15 @@ class ProfileViewModel @Inject constructor(
             }
 
             is ProfileEvent.OrderHistoryClicked -> {
-                viewModelScope.launch {
-                    _effect.send(ProfileEffect.NavigateToOrderHistory)
-                }
+                viewModelScope.launch { _effect.send(ProfileEffect.NavigateToOrderHistory) }
             }
 
             is ProfileEvent.SavedAddressesClicked -> {
-                viewModelScope.launch {
-                    _effect.send(ProfileEffect.NavigateToSavedAddresses)
-                }
+                viewModelScope.launch { _effect.send(ProfileEffect.NavigateToSavedAddresses) }
             }
 
             is ProfileEvent.LanguageAndCurrencyClicked -> {
-                viewModelScope.launch {
-                    _effect.send(ProfileEffect.NavigateToLanguageAndCurrency)
-                }
+                viewModelScope.launch { _effect.send(ProfileEffect.NavigateToLanguageAndCurrency) }
             }
 
             is ProfileEvent.DarkModeToggled -> {
@@ -163,15 +171,25 @@ class ProfileViewModel @Inject constructor(
             is ProfileEvent.ConfirmLogout -> {
                 _state.update { it.copy(showLogoutConfirmDialog = false) }
                 viewModelScope.launch {
-                    _state.update { it.copy(isLoading = true) }
+                    _state.update { it.copy(isLoggingOut = true) }
                     logoutUseCase()
-                    _state.update { it.copy(isLoading = false) }
-                    _effect.send(ProfileEffect.NavigateToLogin)
+                    _state.update { it.copy(isLoggingOut = false) }
+                    // No navigation: logout transitions the session to an
+                    // anonymous guest, and this screen re-renders as the guest
+                    // profile from the observed session state.
                 }
             }
 
             is ProfileEvent.DismissLogoutDialog -> {
                 _state.update { it.copy(showLogoutConfirmDialog = false) }
+            }
+
+            is ProfileEvent.SignInClicked -> {
+                viewModelScope.launch { _effect.send(ProfileEffect.NavigateToLogin) }
+            }
+
+            is ProfileEvent.CreateAccountClicked -> {
+                viewModelScope.launch { _effect.send(ProfileEffect.NavigateToCreateAccount) }
             }
         }
     }

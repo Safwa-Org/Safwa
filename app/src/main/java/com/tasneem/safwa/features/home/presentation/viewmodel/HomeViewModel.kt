@@ -18,11 +18,13 @@ import com.tasneem.safwa.features.category.domain.model.Category
 import com.tasneem.safwa.features.core.domain.usecase.GetCategoriesUseCase
 import com.tasneem.safwa.features.core.domain.usecase.GetWishlistUseCase
 import com.tasneem.safwa.features.core.domain.usecase.ToggleFavoriteUseCase
+import com.tasneem.safwa.features.settings.languageandcurrency.data.CurrencyRateManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -39,7 +41,8 @@ class HomeViewModel @Inject constructor(
     private val cartRepository: CartRepository,
     private val getCurrentUserUseCase: GetCurrentUserUseCase,
     private val getBrandsUseCase: GetBrandsUseCase,
-    private val getAiRecommendationsUseCase: GetAiRecommendationsUseCase
+    private val getAiRecommendationsUseCase: GetAiRecommendationsUseCase,
+    private val currencyRateManager: CurrencyRateManager
 ) : ViewModel() {
 
     companion object {
@@ -67,6 +70,13 @@ class HomeViewModel @Inject constructor(
         observeCartCount()
         loadCartCount()
         loadAiRecommendations()
+
+
+        viewModelScope.launch {
+            currencyRateManager.displayCurrency
+                .drop(1)
+                .collect { loadProducts() }
+        }
     }
 
     private fun loadCurrentUser() {

@@ -11,4 +11,5 @@ data class Product(
     val currency: String = "",
     val imageUrl: List<String> = emptyList(),
     val imageAltText: List<String> = emptyList(),
+    val tags: List<String> = emptyList(),
 )

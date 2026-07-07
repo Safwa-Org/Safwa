@@ -15,6 +15,7 @@ class SearchProductMapper @Inject constructor() : Mapper<SearchProductsQuery.Nod
         price = input.priceRange.minVariantPrice.amount.toString(),
         currency = input.priceRange.minVariantPrice.currencyCode.name,
         imageUrls = input.images.edges.map { it.node.url.toString() },
-        imageAlts = input.images.edges.map { it.node.altText }
+        imageAlts = input.images.edges.map { it.node.altText },
+        tags = input.tags
     )
 }

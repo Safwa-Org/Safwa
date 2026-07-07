@@ -6,6 +6,7 @@ import com.tasneem.safwa.R
 import com.tasneem.safwa.core.domain.model.User
 import com.tasneem.safwa.core.util.Resource
 import com.tasneem.safwa.features.auth.domain.usecase.GoogleLoginUseCase
+import com.tasneem.safwa.features.auth.domain.usecase.GuestLoginUseCase
 import com.tasneem.safwa.features.auth.domain.usecase.LoginUseCase
 import com.tasneem.safwa.features.auth.presentation.login.state.LoginEvent
 import com.tasneem.safwa.features.auth.presentation.login.state.LoginSideEffect
@@ -25,6 +26,7 @@ import javax.inject.Inject
 class LoginViewModel @Inject constructor(
     private val loginUseCase: LoginUseCase,
     private val googleLoginUseCase: GoogleLoginUseCase,
+    private val guestLoginUseCase: GuestLoginUseCase,
     private val syncWishlistUseCase: SyncWishlistUseCase,
 ) : ViewModel() {
 
@@ -60,7 +62,20 @@ class LoginViewModel @Inject constructor(
             }
 
             LoginEvent.GuestClicked -> {
-                viewModelScope.launch { _sideEffect.send(LoginSideEffect.NavigateToHome) }
+                viewModelScope.launch {
+                    _state.update { it.copy(isLoading = true) }
+                    // Uses a Firebase anonymous session so
+                    // guests always have a stable UID.
+                    val result = guestLoginUseCase()
+                    _state.update { it.copy(isLoading = false) }
+                    when (result) {
+                        is Resource.Success -> _sideEffect.send(LoginSideEffect.NavigateToHome)
+                        is Resource.Error -> _state.update {
+                            it.copy(generalErrorMessage = result.message)
+                        }
+                        is Resource.Loading -> {}
+                    }
+                }
             }
 
             is LoginEvent.ShowError -> {
