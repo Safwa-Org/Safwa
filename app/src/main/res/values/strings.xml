@@ -300,7 +300,7 @@
     <string name="ai_chat_send">Send message</string>
     <string name="ai_chat_close">Close chat</string>
     <string name="ai_chat_fab_desc">Open Safwa AI chat</string>
-    
+
     <string name="sort_and_filter">Sort &amp; Filter</string>
     <string name="sort_by">Sort By</string>
     <string name="sort_none">None</string>
@@ -313,5 +313,6 @@
     <string name="clear_all">Clear All</string>
     <string name="price_range">Price Range</string>
     <string name="price_format">Price: %1$d %3$s - %2$d %3$s</string>
+
 </resources>
 
