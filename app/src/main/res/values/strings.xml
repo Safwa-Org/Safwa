@@ -182,12 +182,9 @@
     <string name="err_invalid_mobile">Please enter a valid mobile number</string>
     <string name="err_no_internet">No internet connection — connect and search again</string>
     <string name="err_empty_street">Street address field is required</string>
-    <string name="auth_gate_wishlist_title">Save your favorites</string>
-    <string name="auth_gate_wishlist_desc">Sign in to keep track of the pieces you love and access them anytime.</string>
-    <string name="auth_gate_cart_title">Your bag awaits</string>
-    <string name="auth_gate_cart_desc">Sign in to view your bag and complete your purchase.</string>
-    <string name="auth_gate_profile_title">Your personal space</string>
-    <string name="auth_gate_profile_desc">Sign in to manage your orders, addresses, and preferences.</string>
+    <string name="guest_profile_title">You\'re browsing as a guest</string>
+    <string name="guest_profile_desc">Sign in to manage your orders, addresses, and preferences — your wishlist and bag come with you.</string>
+    <string name="guest_checkout_login_required">Please sign in to complete your purchase.</string>
     <string name="payment_methods">Payment methods</string>
     <string name="select_payment_method">Select Payment Method</string>
     <string name="cash_on_delivery">Cash on Delivery</string>

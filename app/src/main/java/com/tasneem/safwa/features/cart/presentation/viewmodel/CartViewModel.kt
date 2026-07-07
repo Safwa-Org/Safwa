@@ -2,7 +2,9 @@ package com.tasneem.safwa.features.cart.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.tasneem.safwa.core.domain.model.AuthState
 import com.tasneem.safwa.core.util.Resource
+import com.tasneem.safwa.features.auth.domain.usecase.ObserveAuthStateUseCase
 import com.tasneem.safwa.features.cart.domain.usecase.ApplyDiscountCodeUseCase
 import com.tasneem.safwa.features.cart.presentation.state.AppliedDiscountCode
 import com.tasneem.safwa.features.cart.presentation.state.CartEffect
@@ -27,7 +29,8 @@ class CartViewModel @Inject constructor(
     private val getCartUseCase: GetCartUseCase,
     private val removeFromCartUseCase: RemoveFromCartUseCase,
     private val updateCartLineUseCase: UpdateCartLineUseCase,
-    private val applyDiscountCodeUseCase: ApplyDiscountCodeUseCase
+    private val applyDiscountCodeUseCase: ApplyDiscountCodeUseCase,
+    private val observeAuthStateUseCase: ObserveAuthStateUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(CartState())
@@ -294,7 +297,11 @@ class CartViewModel @Inject constructor(
 
             is CartEvent.ProceedToCheckout -> {
                 viewModelScope.launch {
-                    _effect.send(CartEffect.NavigateToCheckout)
+                    if (observeAuthStateUseCase().value is AuthState.Guest) {
+                        _effect.send(CartEffect.NavigateToLogin)
+                    } else {
+                        _effect.send(CartEffect.NavigateToCheckout)
+                    }
                 }
             }
 

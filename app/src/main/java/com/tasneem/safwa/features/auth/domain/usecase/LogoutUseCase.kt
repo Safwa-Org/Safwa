@@ -1,25 +1,26 @@
 package com.tasneem.safwa.features.auth.domain.usecase
-import com.tasneem.safwa.core.domain.repository.SessionPreferencesRepository
+
 import com.tasneem.safwa.core.util.Resource
 import com.tasneem.safwa.features.settings.orderhistory.domain.repository.OrderRepository
-import com.tasneem.safwa.features.auth.domain.repository.AuthRepository
+import com.tasneem.safwa.features.auth.domain.session.AuthSessionManager
 import com.tasneem.safwa.features.core.domain.usecase.ClearWishlistUseCase
 import javax.inject.Inject
 
 class LogoutUseCase @Inject constructor(
-    private val authRepository: AuthRepository,
+    private val authSessionManager: AuthSessionManager,
     private val clearWishlistUseCase: ClearWishlistUseCase,
-    private val sessionPreferencesRepository: SessionPreferencesRepository,
     private val orderRepository: OrderRepository
 ) {
     suspend operator fun invoke(): Resource<Unit> {
-        val result = authRepository.logout()
-        if (result is Resource.Success) {
-            clearWishlistUseCase()
-            sessionPreferencesRepository.clearSession()
-            orderRepository.clearOrders()
-        }
+        return try {
 
-        return result
+            clearWishlistUseCase()
+            orderRepository.clearOrders()
+
+            authSessionManager.signOutToGuest()
+            Resource.Success(Unit)
+        } catch (e: Exception) {
+            Resource.Error(e.localizedMessage ?: "Logout failed")
+        }
     }
 }

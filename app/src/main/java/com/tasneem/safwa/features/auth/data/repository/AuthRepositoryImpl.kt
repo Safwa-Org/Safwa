@@ -1,19 +1,19 @@
 package com.tasneem.safwa.features.auth.data.repository
 
+import com.google.firebase.auth.EmailAuthProvider
+import com.google.firebase.auth.FirebaseAuthUserCollisionException
+import com.google.firebase.auth.GoogleAuthProvider
 import com.tasneem.safwa.core.data.mapper.toDomain
-import com.tasneem.safwa.core.domain.model.AuthState
 import com.tasneem.safwa.core.util.Resource
 import com.tasneem.safwa.features.auth.data.datasource.auth.FirebaseAuthDataSource
 import com.tasneem.safwa.features.auth.data.datasource.firestore.FirestoreDataSource
 import com.tasneem.safwa.core.data.model.UserEntity
 import com.tasneem.safwa.core.domain.model.User
 import com.tasneem.safwa.features.auth.domain.repository.AuthRepository
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 import com.tasneem.network.datasource.auth.AuthRemoteDataSource
+
 class AuthRepositoryImpl @Inject constructor(
     private val authDataSource: FirebaseAuthDataSource,
     private val firestoreDataSource: FirestoreDataSource,
@@ -28,13 +28,23 @@ class AuthRepositoryImpl @Inject constructor(
         phone: String
     ): Resource<User> {
         return try {
-            val authResult = authDataSource.signUpWithEmail(email, password)
+            val guest = guestSnapshotOrNull()
+            var linkedFromGuest = false
+            val authResult = if (guest != null) {
+                val result = authDataSource.linkWithCredential(
+                    EmailAuthProvider.getCredential(email, password)
+                )
+                linkedFromGuest = true
+                result
+            } else {
+                authDataSource.signUpWithEmail(email, password)
+            }
             val uid = authResult.user?.uid ?: return Resource.Error("Registration failed: no user")
 
             val shopifyPassword = uid.take(10) + "Safwa123!"
             val shopifyResult = authRemoteDataSource.registerCustomer(email, shopifyPassword, firstName, lastName, phone)
             if (shopifyResult.isFailure) {
-                authDataSource.signOut()
+                rollbackUpgrade(linkedFromGuest, EmailAuthProvider.PROVIDER_ID)
                 return Resource.Error("Shopify registration failed: ${shopifyResult.exceptionOrNull()?.message}")
             }
             val shopifyToken = shopifyResult.getOrNull()
@@ -46,6 +56,7 @@ class AuthRepositoryImpl @Inject constructor(
                 lastName = lastName,
                 phone = phone,
                 isGuest = false,
+                cartId = guest?.cartId ?: "",
                 customerAccessToken = shopifyToken
             )
 
@@ -53,7 +64,7 @@ class AuthRepositoryImpl @Inject constructor(
                 firestoreDataSource.saveUser(userEntity)
             } catch (innerException: Exception) {
                 android.util.Log.e("AuthRepository", "Failed to save user to Firestore", innerException)
-                authDataSource.signOut()
+                rollbackUpgrade(linkedFromGuest, EmailAuthProvider.PROVIDER_ID)
                 throw innerException
             }
 
@@ -72,6 +83,7 @@ class AuthRepositoryImpl @Inject constructor(
 
     override suspend fun login(email: String, password: String): Resource<User> {
         return try {
+            val guest = guestSnapshotOrNull()
             val authResult = authDataSource.signInWithEmail(email, password)
             val user = authResult.user ?: return Resource.Error("Login failed")
             val uid = user.uid
@@ -83,7 +95,7 @@ class AuthRepositoryImpl @Inject constructor(
 
             val deterministicPassword = uid.take(10) + "Safwa123!"
             var shopifyResult = authRemoteDataSource.loginCustomer(email, deterministicPassword)
-            
+
             if (shopifyResult.isFailure && shopifyResult.exceptionOrNull()?.message?.contains("Unidentified customer", ignoreCase = true) == true) {
                 val fallbackResult = authRemoteDataSource.loginCustomer(email, password)
                 if (fallbackResult.isSuccess) {
@@ -102,19 +114,19 @@ class AuthRepositoryImpl @Inject constructor(
             }
             val shopifyToken = shopifyResult.getOrNull()
 
-            var userEntity = firestoreDataSource.getUser(uid)
-            if (userEntity == null) {
-                userEntity = UserEntity(
+            val existing = firestoreDataSource.getUser(uid)
+            val userEntity = existing?.copy(
+                customerAccessToken = shopifyToken,
+                cartId = existing.cartId.ifEmpty { guest?.cartId ?: "" }
+            )
+                ?: UserEntity(
                     id = uid,
                     email = email,
                     isGuest = false,
+                    cartId = guest?.cartId ?: "",
                     customerAccessToken = shopifyToken
                 )
-                firestoreDataSource.saveUser(userEntity)
-            } else {
-                userEntity = userEntity.copy(customerAccessToken = shopifyToken)
-                firestoreDataSource.saveUser(userEntity)
-            }
+            firestoreDataSource.saveUser(userEntity)
             Resource.Success(userEntity.toDomain())
         } catch (e: Exception) {
             handleAuthException(e)
@@ -137,22 +149,36 @@ class AuthRepositoryImpl @Inject constructor(
 
     override suspend fun loginWithGoogle(idToken: String): Resource<User> {
         return try {
-            val authResult = authDataSource.signInWithGoogle(idToken)
+            val guest = guestSnapshotOrNull()
+            var linkedFromGuest = false
+            val authResult = if (guest != null) {
+                try {
+                    val result = authDataSource.linkWithCredential(
+                        GoogleAuthProvider.getCredential(idToken, null)
+                    )
+                    linkedFromGuest = true
+                    result
+                } catch (e: FirebaseAuthUserCollisionException) {
+                    authDataSource.signInWithGoogle(idToken)
+                }
+            } else {
+                authDataSource.signInWithGoogle(idToken)
+            }
             val uid = authResult.user?.uid ?: return Resource.Error("Google login failed")
-            
+
             val email = authResult.user?.email ?: ""
             val displayName = authResult.user?.displayName ?: ""
             val firstName = displayName.split(" ").firstOrNull() ?: ""
             val lastName = displayName.split(" ").drop(1).joinToString(" ")
-            
+
             val shopifyPassword = uid.take(10) + "Safwa123!"
 
             var shopifyResult = authRemoteDataSource.loginCustomer(email, shopifyPassword)
-            
+
             if (shopifyResult.isFailure) {
                 shopifyResult = authRemoteDataSource.registerCustomer(email, shopifyPassword, firstName, lastName, null)
                 if (shopifyResult.isFailure) {
-                     authDataSource.signOut()
+                     rollbackUpgrade(linkedFromGuest, GoogleAuthProvider.PROVIDER_ID)
                      val msg = shopifyResult.exceptionOrNull()?.message ?: ""
                      if (msg.contains("Email has already been taken", ignoreCase = true) ||
                          msg.contains("has already been taken", ignoreCase = true)
@@ -164,86 +190,49 @@ class AuthRepositoryImpl @Inject constructor(
                      }
                      return Resource.Error("Shopify error: $msg")
                 }
-            } else {
             }
-            
+
             val shopifyToken = shopifyResult.getOrNull()
 
-            var userEntity = firestoreDataSource.getUser(uid)
-            if (userEntity == null) {
-                userEntity = UserEntity(
+            val existing = firestoreDataSource.getUser(uid)
+            val resolvedCartId = existing?.cartId?.ifEmpty { guest?.cartId ?: "" }
+                ?: guest?.cartId ?: ""
+            val userEntity = if (existing == null || existing.isGuest) {
+                UserEntity(
                     id = uid,
                     email = email,
                     firstName = firstName,
                     lastName = lastName,
                     photoUrl = authResult.user?.photoUrl?.toString(),
                     isGuest = false,
+                    cartId = resolvedCartId,
                     customerAccessToken = shopifyToken
                 )
-                firestoreDataSource.saveUser(userEntity)
             } else {
-                userEntity = userEntity.copy(customerAccessToken = shopifyToken)
-                firestoreDataSource.saveUser(userEntity)
+                existing.copy(customerAccessToken = shopifyToken, cartId = resolvedCartId)
             }
+            firestoreDataSource.saveUser(userEntity)
             Resource.Success(userEntity.toDomain())
         } catch (e: Exception) {
             handleAuthException(e)
         }
     }
 
-    override suspend fun loginAsGuest(): Resource<User> {
-        return try {
-            val authResult = authDataSource.signInAnonymously()
-            val uid = authResult.user?.uid ?: return Resource.Error("Guest login failed")
-            val guestUser = User(
-                id = uid,
-                isGuest = true,
-                firstName = "Guest",
-                lastName = "",
-                email = null
-            )
-            Resource.Success(guestUser)
-        } catch (e: Exception) {
-            handleAuthException(e)
-        }
-    }
-
-    override suspend fun logout(): Resource<Unit> {
-        return try {
-            authDataSource.signOut()
-            Resource.Success(Unit)
-        } catch (e: Exception) {
-            Resource.Error(e.localizedMessage ?: "Logout failed")
-        }
-    }
-
     override suspend fun getCurrentUser(): Resource<User?> {
         return try {
             val uid = authDataSource.getCurrentUserId() ?: return Resource.Success(null)
-            val email = authDataSource.getCurrentUserEmail()
+            val entity = firestoreDataSource.getUser(uid)
 
-            val userEntity = firestoreDataSource.getUser(uid)
-
-            if (userEntity != null) {
-                if (email != null && !authDataSource.isEmailVerified()) {
-                    authDataSource.signOut()
-                    return Resource.Success(null)
-                }
-                return Resource.Success(userEntity.toDomain())
+            if (authDataSource.isAnonymous()) {
+                Resource.Success(
+                    entity?.toDomain()?.copy(isGuest = true)
+                        ?: User(id = uid, firstName = "Guest", isGuest = true)
+                )
             } else {
-                if (email == null) {
-                    val guestUser = User(
-                        id = uid,
-                        isGuest = true,
-                        firstName = "Guest",
-                        lastName = "",
-                        email = null
-                    )
-                    return Resource.Success(guestUser)
-                } else {
-                    authDataSource.signOut()
-                    return Resource.Success(null)
-                }
+                Resource.Success(
+                    entity?.toDomain()?.copy(isGuest = false)
+                        ?: User(id = uid, email = authDataSource.getCurrentUserEmail())
+                )
             }
         } catch (e: Exception) {
             Resource.Error(e.localizedMessage ?: "Failed to get user")
@@ -260,30 +249,25 @@ class AuthRepositoryImpl @Inject constructor(
         }
     }
 
-    override fun observeAuthState(): Flow<AuthState> = authDataSource.observeAuthState()
-        .map { isSignedIn ->
-            if (!isSignedIn) {
-                AuthState.Unauthenticated
-            } else {
-                val uid = authDataSource.getCurrentUserId()
-                    ?: return@map AuthState.Unauthenticated
-                val email = authDataSource.getCurrentUserEmail()
-
-                if (email != null && !authDataSource.isEmailVerified()) {
-                    authDataSource.signOut()
-                    return@map AuthState.Unauthenticated
-                }
-
-                val userEntity = firestoreDataSource.getUser(uid)
-                if (userEntity != null) {
-                    AuthState.Authenticated(userEntity.toDomain())
-                } else {
-                    authDataSource.signOut()
-                    AuthState.Unauthenticated
-                }
-            }
+    private suspend fun guestSnapshotOrNull(): User? {
+        val uid = authDataSource.getCurrentUserId() ?: return null
+        if (!authDataSource.isAnonymous()) return null
+        return try {
+            firestoreDataSource.getUser(uid)?.toDomain()?.copy(isGuest = true)
+                ?: User(id = uid, firstName = "Guest", isGuest = true)
+        } catch (e: Exception) {
+            User(id = uid, firstName = "Guest", isGuest = true)
         }
-        .catch { emit(AuthState.Unauthenticated) }
+    }
+
+    private suspend fun rollbackUpgrade(linkedFromGuest: Boolean, providerId: String) {
+        if (linkedFromGuest) {
+            runCatching { authDataSource.unlinkProvider(providerId) }
+                .onFailure { android.util.Log.e("AuthRepository", "Failed to unlink $providerId", it) }
+        } else {
+            runCatching { authDataSource.signOut() }
+        }
+    }
 
     private fun handleAuthException(e: Exception): Resource<User> {
         return when (e) {
@@ -297,5 +281,3 @@ class AuthRepositoryImpl @Inject constructor(
         }
     }
 }
-
-

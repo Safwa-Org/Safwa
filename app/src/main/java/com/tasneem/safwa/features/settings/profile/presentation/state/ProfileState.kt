@@ -3,6 +3,8 @@ package com.tasneem.safwa.features.settings.profile.presentation.state
 data class ProfileState(
     val isLoading: Boolean = false,
 
+    val isGuest: Boolean = false,
+
     val firstName: String = "",
     val lastName: String = "",
     val email: String = "",

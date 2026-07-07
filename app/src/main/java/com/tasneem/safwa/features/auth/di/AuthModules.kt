@@ -16,17 +16,9 @@ import com.tasneem.safwa.features.auth.domain.usecase.GetCurrentUserIdUseCaseImp
 import com.tasneem.safwa.features.auth.data.datasource.firestore.FirestoreDataSource
 import com.tasneem.safwa.features.auth.data.datasource.firestore.FirestoreDataSourceImpl
 import com.tasneem.safwa.features.auth.data.repository.AuthRepositoryImpl
+import com.tasneem.safwa.features.auth.data.session.AuthSessionManagerImpl
 import com.tasneem.safwa.features.auth.domain.repository.AuthRepository
-import com.tasneem.safwa.features.auth.domain.usecase.GetCurrentUserUseCase
-import com.tasneem.safwa.features.auth.domain.usecase.GoogleLoginUseCase
-import com.tasneem.safwa.features.auth.domain.usecase.GuestLoginUseCase
-import com.tasneem.safwa.features.auth.domain.usecase.LoginUseCase
-import com.tasneem.safwa.features.auth.domain.usecase.LogoutUseCase
-import com.tasneem.safwa.features.auth.domain.usecase.RegisterUseCase
-import com.tasneem.safwa.features.auth.domain.usecase.SendVerificationEmailUseCase
-import com.tasneem.safwa.features.auth.domain.usecase.SyncUserSessionUseCase
-import com.tasneem.safwa.features.core.domain.usecase.ClearWishlistUseCase
-import com.tasneem.safwa.features.settings.orderhistory.domain.repository.OrderRepository
+import com.tasneem.safwa.features.auth.domain.session.AuthSessionManager
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -104,4 +96,10 @@ abstract class AuthUseCaseModule {
     abstract fun bindGetCurrentUserIdUseCase(
         impl: GetCurrentUserIdUseCaseImpl
     ): GetCurrentUserIdUseCase
+
+    @Binds
+    @Singleton
+    abstract fun bindAuthSessionManager(
+        impl: AuthSessionManagerImpl
+    ): AuthSessionManager
 }
