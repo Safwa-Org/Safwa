@@ -18,6 +18,7 @@ import com.tasneem.safwa.features.category.presentation.categories.state.Categor
 import androidx.compose.ui.res.stringResource
 import com.tasneem.safwa.R
 import com.tasneem.safwa.features.category.presentation.categories.components.CategoryItem
+import com.tasneem.safwa.features.core.presentation.component.ErrorContentWithRetry
 
 @Composable
 fun CategoriesScreen(
@@ -30,7 +31,8 @@ fun CategoriesScreen(
     CategoriesContent(
         state = state,
         onNavigateBack = onNavigateBack,
-        onCategoryClicked = onCategoryClicked
+        onCategoryClicked = onCategoryClicked,
+        onRetry = viewModel::retry
     )
 }
 
@@ -38,7 +40,8 @@ fun CategoriesScreen(
 fun CategoriesContent(
     state: CategoriesState,
     onNavigateBack: () -> Unit,
-    onCategoryClicked: (String) -> Unit
+    onCategoryClicked: (String) -> Unit,
+    onRetry: () -> Unit = {}
 ) {
     Scaffold(
         topBar = {
@@ -53,8 +56,12 @@ fun CategoriesContent(
         Box(modifier = Modifier.fillMaxSize().padding(padding)) {
             if (state.isLoading) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-            } else if (!state.error.isNullOrEmpty()) {
-                Text(text = state.error, color = MaterialTheme.colorScheme.error, modifier = Modifier.align(Alignment.Center))
+            } else if (state.error != null) {
+                ErrorContentWithRetry(
+                    title = stringResource(state.error.titleRes),
+                    description = stringResource(state.error.descriptionRes),
+                    onRetry = onRetry,
+                )
             } else {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
