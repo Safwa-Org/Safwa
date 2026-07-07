@@ -293,5 +293,18 @@
     <string name="ai_chat_send">Send message</string>
     <string name="ai_chat_close">Close chat</string>
     <string name="ai_chat_fab_desc">Open Safwa AI chat</string>
+    
+    <string name="sort_and_filter">Sort &amp; Filter</string>
+    <string name="sort_by">Sort By</string>
+    <string name="sort_none">None</string>
+    <string name="sort_price_low_high">Price: Low to High</string>
+    <string name="sort_price_high_low">Price: High to Low</string>
+    <string name="sort_best_seller">Best Seller</string>
+    <string name="brands">Brands</string>
+    <string name="sub_categories">Sub-Categories</string>
+    <string name="group_by_sub_category">Group by Sub-Category</string>
+    <string name="clear_all">Clear All</string>
+    <string name="price_range">Price Range</string>
+    <string name="price_format">Price: $%1$d - $%2$d</string>
 </resources>
 

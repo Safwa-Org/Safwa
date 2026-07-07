@@ -61,7 +61,6 @@ fun WishlistContent(
     ) {
         SafwaTopAppBar(
             title = stringResource(id = R.string.wishlist),
-            onCartClick = {}
         )
             CategoriesRow(
                 categories = state.categories,
