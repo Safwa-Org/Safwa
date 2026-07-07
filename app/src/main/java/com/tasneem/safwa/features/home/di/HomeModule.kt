@@ -1,6 +1,7 @@
 package com.tasneem.safwa.features.home.di
 
 import com.tasneem.network.datasource.product.ProductRemoteDataSource
+import com.tasneem.safwa.core.ai.domain.GenerativeAiService
 import com.tasneem.safwa.features.home.data.datasource.AiRemoteDataSource
 import com.tasneem.safwa.features.home.data.datasource.AiRemoteDataSourceImpl
 import com.tasneem.safwa.features.home.data.repository.AiRepositoryImpl
@@ -26,8 +27,10 @@ object HomeModule {
 
     @Provides
     @Singleton
-    fun provideAiRemoteDataSource(): AiRemoteDataSource {
-        return AiRemoteDataSourceImpl()
+    fun provideAiRemoteDataSource(
+        generativeAiService: GenerativeAiService
+    ): AiRemoteDataSource {
+        return AiRemoteDataSourceImpl(generativeAiService)
     }
 
     @Provides
