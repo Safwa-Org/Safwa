@@ -40,7 +40,6 @@ fun ChatBubble(
         horizontalAlignment = if (isUser) Alignment.End else Alignment.Start
     ) {
         if (isUser) {
-            // ── User message ── right-aligned, green bubble, no avatar
             Surface(
                 shape = RoundedCornerShape(
                     topStart = 20.dp,
@@ -61,12 +60,10 @@ fun ChatBubble(
                 )
             }
         } else {
-            // ── AI message ── left-aligned, with small avatar
             Row(
                 verticalAlignment = Alignment.Top,
                 horizontalArrangement = Arrangement.Start
             ) {
-                // Small AI avatar
                 Box(
                     modifier = Modifier
                         .padding(top = 4.dp)
@@ -94,7 +91,7 @@ fun ChatBubble(
                         bottomStart = 20.dp,
                         bottomEnd = 20.dp
                     ),
-                    color = MaterialTheme.colorScheme.surfaceVariant,
+                    color = MaterialTheme.colorScheme.surface,
                     tonalElevation = 1.dp
                 ) {
                     Text(
@@ -103,7 +100,7 @@ fun ChatBubble(
                             .padding(horizontal = 16.dp, vertical = 12.dp)
                             .widthIn(max = 260.dp),
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = MaterialTheme.colorScheme.onSurface,
                         textAlign = TextAlign.Start
                     )
                 }

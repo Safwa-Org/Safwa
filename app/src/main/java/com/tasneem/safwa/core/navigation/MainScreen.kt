@@ -22,6 +22,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.runtime.LaunchedEffect
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.tasneem.safwa.R
@@ -57,6 +58,17 @@ fun MainScreen(
 
     val aiChatViewModel: AiChatViewModel = hiltViewModel()
     val aiChatState by aiChatViewModel.state.collectAsStateWithLifecycle()
+
+    LaunchedEffect(Unit) {
+        aiChatViewModel.effect.collect { effect ->
+            when (effect) {
+                is com.tasneem.safwa.features.aichat.presentation.viewmodel.AiChatEffect.NavigateToProductDetails -> {
+                    showAiChat = false
+                    onNavigateToProductDetails(effect.handle)
+                }
+            }
+        }
+    }
 
     Scaffold(
         bottomBar = {

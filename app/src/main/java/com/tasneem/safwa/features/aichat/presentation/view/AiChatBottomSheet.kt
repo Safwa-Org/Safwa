@@ -58,6 +58,8 @@ import androidx.compose.ui.unit.sp
 import com.tasneem.safwa.R
 import com.tasneem.safwa.features.aichat.presentation.state.AiChatEvent
 import com.tasneem.safwa.features.aichat.presentation.state.AiChatState
+import com.tasneem.safwa.features.wishlist.presentation.components.ProductCard
+import androidx.compose.material3.CircularProgressIndicator
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -70,11 +72,11 @@ fun AiChatBottomSheet(
 ) {
    val listState = rememberLazyListState()
 
-   // Auto-scroll to bottom when messages change
+
    LaunchedEffect(state.messages.size, state.isTyping) {
        if (state.messages.isNotEmpty()) {
            listState.animateScrollToItem(
-               // Scroll to typing indicator if visible, otherwise last message
+
                index = state.messages.size - 1 + if (state.isTyping) 1 else 0
            )
        }
@@ -102,12 +104,12 @@ fun AiChatBottomSheet(
                .fillMaxSize()
                .imePadding()
        ) {
-           // ── Header ──
+
            ChatHeader(onDismiss = onDismiss)
 
            Spacer(modifier = Modifier.height(8.dp))
 
-           // ── Messages ──
+
            LazyColumn(
                state = listState,
                modifier = Modifier
@@ -121,9 +123,29 @@ fun AiChatBottomSheet(
                ) { message ->
                    ChatBubble(message = message)
                    Spacer(modifier = Modifier.height(4.dp))
+
+
+                   if (message.products.isNotEmpty()) {
+                       LazyRow(
+                           horizontalArrangement = Arrangement.spacedBy(16.dp),
+                           contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+                       ) {
+                           items(count = message.products.size, key = { message.products[it].id }) { index ->
+                               val product = message.products[index]
+                               Box(modifier = Modifier.width(160.dp)) {
+                                   ProductCard(
+                                       product = product,
+                                       showFavoriteIcon = false,
+                                       onClick = { onEvent(AiChatEvent.ProductClicked(product)) }
+                                   )
+                               }
+                           }
+                       }
+                       Spacer(modifier = Modifier.height(8.dp))
+                   }
                }
 
-               // Typing indicator
+
                if (state.isTyping) {
                    item(key = "typing_indicator") {
                        TypingIndicator()
@@ -131,7 +153,7 @@ fun AiChatBottomSheet(
                }
            }
 
-           // ── Suggestion Chips ──
+
            if (state.suggestionChips.isNotEmpty()) {
                LazyRow(
                    modifier = Modifier
@@ -161,7 +183,7 @@ fun AiChatBottomSheet(
                }
            }
 
-           // ── Input Field ──
+
            ChatInputBar(
                inputText = state.inputText,
                onInputChanged = { onEvent(AiChatEvent.InputChanged(it)) },
@@ -182,7 +204,7 @@ private fun ChatHeader(
            .padding(horizontal = 16.dp, vertical = 8.dp),
        verticalAlignment = Alignment.CenterVertically
    ) {
-       // AI Avatar
+
        Box(
            modifier = Modifier
                .size(44.dp)
@@ -202,7 +224,7 @@ private fun ChatHeader(
 
        Spacer(modifier = Modifier.width(12.dp))
 
-       // Title + Subtitle
+
        Column(modifier = Modifier.weight(1f)) {
            Text(
                text = stringResource(R.string.ai_chat_title),
@@ -218,7 +240,7 @@ private fun ChatHeader(
            )
        }
 
-       // Close button
+
        IconButton(onClick = onDismiss) {
            Icon(
                imageVector = Icons.Default.Close,
@@ -263,7 +285,7 @@ private fun ChatInputBar(
            textStyle = MaterialTheme.typography.bodyMedium
        )
 
-       // Send button
+
        Surface(
            onClick = onSend,
            modifier = Modifier.size(48.dp),
@@ -294,7 +316,7 @@ private fun TypingIndicator(
            .padding(horizontal = 16.dp, vertical = 4.dp),
        verticalAlignment = Alignment.Top
    ) {
-       // AI avatar – matches ChatBubble style
+
        Box(
            modifier = Modifier
                .padding(top = 4.dp)
