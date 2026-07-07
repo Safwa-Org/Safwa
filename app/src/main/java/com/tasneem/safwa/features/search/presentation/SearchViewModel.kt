@@ -39,23 +39,24 @@ class SearchViewModel @Inject constructor(
     val effect = _effect.receiveAsFlow()
 
     private var searchJob: Job? = null
+    private var lastSearchedQuery: String? = null
 
     init {
         _state.update { it.copy(
-            isLoading = false
+            isLoading = false,
+            currentCurrency = currencyRateManager.currentDisplayCurrency()
         ) }
-        
+
         observeWishlist()
         loadCategories()
-        performSearch("")
-        
+        executeSearch("")
+
         viewModelScope.launch {
-            _state.update { it.copy(currentCurrency = currencyRateManager.currentDisplayCurrency()) }
             currencyRateManager.displayCurrency
                 .drop(1)
                 .collect { newCurrency ->
                     _state.update { it.copy(currentCurrency = newCurrency) }
-                    performSearch(_state.value.searchQuery)
+                    executeSearch(_state.value.searchQuery)
                 }
         }
     }
@@ -86,19 +87,15 @@ class SearchViewModel @Inject constructor(
     fun onIntent(intent: SearchIntent) {
         when (intent) {
             is SearchIntent.QueryChanged -> {
-                _state.update { currentState ->
-                    currentState.copy(searchQuery = intent.query)
-                }
+                _state.update { it.copy(searchQuery = intent.query) }
                 searchJob?.cancel()
                 searchJob = viewModelScope.launch {
                     delay(500.milliseconds)
-                    performSearch(intent.query)
+                    executeSearch(intent.query)
                 }
             }
             is SearchIntent.FilterSelected -> {
-                _state.update { currentState ->
-                    currentState.copy(selectedCategory = intent.category)
-                }
+                _state.update { it.copy(selectedCategory = intent.category) }
                 filterProducts()
             }
             is SearchIntent.ToggleFavorite -> {
@@ -112,8 +109,7 @@ class SearchViewModel @Inject constructor(
                 }
             }
             is SearchIntent.ExecuteSearch -> {
-                searchJob?.cancel()
-                performSearch(_state.value.searchQuery)
+                executeSearch(_state.value.searchQuery)
             }
             is SearchIntent.ToggleFilterSheet -> {
                 _state.update { it.copy(showFilterSheet = intent.show) }
@@ -160,35 +156,42 @@ class SearchViewModel @Inject constructor(
         }
     }
 
-    private fun performSearch(query: String) {
+    private fun executeSearch(query: String) {
+        searchJob?.cancel()
+
         if (query.isBlank()) {
-            _state.update { 
+            lastSearchedQuery = null
+            _state.update {
                 it.copy(
-                    products = emptyList(), 
+                    products = emptyList(),
                     filteredProducts = emptyList()
-                ) 
+                )
             }
             return
         }
-        viewModelScope.launch {
+
+        searchJob = viewModelScope.launch {
             searchProductsUseCase(query).collect { result ->
                 when (result) {
                     is Resource.Loading -> _state.update { it.copy(isLoading = true) }
                     is Resource.Success -> {
                         val availableBrands = result.data.map { it.vendor }.distinct().filter { it.isNotBlank() }
                         val availableSubCategories = result.data.flatMap { it.tags }.distinct().filter { it.isNotBlank() }
-                        val maxPrice = result.data.maxOfOrNull { it.price.toFloatOrNull() ?: 0f } ?: 1000f
-                        _state.update { 
-                            it.copy(
-                                isLoading = false, 
+                        val productsMaxPrice = result.data.maxOfOrNull { it.price.toFloatOrNull() ?: 0f } ?: 1000f
+
+                        _state.update { currentState ->
+                            val effectiveMax = maxOf(productsMaxPrice, currentState.selectedPriceRange.endInclusive)
+
+                            currentState.copy(
+                                isLoading = false,
                                 products = result.data,
-                                categories =  it.categories,
+                                categories = currentState.categories,
                                 availableBrands = availableBrands,
                                 availableSubCategories = availableSubCategories,
-                                maxPrice = maxPrice,
-                                selectedPriceRange = 0f..maxPrice
-                            ) 
+                                maxPrice = effectiveMax
+                            )
                         }
+                        lastSearchedQuery = query
                         filterProducts()
                     }
                     is Resource.Error -> {
