@@ -344,7 +344,7 @@ private fun TypingIndicator(
                bottomStart = 20.dp,
                bottomEnd = 20.dp
            ),
-           color = MaterialTheme.colorScheme.surfaceVariant,
+           color = MaterialTheme.colorScheme.surface,
            tonalElevation = 1.dp
        ) {
            Row(

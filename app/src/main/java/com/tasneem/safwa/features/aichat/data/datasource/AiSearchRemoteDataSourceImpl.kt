@@ -11,9 +11,9 @@ class AiSearchRemoteDataSourceImpl @Inject constructor(
 
     override suspend fun translateQuery(userInput: String): SmartSearchQuery {
         val systemInstruction = """
-            You are a Shopify search query generator.
+            You are a Shopify search query generator and a helpful shopping assistant.
 
-            Your task is to convert natural language into Shopify GraphQL search syntax.
+            Your task is to convert natural language into a Shopify GraphQL search syntax, AND generate appropriate friendly responses in the SAME LANGUAGE as the user's prompt.
 
             Rules:
             - Return ONLY valid JSON.
@@ -23,10 +23,12 @@ class AiSearchRemoteDataSourceImpl @Inject constructor(
 
             {
               "query": "...",
-              "first": 20
+              "first": 20,
+              "message_if_found": "Message to show if products are found (in user's language)",
+              "message_if_not_found": "Message to show if no products are found (in user's language)"
             }
 
-            Use these Shopify fields:
+            Use these Shopify fields for query:
             - vendor:
             - product_type:
             - title:
@@ -38,14 +40,18 @@ class AiSearchRemoteDataSourceImpl @Inject constructor(
             Output:
             {
               "query": "vendor:Nike AND product_type:\"Running Shoes\" AND variants.price:<=200",
-              "first": 20
+              "first": 20,
+              "message_if_found": "Here are the Nike running shoes under 200 I found for you ✦",
+              "message_if_not_found": "I couldn't find any Nike running shoes under 200 at the moment."
             }
 
-            User: black adidas shoes
+            User: عايز عطور رجالي
             Output:
             {
-              "query": "vendor:Adidas AND Black",
-              "first": 20
+              "query": "product_type:\"Perfume\" AND tag:\"Men\"",
+              "first": 20,
+              "message_if_found": "إليك العطور الرجالية التي وجدتها لك ✦",
+              "message_if_not_found": "عذراً، لم أتمكن من العثور على عطور رجالية حالياً."
             }
         """.trimIndent()
 
@@ -66,8 +72,15 @@ class AiSearchRemoteDataSourceImpl @Inject constructor(
             val jsonObject = JSONObject(cleanResponseText)
             val query = jsonObject.optString("query", "")
             val first = jsonObject.optInt("first", 20)
+            val messageIfFound = jsonObject.optString("message_if_found", "Here's what I found for you ✦")
+            val messageIfNotFound = jsonObject.optString("message_if_not_found", "I couldn't find any products matching your request.")
             
-            SmartSearchQuery(query = query, first = first)
+            SmartSearchQuery(
+                query = query,
+                first = first,
+                messageIfFound = messageIfFound,
+                messageIfNotFound = messageIfNotFound
+            )
         } catch (e: Exception) {
             e.printStackTrace()
             SmartSearchQuery(query = userInput, first = 20)

@@ -125,9 +125,10 @@ class AiChatViewModel @Inject constructor(
                         _state.update { it.copy(isTyping = true) }
                     }
                     is Resource.Success -> {
-                        val products = result.data
+                        val products = result.data.first
+                        val query = result.data.second
                         val aiMessage = ChatMessage(
-                            text = if (products.isNotEmpty()) "Here's what I found for you ✦" else "I couldn't find any products matching your request.",
+                            text = if (products.isNotEmpty()) query.messageIfFound else query.messageIfNotFound,
                             isFromUser = false,
                             products = products
                         )
