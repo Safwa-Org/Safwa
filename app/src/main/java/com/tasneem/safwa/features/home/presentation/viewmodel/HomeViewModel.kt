@@ -41,8 +41,7 @@ class HomeViewModel @Inject constructor(
     private val cartRepository: CartRepository,
     private val getCurrentUserUseCase: GetCurrentUserUseCase,
     private val getBrandsUseCase: GetBrandsUseCase,
-    private val getAiRecommendationsUseCase: GetAiRecommendationsUseCase
-    private val getBrandsUseCase: GetBrandsUseCase,
+    private val getAiRecommendationsUseCase: GetAiRecommendationsUseCase,
     private val currencyRateManager: CurrencyRateManager
 ) : ViewModel() {
 
