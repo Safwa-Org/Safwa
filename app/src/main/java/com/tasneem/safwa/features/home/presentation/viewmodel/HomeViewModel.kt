@@ -2,8 +2,10 @@ package com.tasneem.safwa.features.home.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.tasneem.safwa.core.domain.model.AuthState
+import com.tasneem.safwa.core.util.NetworkStatusProvider
 import com.tasneem.safwa.core.util.Resource
-import com.tasneem.safwa.features.auth.domain.usecase.GetCurrentUserUseCase
+import com.tasneem.safwa.features.auth.domain.usecase.ObserveAuthStateUseCase
 import com.tasneem.safwa.features.cart.domain.repository.CartRepository
 import com.tasneem.safwa.features.home.domain.model.PromoBanner
 import com.tasneem.safwa.features.brand.domain.usecase.GetBrandsUseCase
@@ -39,10 +41,11 @@ class HomeViewModel @Inject constructor(
     private val getCategoriesUseCase: GetCategoriesUseCase,
     private val getCartUseCase: GetCartUseCase,
     private val cartRepository: CartRepository,
-    private val getCurrentUserUseCase: GetCurrentUserUseCase,
+    private val observeAuthStateUseCase: ObserveAuthStateUseCase,
     private val getBrandsUseCase: GetBrandsUseCase,
     private val getAiRecommendationsUseCase: GetAiRecommendationsUseCase,
-    private val currencyRateManager: CurrencyRateManager
+    private val currencyRateManager: CurrencyRateManager,
+    private val networkStatusProvider: NetworkStatusProvider
 ) : ViewModel() {
 
     companion object {
@@ -55,6 +58,8 @@ class HomeViewModel @Inject constructor(
     private val _effect = Channel<HomeEffect>()
     val effect = _effect.receiveAsFlow()
 
+    private var cartCountSessionId: String? = null
+
     init {
         _state.update {
             it.copy(
@@ -62,15 +67,14 @@ class HomeViewModel @Inject constructor(
                 promoBanners = getPromoBanners()
             )
         }
-        loadCurrentUser()
         loadProducts()
         loadBrands()
         observeWishlist()
         loadCategories()
         observeCartCount()
-        loadCartCount()
         loadAiRecommendations()
-
+        observeSession()
+        retryOnReconnect()
 
         viewModelScope.launch {
             currencyRateManager.displayCurrency
@@ -79,16 +83,38 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    private fun loadCurrentUser() {
+    private fun observeSession() {
         viewModelScope.launch {
-            when (val result = getCurrentUserUseCase()) {
-                is Resource.Success -> {
-                    _state.update { it.copy(userName = result.data?.firstName ?: "Guest") }
+            observeAuthStateUseCase().collect { auth ->
+                val user = when (auth) {
+                    is AuthState.Authenticated -> auth.user
+                    is AuthState.Guest -> auth.user
+                    AuthState.Loading -> return@collect
                 }
-                else -> {
-                    _state.update { it.copy(userName = "Guest") }
+                _state.update { it.copy(userName = user.firstName.ifBlank { "Guest" }) }
+                if (user.id != cartCountSessionId) {
+                    cartCountSessionId = user.id
+                    loadCartCount()
                 }
             }
+        }
+    }
+
+    private fun retryOnReconnect() {
+        viewModelScope.launch {
+            networkStatusProvider.observeConnectivity()
+                .drop(1)
+                .collect { isConnected ->
+                    if (!isConnected) return@collect
+                    val current = _state.value
+                    if (current.errorMessage != null || current.products.isEmpty()) loadProducts()
+                    if (current.brands.isEmpty()) loadBrands()
+                    if (current.categories.isEmpty()) loadCategories()
+                    if (current.aiErrorMessage != null || current.aiRecommendations.isEmpty()) {
+                        loadAiRecommendations()
+                    }
+                    loadCartCount()
+                }
         }
     }
 
