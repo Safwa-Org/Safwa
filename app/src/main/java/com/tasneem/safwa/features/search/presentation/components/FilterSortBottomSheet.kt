@@ -104,7 +104,8 @@ fun FilterSortBottomSheet(
                 text = stringResource(
                     id = R.string.price_format,
                     state.selectedPriceRange.start.toInt(),
-                    state.selectedPriceRange.endInclusive.toInt()
+                    state.selectedPriceRange.endInclusive.toInt(),
+                    state.currentCurrency
                 ),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface,

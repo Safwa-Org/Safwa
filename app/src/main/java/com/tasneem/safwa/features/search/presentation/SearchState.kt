@@ -19,7 +19,8 @@ data class SearchState(
     val showFilterSheet: Boolean = false,
     val isGroupedBySubCategory: Boolean = false,
     val maxPrice: Float = 1000f,
-    val selectedPriceRange: ClosedFloatingPointRange<Float> = 0f..1000f
+    val selectedPriceRange: ClosedFloatingPointRange<Float> = 0f..1000f,
+    val currentCurrency: String = "USD"
 )
 
 enum class SortOption {
