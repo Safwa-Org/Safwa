@@ -10,4 +10,6 @@ class GraphQlException(val errors: String) : AppException()
 
 class EmptyResponseException : AppException()
 
+class UnauthenticatedException : AppException()
+
 class UnknownException(cause: Throwable) : AppException()

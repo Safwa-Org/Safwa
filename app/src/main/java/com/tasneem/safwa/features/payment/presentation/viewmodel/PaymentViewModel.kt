@@ -4,11 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tasneem.safwa.R
 import com.tasneem.safwa.features.payment.domain.model.CardDetails
-import com.tasneem.safwa.features.payment.domain.model.PaymentDetails
 import com.tasneem.safwa.features.payment.domain.model.PaymentMethodType
 import com.tasneem.safwa.features.payment.domain.usecase.GetSavedCardsUseCase
-import com.tasneem.safwa.features.payment.domain.usecase.ProcessPayMockPaymentUseCase
-import com.tasneem.safwa.features.payment.domain.usecase.ProcessPaymentUseCase
 import com.tasneem.safwa.features.payment.domain.usecase.SaveCardUseCase
 import com.tasneem.safwa.features.payment.presentation.state.PaymentEffect
 import com.tasneem.safwa.features.payment.presentation.state.PaymentEvent
@@ -31,9 +28,7 @@ class PaymentViewModel @Inject constructor(
     private val getCartUseCase: GetCartUseCase,
     private val getSavedCardsUseCase: GetSavedCardsUseCase,
     private val saveCardUseCase: SaveCardUseCase,
-    private val processPaymentUseCase: ProcessPaymentUseCase,
-    private val clearCartUseCase: ClearCartUseCase,
-    private val processPayMockPaymentUseCase: ProcessPayMockPaymentUseCase
+    private val clearCartUseCase: ClearCartUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(PaymentState())
@@ -106,37 +101,13 @@ class PaymentViewModel @Inject constructor(
                 }
             }
             is PaymentEvent.ContinueClicked -> {
-                val currentMethod = _state.value.selectedMethod ?: return
-                when (currentMethod) {
-                    PaymentMethodType.PAYMOCK -> onEvent(PaymentEvent.PayMockClicked)
+                when (val currentMethod = _state.value.selectedMethod ?: return) {
                     PaymentMethodType.SHOPIFY -> onEvent(PaymentEvent.ShopifyClicked)
-                    PaymentMethodType.CASH_ON_DELIVERY,
+                    PaymentMethodType.CASH_ON_DELIVERY -> navigateToCheckout("cod")
+                    PaymentMethodType.PAYMOCK -> navigateToCheckout("paymock")
                     PaymentMethodType.VISA -> {
-                        if (_state.value.selectedCardId != null) {
-                            viewModelScope.launch {
-                                _state.update { it.copy(isLoading = true) }
-                                val cartResource = getCartUseCase()
-                                if (cartResource is com.tasneem.safwa.core.util.Resource.Success && cartResource.data != null) {
-                                    processPaymentUseCase(
-                                        cartResource.data.id,
-                                        cartResource.data.totalAmount.toDoubleOrNull() ?: 0.0,
-                                        PaymentDetails(currentMethod, _state.value.selectedCardId)
-                                    ).collect { result ->
-                                        result.onSuccess {
-                                            clearCartUseCase()
-                                            _state.update { it.copy(isLoading = false, isSuccess = true) }
-                                            _effect.send(PaymentEffect.NavigateToOrderConfirmed())
-                                        }.onFailure { err ->
-                                            _state.update { it.copy(isLoading = false, errorMessage = err.message) }
-                                            _effect.send(PaymentEffect.NavigateToOrderFailed)
-                                        }
-                                    }
-                                } else {
-                                    _state.update { it.copy(isLoading = false, errorMessage = "Cart not found") }
-                                    _effect.send(PaymentEffect.NavigateToOrderFailed)
-                                }
-                            }
-                        }
+                        val cardId = _state.value.selectedCardId ?: return
+                        navigateToCheckout("card:$cardId")
                     }
                 }
             }
@@ -161,34 +132,13 @@ class PaymentViewModel @Inject constructor(
                     }
                 }
             }
-            is PaymentEvent.PayMockClicked -> {
-                viewModelScope.launch {
-                    _state.update { it.copy(isLoading = true) }
-                    val cartResource = getCartUseCase()
-                    if (cartResource is com.tasneem.safwa.core.util.Resource.Success && cartResource.data != null) {
-                        val cart = cartResource.data
-                        val totalAmount = cart.totalAmount.toDoubleOrNull() ?: 0.0
-                        processPayMockPaymentUseCase(totalAmount).collect { result ->
-                            result.onSuccess { mockId ->
-                                clearCartUseCase()
-                                _state.update {
-                                    it.copy(
-                                        isLoading = false,
-                                        isSuccess = true
-                                    )
-                                }
-                                _effect.send(PaymentEffect.NavigateToOrderConfirmed())
-                            }.onFailure { err ->
-                                _state.update { it.copy(isLoading = false, errorMessage = err.message) }
-                                _effect.send(PaymentEffect.NavigateToOrderFailed)
-                            }
-                        }
-                    } else {
-                        _state.update { it.copy(isLoading = false, errorMessage = "Cart not found") }
-                        _effect.send(PaymentEffect.NavigateToOrderFailed)
-                    }
-                }
-            }
+            is PaymentEvent.PayMockClicked -> navigateToCheckout("paymock")
+        }
+    }
+
+    private fun navigateToCheckout(methodId: String) {
+        viewModelScope.launch {
+            _effect.send(PaymentEffect.NavigateToCheckout(methodId))
         }
     }
 }

@@ -19,6 +19,7 @@ import com.tasneem.safwa.features.brand.presentation.view.BrandsScreen
 import com.tasneem.safwa.features.cart.presentation.view.CartScreen
 import com.tasneem.safwa.features.category.presentation.categories.CategoriesScreen
 import com.tasneem.safwa.features.category.presentation.category_products.CategoryProductsScreen
+import com.tasneem.safwa.features.checkout.presentation.view.CheckoutScreen
 import com.tasneem.safwa.features.onboarding.OnboardingScreen
 import com.tasneem.safwa.features.payment.presentation.view.PaymentScreen
 import com.tasneem.safwa.features.productdetails.presentation.view.ProductDetailsScreen
@@ -166,7 +167,6 @@ fun SafwaNavHost(
         }
 
         composable<ScreenRoute.Cart> {
-            // Cart implementation
             CartScreen(
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToCheckout = { navController.navigate(ScreenRoute.Payment) }
@@ -174,7 +174,15 @@ fun SafwaNavHost(
         }
 
         composable<ScreenRoute.Checkout> {
-            // Checkout implementation
+            CheckoutScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToSavedAddresses = { navController.navigate(ScreenRoute.SavedAddresses) },
+                onNavigateToOrderConfirmed = { orderId, totalAmount ->
+                    navController.navigate(ScreenRoute.OrderConfirmation(orderId, totalAmount)) {
+                        popUpTo(ScreenRoute.Home)
+                    }
+                },
+            )
         }
 
         composable<ScreenRoute.Payment> {
@@ -182,8 +190,11 @@ fun SafwaNavHost(
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToHome = {
                     navController.navigate(ScreenRoute.Home) {
-                        popUpTo(ScreenRoute.Checkout) { inclusive = true }
+                        popUpTo(ScreenRoute.Payment) { inclusive = true }
                     }
+                },
+                onNavigateToCheckout = { methodId ->
+                    navController.navigate(ScreenRoute.Checkout(methodId))
                 },
                 onNavigateToOrderConfirmed = { orderId, totalAmount ->
                     navController.navigate(ScreenRoute.OrderConfirmation(orderId, totalAmount)) {

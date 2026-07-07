@@ -1,0 +1,11 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "safwa-admin-proxy",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-07-01",
+  "vars": {
+    "FIREBASE_PROJECT_ID": "safwa-73fb7",
+    "FIREBASE_PROJECT_NUMBER": "348459336829",
+    "SHOPIFY_ADMIN_ENDPOINT": "https://mad46-and10.myshopify.com/admin/api/2025-04/graphql.json"
+  }
+}

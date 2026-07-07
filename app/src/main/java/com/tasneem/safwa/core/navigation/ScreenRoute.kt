@@ -39,7 +39,9 @@ sealed class ScreenRoute {
     object Cart : ScreenRoute()
 
     @Serializable
-    object Checkout : ScreenRoute()
+    data class Checkout(
+        val methodId: String
+    ) : ScreenRoute()
 
     @Serializable
     object Payment : ScreenRoute()

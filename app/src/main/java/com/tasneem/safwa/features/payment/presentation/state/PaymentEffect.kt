@@ -7,4 +7,6 @@ sealed interface PaymentEffect {
     data object NavigateToOrderFailed : PaymentEffect
     data class ShowSnackBar(@androidx.annotation.StringRes val messageRes: Int) : PaymentEffect
     data class LaunchShopifyCheckout(val url: String) : PaymentEffect
+
+    data class NavigateToCheckout(val methodId: String) : PaymentEffect
 }

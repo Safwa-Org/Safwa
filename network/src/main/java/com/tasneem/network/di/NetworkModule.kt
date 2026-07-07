@@ -7,6 +7,7 @@ import com.apollographql.cache.normalized.api.DefaultCacheKeyGenerator
 import com.apollographql.cache.normalized.api.DefaultCacheResolver
 import com.apollographql.cache.normalized.normalizedCache
 import com.apollographql.cache.normalized.sql.SqlNormalizedCacheFactory
+import com.google.firebase.appcheck.FirebaseAppCheck
 import com.tasneem.network.datasource.address.CustomerAddressRemoteDataSource
 import com.tasneem.network.datasource.address.CustomerAddressRemoteDataSourceImpl
 import com.tasneem.network.datasource.auth.AuthRemoteDataSource
@@ -15,6 +16,9 @@ import com.tasneem.network.datasource.brand.BrandRemoteDataSource
 import com.tasneem.network.datasource.brand.BrandRemoteDataSourceImpl
 import com.tasneem.network.datasource.cart.CartRemoteDataSource
 import com.tasneem.network.datasource.cart.CartRemoteDataSourceImpl
+import com.tasneem.network.datasource.checkout.AdminProxyApi
+import com.tasneem.network.datasource.checkout.CheckoutRemoteDataSource
+import com.tasneem.network.datasource.checkout.CheckoutRemoteDataSourceImpl
 import com.tasneem.network.datasource.currency.ExchangeRateApi
 import com.tasneem.network.datasource.currency.ExchangeRateRemoteDataSource
 import com.tasneem.network.datasource.currency.ExchangeRateRemoteDataSourceImpl
@@ -166,6 +170,21 @@ object NetworkModule {
             .build()
             .create(LocationIqApi::class.java)
 
+
+    @Provides
+    @Singleton
+    fun provideFirebaseAppCheck(): FirebaseAppCheck = FirebaseAppCheck.getInstance()
+
+    @Provides
+    @Singleton
+    fun provideAdminProxyApi(okHttpClient: OkHttpClient): AdminProxyApi =
+        Retrofit.Builder()
+            .baseUrl(BuildConfig.ADMIN_PROXY_BASE_URL)
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(AdminProxyApi::class.java)
+
     @Provides
     @Singleton
     fun providePayMockApiService(
@@ -233,4 +252,10 @@ abstract class DataSourceModule {
     abstract fun bindCustomerAddressRemoteDataSource(
         impl: CustomerAddressRemoteDataSourceImpl
     ): CustomerAddressRemoteDataSource
+
+    @Binds
+    abstract fun bindCheckoutRemoteDataSource(
+        impl: CheckoutRemoteDataSourceImpl
+    ): CheckoutRemoteDataSource
+
 }

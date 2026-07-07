@@ -1,5 +1,6 @@
 package com.tasneem.safwa.features.settings.orderhistory.presentation.view
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -24,6 +25,7 @@ import com.tasneem.safwa.R
 import com.tasneem.safwa.core.shared_component.SafwaTopAppBar
 import com.tasneem.safwa.features.settings.orderhistory.domain.model.OrderHistoryItem
 import com.tasneem.safwa.features.settings.orderhistory.domain.model.OrderLineItem
+import com.tasneem.safwa.features.settings.orderhistory.domain.model.OrderStatus
 import com.tasneem.safwa.features.settings.orderhistory.presentation.viewmodel.OrderDetailsViewModel
 
 @Composable
@@ -32,6 +34,7 @@ fun OrderDetailsScreen(
     onNavigateBack: () -> Unit
 ) {
     val order by viewModel.order.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     if (order == null) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -64,6 +67,27 @@ fun OrderDetailsScreen(
                 OrderSummaryCard(order = order!!)
             }
 
+            if (order!!.status == OrderStatus.IN_TRANSIT) {
+                item {
+                    OutlinedButton(
+                        onClick = viewModel::onCancelOrderClick,
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = !uiState.isCancelling,
+                        shape = RoundedCornerShape(16.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = MaterialTheme.colorScheme.error
+                        ),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.error)
+                    ) {
+                        if (uiState.isCancelling) {
+                            CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
+                        } else {
+                            Text(stringResource(R.string.order_cancel_button))
+                        }
+                    }
+                }
+            }
+
             item {
                 Text(
                     text = "${stringResource(R.string.items)} (${order!!.itemCount})",
@@ -83,6 +107,40 @@ fun OrderDetailsScreen(
                 }
             }
         }
+    }
+
+    if (uiState.showCancelConfirm) {
+        AlertDialog(
+            onDismissRequest = viewModel::onDismissCancelConfirm,
+            title = { Text(stringResource(R.string.order_cancel_confirm_title)) },
+            text = { Text(stringResource(R.string.order_cancel_confirm_message)) },
+            confirmButton = {
+                TextButton(onClick = viewModel::onConfirmCancelOrder) {
+                    Text(
+                        text = stringResource(R.string.order_cancel_confirm_action),
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = viewModel::onDismissCancelConfirm) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        )
+    }
+
+    uiState.cancelError?.let { error ->
+        AlertDialog(
+            onDismissRequest = viewModel::onDismissCancelError,
+            title = { Text(stringResource(R.string.order_cancel_button)) },
+            text = { Text(error) },
+            confirmButton = {
+                TextButton(onClick = viewModel::onDismissCancelError) {
+                    Text(stringResource(R.string.ok))
+                }
+            }
+        )
     }
 }
 

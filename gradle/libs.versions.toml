@@ -61,6 +61,7 @@ firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.r
 # Firebase Auth & Firestore (Version is omitted because BOM manages it)
 firebase-auth = { group = "com.google.firebase", name = "firebase-auth" }
 firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore" }
+firebase-appcheck = { group = "com.google.firebase", name = "firebase-appcheck" }
 # Google Sign-In
 play-services-auth = { group = "com.google.android.gms", name = "play-services-auth", version.ref = "playServicesAuth" }
 # Coroutines Play Services

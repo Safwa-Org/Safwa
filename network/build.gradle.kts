@@ -29,11 +29,12 @@ val locationBaseUrl = localProperties.getProperty("Location_BASE_URL")
 val locationApiKey = localProperties.getProperty("LOCATIONIQ_API_KEY")
     ?: throw Exception("Missing LOCATIONIQ_API_KEY in local.properties.")
 
-val paypalClientId = localProperties.getProperty("PAYPAL_CLIENT_ID")
-    ?: throw Exception("Missing PAYPAL_CLIENT_ID in local.properties.")
 
-val paypalSecret = localProperties.getProperty("PAYPAL_SECRET")
-    ?: throw Exception("Missing PAYPAL_SECRET in local.properties.")
+val adminProxyBaseUrl = localProperties.getProperty("ADMIN_PROXY_BASE_URL")
+    ?: throw Exception(
+        "Missing ADMIN_PROXY_BASE_URL in local.properties.\n" +
+                "Please add the deployed Cloudflare Worker URL\n"
+    )
 
 android {
     namespace = "com.tasneem.safwa.network"
@@ -48,15 +49,13 @@ android {
         )
 
         buildConfigField("String", "COUNTRIES_BASE_URL", "\"$currencyBaseUrl\"")
-        buildConfigField("String", "PAYPAL_CLIENT_ID", "\"$paypalClientId\"")
-        buildConfigField("String", "PAYPAL_SECRET", "\"$paypalSecret\"")
         buildConfigField("String", "PAYPAL_BASE_URL", "\"https://api-m.sandbox.paypal.com/\"")
         buildConfigField("String", "SHOPIFY_DEPOSIT_BASE_URL", "\"https://elb.deposit.shopifycs.com/\"")
         buildConfigField("String", "Currency_Exchange_BASE_URL", "\"$currencyBaseUrl\"")
         buildConfigField("String", "Location_BASE_URL", "\"$locationBaseUrl\"")
         buildConfigField("String", "LOCATIONIQ_API_KEY", "\"$locationApiKey\"")
-
-
+        // Proxy URL for Shopify Admin API (admin token is kept server-side).
+        buildConfigField("String", "ADMIN_PROXY_BASE_URL", "\"$adminProxyBaseUrl\"")
     }
     buildFeatures {
         buildConfig = true
@@ -88,4 +87,11 @@ dependencies {
     implementation(libs.retrofit.converter.gson)
     implementation(libs.okhttp.logging.interceptor)
     ksp(libs.hilt.android.compiler)
+
+    // Firebase Auth (ID token) + App Check (attestation token) are attached to
+    // every call to the admin proxy Worker so it can verify the caller
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.appcheck)
+    implementation(libs.kotlinx.coroutines.play.services)
 }
