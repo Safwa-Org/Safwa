@@ -35,6 +35,12 @@ val paypalClientId = localProperties.getProperty("PAYPAL_CLIENT_ID")
 val paypalSecret = localProperties.getProperty("PAYPAL_SECRET")
     ?: throw Exception("Missing PAYPAL_SECRET in local.properties.")
 
+val adminProxyBaseUrl = localProperties.getProperty("ADMIN_PROXY_BASE_URL")
+    ?: throw Exception(
+        "Missing ADMIN_PROXY_BASE_URL in local.properties.\n" +
+                "Please add the deployed Cloudflare Worker URL\n"
+    )
+
 android {
     namespace = "com.tasneem.safwa.network"
     compileSdk = 36
@@ -55,8 +61,8 @@ android {
         buildConfigField("String", "Currency_Exchange_BASE_URL", "\"$currencyBaseUrl\"")
         buildConfigField("String", "Location_BASE_URL", "\"$locationBaseUrl\"")
         buildConfigField("String", "LOCATIONIQ_API_KEY", "\"$locationApiKey\"")
-
-
+        // Proxy URL for Shopify Admin API (admin token is kept server-side).
+        buildConfigField("String", "ADMIN_PROXY_BASE_URL", "\"$adminProxyBaseUrl\"")
     }
     buildFeatures {
         buildConfig = true
@@ -87,4 +93,11 @@ dependencies {
     implementation(libs.retrofit.converter.gson)
     implementation(libs.okhttp.logging.interceptor)
     ksp(libs.hilt.android.compiler)
+
+    // Firebase Auth (ID token) + App Check (attestation token) are attached to
+    // every call to the admin proxy Worker so it can verify the caller
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.appcheck)
+    implementation(libs.kotlinx.coroutines.play.services)
 }

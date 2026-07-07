@@ -15,6 +15,8 @@ fun CartDto.toDomain(): Cart {
         totalAmount = this.totalAmount,
         currency = this.currency,
         shippingAmount = this.shippingAmount,
+        shippingTitle = this.shippingTitle,
+        taxAmount = this.taxAmount,
         discountCodes = this.discountCodes.map { discount ->
             DiscountCode(
                 code = discount.code,

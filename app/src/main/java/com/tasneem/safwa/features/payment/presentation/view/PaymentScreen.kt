@@ -64,7 +64,8 @@ fun PaymentScreen(
     onNavigateBack: () -> Unit = {},
     onNavigateToHome: () -> Unit = {},
     onNavigateToOrderConfirmed: (String, String) -> Unit = { _, _ -> },
-    onNavigateToOrderFailed: () -> Unit = {}
+    onNavigateToOrderFailed: () -> Unit = {},
+    onNavigateToCheckout: (methodId: String) -> Unit = {}
 ) {
     val uiState by viewModel.state.collectAsStateWithLifecycle()
     val snackBarHostState = remember { SnackbarHostState() }
@@ -78,6 +79,7 @@ fun PaymentScreen(
                 PaymentEffect.NavigateToHome -> onNavigateToHome()
                 is PaymentEffect.NavigateToOrderConfirmed -> onNavigateToOrderConfirmed(effect.orderId ?: "", effect.totalAmount ?: "")
                 PaymentEffect.NavigateToOrderFailed -> onNavigateToOrderFailed()
+                is PaymentEffect.NavigateToCheckout -> onNavigateToCheckout(effect.methodId)
                 is PaymentEffect.ShowSnackBar -> {
                     scope.launch {
                         snackBarHostState.showSnackbar(context.getString(effect.messageRes))

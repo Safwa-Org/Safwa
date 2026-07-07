@@ -2,14 +2,15 @@ package com.tasneem.network.mapper
 
 import com.tasneem.network.dto.CartDto
 import com.tasneem.network.dto.CartLineDto
+import com.tasneem.network.dto.DiscountCodeDto
 import com.tasneem.safwa.network.GetCartQuery
 import javax.inject.Inject
 
 class CartMapper @Inject constructor() : Mapper<GetCartQuery.Cart, CartDto> {
     override fun map(input: GetCartQuery.Cart): CartDto {
-        val shippingAmount = input.deliveryGroups.edges.firstOrNull()
+        val deliveryOption = input.deliveryGroups.edges.firstOrNull()
             ?.node?.deliveryOptions?.firstOrNull()
-            ?.estimatedCost?.amount?.toString()
+        val shippingAmount = deliveryOption?.estimatedCost?.amount?.toString()
 
         return CartDto(
             id = input.id,
@@ -18,8 +19,10 @@ class CartMapper @Inject constructor() : Mapper<GetCartQuery.Cart, CartDto> {
             totalAmount = input.cost.totalAmount.amount.toString(),
             currency = input.cost.totalAmount.currencyCode.name,
             shippingAmount = shippingAmount,
+            shippingTitle = deliveryOption?.title,
+            taxAmount = input.cost.totalTaxAmount?.amount?.toString(),
             discountCodes = input.discountCodes.map { discount ->
-                com.tasneem.network.dto.DiscountCodeDto(
+                DiscountCodeDto(
                     code = discount.code,
                     applicable = discount.applicable
                 )

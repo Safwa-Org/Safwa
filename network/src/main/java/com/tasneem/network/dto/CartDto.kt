@@ -7,6 +7,8 @@ data class CartDto(
     val totalAmount: String,
     val currency: String,
     val shippingAmount: String?,
+    val shippingTitle: String? = null,
+    val taxAmount: String? = null,
     val discountCodes: List<DiscountCodeDto> = emptyList(),
     val lines: List<CartLineDto>
 )
