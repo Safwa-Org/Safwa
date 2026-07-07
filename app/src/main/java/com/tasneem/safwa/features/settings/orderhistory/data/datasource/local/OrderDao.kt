@@ -19,4 +19,7 @@ interface OrderDao {
 
     @Query("DELETE FROM order_history_table")
     suspend fun deleteAllOrders()
+
+    @Query("UPDATE order_history_table SET status = :status WHERE id = :orderId")
+    suspend fun updateStatus(orderId: String, status: String)
 }

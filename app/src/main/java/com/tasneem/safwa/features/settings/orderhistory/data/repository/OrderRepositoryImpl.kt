@@ -10,7 +10,7 @@ import com.tasneem.safwa.features.settings.orderhistory.domain.model.OrderStatus
 import com.tasneem.safwa.features.settings.orderhistory.domain.repository.OrderRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
@@ -21,23 +21,19 @@ class OrderRepositoryImpl @Inject constructor(
     override fun getOrders(customerAccessToken: String): Flow<Resource<List<OrderHistoryItem>>> = flow {
         emit(Resource.Loading)
 
-        val localOrders = localDataSource.getOrders().first()
-        if (localOrders.isNotEmpty()) {
-            emit(Resource.Success(localOrders.map { it.toDomain() }))
-        }
-
+        var remoteError: Exception? = null
         try {
             val edges = remoteDataSource.getOrders(customerAccessToken)
             val remoteOrders = edges.mapNotNull { it.node }.map { node ->
                 
                 val status = when {
+                    node.canceledAt != null -> OrderStatus.CANCELLED
                     node.fulfillmentStatus.name == "FULFILLED" -> OrderStatus.DELIVERED
-                    node.financialStatus?.name == "REFUNDED" -> OrderStatus.CANCELLED
                     else -> OrderStatus.IN_TRANSIT
                 }
 
                 val date = node.processedAt.toString().take(10)
-                
+
                 val lineItems = node.lineItems.edges.map { edge ->
                     com.tasneem.safwa.features.settings.orderhistory.domain.model.OrderLineItem(
                         title = edge.node.title,
@@ -45,7 +41,7 @@ class OrderRepositoryImpl @Inject constructor(
                         imageUrl = edge.node.variant?.image?.url?.toString()
                     )
                 }
-                
+
                 OrderHistoryItem(
                     id = node.id,
                     orderNumber = node.orderNumber.toString(),
@@ -59,11 +55,19 @@ class OrderRepositoryImpl @Inject constructor(
 
             localDataSource.deleteAllOrders()
             localDataSource.insertOrders(remoteOrders.map { it.toEntity() })
-
-            emit(Resource.Success(remoteOrders))
         } catch (e: Exception) {
-            emit(Resource.Error(e.message ?: "An unknown error occurred"))
+            remoteError = e
         }
+
+        emitAll(
+            localDataSource.getOrders().map { entities ->
+                if (entities.isEmpty() && remoteError != null) {
+                    Resource.Error(remoteError.message ?: "An unknown error occurred")
+                } else {
+                    Resource.Success(entities.map { it.toDomain() })
+                }
+            }
+        )
     }
 
     override fun getOrderById(orderId: String): Flow<OrderHistoryItem?> {
@@ -72,5 +76,9 @@ class OrderRepositoryImpl @Inject constructor(
 
     override suspend fun clearOrders() {
         localDataSource.deleteAllOrders()
+    }
+
+    override suspend fun markOrderCancelled(orderId: String) {
+        localDataSource.updateStatus(orderId, OrderStatus.CANCELLED.name)
     }
 }

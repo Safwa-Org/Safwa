@@ -254,6 +254,11 @@
     <string name="total_amount">Total Amount</string>
     <string name="date_label">Date</string>
     <string name="no_images_available">No images available</string>
+    <string name="order_cancel_button">Cancel Order</string>
+    <string name="order_cancel_confirm_title">Cancel this order?</string>
+    <string name="order_cancel_confirm_message">This action can\'t be undone.</string>
+    <string name="order_cancel_confirm_action">Cancel Order</string>
+    <string name="ok">OK</string>
     <string name="paymock">PayMock</string>
     <string name="err_address_not_selected">Please Select An Address</string>
     <string name="search_for_your_address">Search for your address</string>
