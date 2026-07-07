@@ -10,5 +10,6 @@ data class ProductDto(
     val price: String,
     val currency: String,
     val imageUrls: List<String?>,
-    val imageAlts: List<String?>
+    val imageAlts: List<String?>,
+    val tags: List<String> = emptyList()
 )

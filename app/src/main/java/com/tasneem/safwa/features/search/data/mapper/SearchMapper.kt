@@ -14,6 +14,7 @@ fun ProductDto.toDomainModel(): Product {
         price = price,
         currency = currency,
         imageUrl = imageUrls.filterNotNull(),
-        imageAltText = imageAlts.filterNotNull()
+        imageAltText = imageAlts.filterNotNull(),
+        tags = tags
     )
 }
