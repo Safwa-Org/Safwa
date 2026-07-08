@@ -1,6 +1,7 @@
 package com.tasneem.safwa.features.search.presentation
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -26,6 +27,7 @@ import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.foundation.layout.Row
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.ui.Alignment
 
 import androidx.compose.runtime.LaunchedEffect
@@ -105,7 +107,14 @@ fun SearchContent(
                 )
             }
 
-            if (state.filteredProducts.isEmpty()) {
+            if (state.isLoading) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            } else if (state.filteredProducts.isEmpty()) {
                 EmptySearchState()
             } else {
                 LazyVerticalGrid(
