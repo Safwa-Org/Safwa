@@ -20,6 +20,11 @@ class GetAiRecommendationsUseCase @Inject constructor(
 
             val history = getUserShoppingHistoryUseCase()
 
+            if (history.wishlistItems.isEmpty() && history.cartItems.isEmpty() && history.orderItems.isEmpty()) {
+                emit(Resource.Success(emptyList()))
+                return@flow
+            }
+
             val aiSearchQuery = try {
                 aiRepository.getRecommendations(history)
             } catch (e: Exception) {
