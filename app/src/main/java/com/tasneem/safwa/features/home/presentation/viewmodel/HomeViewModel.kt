@@ -326,6 +326,12 @@ class HomeViewModel @Inject constructor(
 
             is HomeEvent.ShopEditClicked -> {
             }
+
+            is HomeEvent.ViewAllLatestProducts -> {
+                viewModelScope.launch {
+                    _effect.send(HomeEffect.NavigateToLatestProducts)
+                }
+            }
         }
     }
 

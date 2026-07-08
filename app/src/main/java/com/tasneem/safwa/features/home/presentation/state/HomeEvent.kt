@@ -14,4 +14,5 @@ sealed interface HomeEvent {
     data object SeeAllBestSellers : HomeEvent
     data object ViewAllBrands : HomeEvent
     data object ShopEditClicked : HomeEvent
+    data object ViewAllLatestProducts : HomeEvent
 }

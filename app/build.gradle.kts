@@ -116,4 +116,7 @@ dependencies {
     
     // Gemini AI
     implementation("com.google.ai.client.generativeai:generativeai:0.9.0")
+    
+    implementation(libs.androidx.paging.runtime)
+    implementation(libs.androidx.paging.compose)
 }

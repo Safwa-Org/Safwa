@@ -3,6 +3,7 @@ package com.tasneem.network.datasource.product
 import com.apollographql.apollo.ApolloClient
 import com.tasneem.network.dto.ProductDetailsDto
 import com.tasneem.network.dto.ProductDto
+import com.tasneem.network.dto.PaginatedResultDto
 import com.tasneem.network.dto.CategoryDto
 import com.tasneem.network.exception.safeApiCall
 import com.tasneem.network.mapper.ProductDetailsDtoMapper
@@ -49,6 +50,41 @@ class ProductRemoteDataSourceImpl @Inject constructor(
                 val products = data.products.edges
                     .map { it.node }
                 mapper.mapList(products)
+            }
+        )
+    }
+
+    override suspend fun getPaginatedProducts(
+        first: Int,
+        after: String?,
+        sortKey: String?,
+        reverse: Boolean?,
+        languageCode: String
+    ): PaginatedResultDto<ProductDto> {
+        return safeApiCall(
+            apiCall = {
+                apolloClient.query(
+                    ProductsQuery(
+                        first = first,
+                        after = Optional.presentIfNotNull(after),
+                        sortKey = Optional.presentIfNotNull(
+                            sortKey?.let {
+                                try { ProductSortKeys.valueOf(it) } catch (_: Exception) { null }
+                            }
+                        ),
+                        reverse = Optional.presentIfNotNull(reverse),
+                        language = Optional.presentIfNotNull(LanguageCode.safeValueOf(languageCode.uppercase()))
+                    )
+                ).execute()
+            },
+            mapper = { data ->
+                val products = data.products.edges
+                    .map { it.node }
+                PaginatedResultDto(
+                    items = mapper.mapList(products),
+                    endCursor = data.products.pageInfo.endCursor,
+                    hasNextPage = data.products.pageInfo.hasNextPage
+                )
             }
         )
     }

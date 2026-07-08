@@ -44,6 +44,7 @@ fun MainScreen(
     onNavigateToCreateAccount: () -> Unit = {},
     onNavigateToBrands: () -> Unit = {},
     onNavigateToBrandProducts: (String) -> Unit = {},
+    onNavigateToLatestProducts: () -> Unit = {},
 ) {
     var selectedTab by rememberSaveable { mutableIntStateOf(0) }
     var showAiChat by rememberSaveable { mutableStateOf(false) }
@@ -93,7 +94,8 @@ fun MainScreen(
                     onNavigateToCategories = onNavigateToCategories,
                     onNavigateToCategoryProducts = onNavigateToCategoryProducts,
                     onNavigateToBrands = onNavigateToBrands,
-                    onNavigateToBrandProducts = onNavigateToBrandProducts
+                    onNavigateToBrandProducts = onNavigateToBrandProducts,
+                    onNavigateToLatestProducts = onNavigateToLatestProducts
                 )
 
                 1 -> SearchScreen(

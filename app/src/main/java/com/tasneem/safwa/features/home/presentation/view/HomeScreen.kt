@@ -51,7 +51,8 @@ fun HomeScreen(
     onNavigateToCategories: () -> Unit = {},
     onNavigateToCategoryProducts: (String) -> Unit = {},
     onNavigateToBrands: () -> Unit = {},
-    onNavigateToBrandProducts: (String) -> Unit = {}
+    onNavigateToBrandProducts: (String) -> Unit = {},
+    onNavigateToLatestProducts: () -> Unit = {}
 ) {
     val uiState by viewModel.state.collectAsStateWithLifecycle()
 
@@ -65,6 +66,7 @@ fun HomeScreen(
                 is HomeEffect.NavigateToProductDetails -> onNavigateToProductDetails(effect.handle)
                 is HomeEffect.NavigateToBrand -> onNavigateToBrandProducts(effect.brand)
                 HomeEffect.NavigateToBrands -> onNavigateToBrands()
+                HomeEffect.NavigateToLatestProducts -> onNavigateToLatestProducts()
             }
         }
     }
@@ -235,7 +237,9 @@ fun HomeContent(
                             }
                             item(span = { GridItemSpan(2) }) {
                                 SectionHeader(
-                                    title = stringResource(id = R.string.latest_added)
+                                    title = stringResource(id = R.string.latest_added),
+                                    actionText = stringResource(id = R.string.view_all),
+                                    onActionClick = { onEvent(HomeEvent.ViewAllLatestProducts) }
                                 )
                             }
                             item(span = { GridItemSpan(2) }) {
