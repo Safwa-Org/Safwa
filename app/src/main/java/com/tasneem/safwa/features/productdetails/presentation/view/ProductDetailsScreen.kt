@@ -62,6 +62,12 @@ fun ProductDetailsScreen(
                         snackBarHostState.showSnackbar(effect.message)
                     }
                 }
+                is ProductDetailsEffect.ShowSnackBarRes -> {
+                    val msg = context.getString(effect.messageResId)
+                    launch {
+                        snackBarHostState.showSnackbar(msg)
+                    }
+                }
 
                 is ProductDetailsEffect.ShareProduct -> {
                     val shareIntent = Intent(Intent.ACTION_SEND).apply {

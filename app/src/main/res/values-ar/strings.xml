@@ -523,5 +523,12 @@
     <string name="an_unexpected_error_occurred">حدث خطأ غير متوقع</string>
     <string name="no_orders_yet">لا توجد طلبات بعد</string>
     <string name="start_shopping_to_see_orders">ابدأ التسوق لرؤية سجل طلباتك هنا.</string>
+    <string name="please_sign_in_to_leave_a_review">يرجى تسجيل الدخول لترك مراجعة</string>
+    <string name="anonymous">مجهول</string>
+    <string name="review_submitted">تم إرسال المراجعة</string>
+    <string name="could_not_submit_review">تعذر إرسال المراجعة</string>
+    <string name="please_select_a_star_rating">يرجى اختيار التقييم بالنجوم.</string>
+    <string name="please_write_a_comment">يرجى كتابة تعليق.</string>
+    <string name="rating_format">%1$.1f (%2$d)</string>
 
 </resources>

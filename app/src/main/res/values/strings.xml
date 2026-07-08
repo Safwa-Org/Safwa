@@ -291,6 +291,14 @@
     <string name="update_review">Update Review</string>
     <string name="submit_review">Submit Review</string>
     <string name="no_reviews_yet">No reviews yet — be the first to share your thoughts.</string>
+    <string name="please_sign_in_to_leave_a_review">Please sign in to leave a review</string>
+    <string name="anonymous">Anonymous</string>
+    <string name="review_submitted">Review submitted</string>
+    <string name="could_not_submit_review">Could not submit review</string>
+    <string name="please_select_a_star_rating">Please select a star rating.</string>
+    <string name="please_write_a_comment">Please write a comment.</string>
+    <string name="rating_format">%1$.1f (%2$d)</string>
+
     <string name="ai_chat_title">Safwa AI</string>
     <string name="ai_chat_subtitle">PERSONAL SHOPPER · ONLINE</string>
     <string name="ai_chat_input_placeholder">Ask Safwa AI…</string>
@@ -328,7 +336,5 @@
     <string name="an_unexpected_error_occurred">An unexpected error occurred</string>
     <string name="no_orders_yet">No orders yet</string>
     <string name="start_shopping_to_see_orders">Start shopping to see your order history here.</string>
-    <string name="ai_generated_label">✦ AI-generated</string>
 </resources>
 
-</resources>

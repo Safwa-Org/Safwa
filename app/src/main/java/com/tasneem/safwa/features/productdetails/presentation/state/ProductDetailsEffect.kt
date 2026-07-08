@@ -4,5 +4,6 @@ sealed interface ProductDetailsEffect {
     object NavigateBack : ProductDetailsEffect
     object NavigateToCart : ProductDetailsEffect
     data class ShowSnackBar(val message: String) : ProductDetailsEffect
+    data class ShowSnackBarRes(val messageResId: Int) : ProductDetailsEffect
     data class ShareProduct(val title: String, val url: String) : ProductDetailsEffect
 }
