@@ -19,6 +19,7 @@ import com.tasneem.safwa.features.wishlist.presentation.components.ProductCard
 import com.tasneem.safwa.features.core.domain.model.Product
 import androidx.compose.ui.res.stringResource
 import com.tasneem.safwa.R
+import com.tasneem.safwa.features.core.presentation.component.ErrorContentWithRetry
 
 @Composable
 fun CategoryProductsScreen(
@@ -33,7 +34,8 @@ fun CategoryProductsScreen(
         categoryName = viewModel.categoryName,
         onNavigateBack = onNavigateBack,
         onNavigateToProductDetails = onNavigateToProductDetails,
-        onToggleFavorite = { product -> viewModel.toggleFavorite(product) }
+        onToggleFavorite = { product -> viewModel.toggleFavorite(product) },
+        onRetry = viewModel::retry
     )
 }
 
@@ -43,7 +45,8 @@ fun CategoryProductsContent(
     categoryName: String,
     onNavigateBack: () -> Unit,
     onNavigateToProductDetails: (String) -> Unit,
-    onToggleFavorite: (Product) -> Unit
+    onToggleFavorite: (Product) -> Unit,
+    onRetry: () -> Unit = {}
 ) {
     Scaffold(
         topBar = {
@@ -58,8 +61,12 @@ fun CategoryProductsContent(
         Box(modifier = Modifier.fillMaxSize().padding(padding)) {
             if (state.isLoading) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-            } else if (!state.error.isNullOrEmpty()) {
-                Text(text = state.error, color = MaterialTheme.colorScheme.error, modifier = Modifier.align(Alignment.Center))
+            } else if (state.error != null) {
+                ErrorContentWithRetry(
+                    title = stringResource(state.error.titleRes),
+                    description = stringResource(state.error.descriptionRes),
+                    onRetry = onRetry,
+                )
             } else if (state.products.isEmpty()) {
                 Text(text = stringResource(id = R.string.no_products_found), modifier = Modifier.align(Alignment.Center))
             } else {

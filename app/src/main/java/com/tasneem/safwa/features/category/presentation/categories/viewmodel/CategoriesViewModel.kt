@@ -2,6 +2,7 @@ package com.tasneem.safwa.features.category.presentation.categories.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.tasneem.safwa.core.presentation.mapper.toUiError
 import com.tasneem.safwa.core.util.Resource
 import com.tasneem.safwa.features.core.domain.usecase.GetCategoriesUseCase
 import com.tasneem.safwa.features.category.presentation.categories.state.CategoriesState
@@ -24,22 +25,23 @@ class CategoriesViewModel @Inject constructor(
         loadCategories()
     }
 
+    fun retry() = loadCategories()
+
     private fun loadCategories() {
         viewModelScope.launch {
             getCategoriesUseCase().collect { result ->
                 when (result) {
                     is Resource.Success -> {
-                        _state.update { it.copy(isLoading = false, categories = result.data) }
+                        _state.update { it.copy(isLoading = false, categories = result.data, error = null) }
                     }
                     is Resource.Error -> {
-                        _state.update { it.copy(isLoading = false, error = result.message) }
+                        _state.update { it.copy(isLoading = false, error = result.throwable.toUiError()) }
                     }
                     is Resource.Loading -> {
-                        _state.update { it.copy(isLoading = true) }
+                        _state.update { it.copy(isLoading = true, error = null) }
                     }
                 }
             }
         }
     }
 }
-

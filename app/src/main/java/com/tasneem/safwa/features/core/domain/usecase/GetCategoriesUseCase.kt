@@ -16,7 +16,7 @@ class GetCategoriesUseCase @Inject constructor(
             val categories = repository.getCategories(first)
             emit(Resource.Success(categories))
         } catch (e: Exception) {
-            emit(Resource.Error(e.localizedMessage ?: "An unexpected error occurred"))
+            emit(Resource.Error(message = e.localizedMessage, throwable = e))
         }
     }
 }
