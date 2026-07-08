@@ -28,7 +28,7 @@ class ProductRemoteDataSourceImpl @Inject constructor(
     private val productDetailsDtoMapper: ProductDetailsDtoMapper
 ) : ProductRemoteDataSource {
 
-    override suspend fun getProducts(first: Int, after: String?, sortKey: String?, languageCode: String): List<ProductDto> {
+    override suspend fun getProducts(first: Int, after: String?, sortKey: String?, reverse: Boolean?, languageCode: String): List<ProductDto> {
         return safeApiCall(
             apiCall = {
                 apolloClient.query(
@@ -40,6 +40,7 @@ class ProductRemoteDataSourceImpl @Inject constructor(
                                 try { ProductSortKeys.valueOf(it) } catch (_: Exception) { null }
                             }
                         ),
+                        reverse = Optional.presentIfNotNull(reverse),
                         language = Optional.presentIfNotNull(LanguageCode.safeValueOf(languageCode.uppercase()))
                     )
                 ).execute()

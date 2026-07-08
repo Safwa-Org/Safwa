@@ -329,6 +329,7 @@
     <string name="promo_summer_bogo_headline">Buy one get\none free on\nsummer items.</string>
     <string name="ai_recommendations">AI Recommendations ✨</string>
     <string name="ai_generated_label">AI Generated</string>
+    <string name="latest_added">Latest Added</string>
     <string name="add_new_address">Add new address</string>
 
     <string name="please_login_again_to_view_orders">Please login again to view orders</string>

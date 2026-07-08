@@ -16,6 +16,7 @@ data class HomeState(
     val promoBanners: List<PromoBanner> = emptyList(),
     val products: List<Product> = emptyList(),
     val filteredProducts: List<Product> = emptyList(),
+    val latestProducts: List<Product> = emptyList(),
     val favoriteProductIds: Set<String> = emptySet(),
     val categories: List<Category> = emptyList(),
     val selectedCategory: Category? = null,

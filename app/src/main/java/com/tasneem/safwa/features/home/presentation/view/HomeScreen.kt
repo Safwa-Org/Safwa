@@ -229,6 +229,38 @@ fun HomeContent(
                             }
                         }
 
+                        if (state.latestProducts.isNotEmpty()) {
+                            item(span = { GridItemSpan(2) }) {
+                                Spacer(modifier = Modifier.height(24.dp))
+                            }
+                            item(span = { GridItemSpan(2) }) {
+                                SectionHeader(
+                                    title = stringResource(id = R.string.latest_added)
+                                )
+                            }
+                            item(span = { GridItemSpan(2) }) {
+                                Spacer(modifier = Modifier.height(12.dp))
+                            }
+                            item(span = { GridItemSpan(2) }) {
+                                androidx.compose.foundation.lazy.LazyRow(
+                                    horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(16.dp),
+                                    contentPadding = PaddingValues(horizontal = 16.dp)
+                                ) {
+                                    items(count = state.latestProducts.size, key = { state.latestProducts[it].id + "_latest" }) { index ->
+                                        val product = state.latestProducts[index]
+                                        Box(modifier = Modifier.width(160.dp)) {
+                                            ProductCard(
+                                                product = product,
+                                                isFavorite = state.favoriteProductIds.contains(product.id),
+                                                onToggleFavorite = { onEvent(HomeEvent.ToggleFavorite(product)) },
+                                                onClick = { onEvent(HomeEvent.ProductClicked(product)) }
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
                         item(span = { GridItemSpan(2) }) {
                             Spacer(modifier = Modifier.height(24.dp))
                         }
