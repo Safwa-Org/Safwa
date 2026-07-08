@@ -179,6 +179,14 @@ private fun StockBadge(isInStock: Boolean) {
 }
 
 @Composable
+private fun localizedOptionLabel(name: String): String =
+    when (name.trim().lowercase()) {
+        "color", "colour", "colors", "colours" -> stringResource(R.string.color_label)
+        "size", "sizes" -> stringResource(R.string.size_label)
+        else -> name
+    }
+
+@Composable
 private fun VariantOptionGroupSection(
     group: VariantOptionGroup,
     selectedValue: String,
@@ -186,7 +194,7 @@ private fun VariantOptionGroupSection(
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(
-            text = group.name,
+            text = localizedOptionLabel(group.name),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onBackground
         )

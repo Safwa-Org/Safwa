@@ -79,6 +79,7 @@
     <string name="no_ratings_yet">No ratings yet</string>
     <string name="in_stock">In stock</string>
     <string name="size_label">SIZE</string>
+    <string name="color_label">COLOR</string>
     <string name="description_label">DESCRIPTION</string>
     <string name="add_to_cart_format">Add to cart · %1$s</string>
     <string name="back">Back</string>

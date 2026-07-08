@@ -127,6 +127,7 @@
     <string name="in_stock">متوفر</string>
 
     <string name="size_label">المقاس</string>
+    <string name="color_label">اللون</string>
     <string name="description_label">الوصف</string>
 
     <string name="add_to_cart_format">أضف إلى السلة · %1$s</string>
