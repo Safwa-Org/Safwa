@@ -1,0 +1,534 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">صفوة</string>
+
+    <string name="onboarding_welcome_title">مرحبًا بك في صفوة</string>
+    <string name="onboarding_welcome_heading">فخامة مختارة،<br/>تصل إليك بهدوء.</string>
+    <string name="onboarding_welcome_desc">مجموعة مختارة بعناية من العطور والمنتجات الجلدية والساعات من دورٍ نثق بحرفيتها.</string>
+
+    <string name="onboarding_collection_title">مجموعة حصرية</string>
+    <string name="onboarding_collection_heading">اكتشف أرقى<br/>الحِرف.</string>
+    <string name="onboarding_collection_desc">استكشف مجموعاتنا الحصرية المصنوعة بدقة وشغف.</string>
+
+    <string name="onboarding_delivery_title">توصيل سريع</string>
+    <string name="onboarding_delivery_heading">توصيل سريع وآمن<br/>إلى باب منزلك.</string>
+    <string name="onboarding_delivery_desc">استمتع براحة البال مع خدمات التوصيل السريعة والآمنة.</string>
+
+    <string name="skip">تخطي</string>
+    <string name="continue_text">متابعة</string>
+
+    <string name="error_fields_empty">لا يمكن ترك الحقول فارغة</string>
+
+    <string name="welcome_back">مرحبًا بعودتك</string>
+    <string name="sign_in_desc">سجّل الدخول لمتابعة تجربتك المميزة.</string>
+
+    <string name="email">البريد الإلكتروني</string>
+    <string name="password">كلمة المرور</string>
+
+    <string name="forgot_password">هل نسيت كلمة المرور؟</string>
+    <string name="sign_in">تسجيل الدخول</string>
+
+    <string name="continue_as_guest">المتابعة كضيف</string>
+
+    <string name="new_to_safwa">جديد في صفوة؟ </string>
+    <string name="create_account">إنشاء حساب</string>
+
+    <string name="or">أو</string>
+
+    <string name="google_icon_desc">أيقونة جوجل</string>
+    <string name="continue_with_google">المتابعة باستخدام جوجل</string>
+
+    <string name="hide">إخفاء</string>
+    <string name="show">إظهار</string>
+
+    <string name="default_web_client_id" translatable="false">348459336829-ntc7efkmbjq201edafusr8ntqf6f6ibr.apps.googleusercontent.com</string>
+
+    <string name="create_account_title">إنشاء حساب</string>
+    <string name="sign_up_desc">ابدأ رحلتك مع صفوة</string>
+
+    <string name="confirm_password">تأكيد كلمة المرور</string>
+    <string name="sign_up">إنشاء الحساب</string>
+
+    <string name="already_have_account">لديك حساب بالفعل؟</string>
+
+    <string name="first_name">الاسم الأول</string>
+    <string name="last_name">اسم العائلة</string>
+
+    <string name="phone">رقم الهاتف (اختياري)</string>
+
+    <string name="error_phone_empty">يرجى إدخال رقم الهاتف</string>
+    <string name="error_phone_invalid">يجب أن يحتوي رقم الهاتف على أرقام فقط</string>
+
+    <string name="error_first_name_empty">يرجى إدخال الاسم الأول</string>
+    <string name="error_last_name_empty">يرجى إدخال اسم العائلة</string>
+
+    <string name="error_email_empty">يرجى إدخال البريد الإلكتروني</string>
+
+    <string name="error_password_empty">يرجى إدخال كلمة مرور</string>
+
+    <string name="error_confirm_password_empty">يرجى تأكيد كلمة المرور</string>
+
+    <string name="error_passwords_do_not_match">كلمتا المرور غير متطابقتين</string>
+
+    <string name="error_password_too_short">يجب ألا تقل كلمة المرور عن 6 أحرف</string>
+
+    <string name="error_name_need_two_parts">يرجى إدخال الاسم الأول واسم العائلة</string>
+
+    <string name="error_name_letters_only">يجب أن يحتوي الاسم على أحرف فقط</string>
+
+    <string name="error_invalid_email">يرجى إدخال بريد إلكتروني صالح</string>
+
+    <string name="error_password_no_uppercase">يجب أن تحتوي كلمة المرور على حرف كبير واحد على الأقل</string>
+
+    <string name="error_password_no_lowercase">يجب أن تحتوي كلمة المرور على حرف صغير واحد على الأقل</string>
+
+    <string name="error_password_no_digit">يجب أن تحتوي كلمة المرور على رقم واحد على الأقل</string>
+
+    <string name="error_password_no_symbol">يجب أن تحتوي كلمة المرور على رمز خاص واحد على الأقل</string>
+
+    <string name="error_phone_egypt_invalid">يرجى إدخال رقم هاتف مصري صالح</string>
+
+    <string name="error_space">"      "</string>
+
+    <string name="error_invalid_or_password">البريد الإلكتروني أو كلمة المرور غير صحيحة</string>
+
+    <string name="failed_guest">فشل تسجيل الدخول كضيف</string>
+
+    <string name="error_email_exists">البريد الإلكتروني مستخدم بالفعل</string>
+
+    <string name="error_password_weak">كلمة المرور ضعيفة جدًا</string>
+
+    <string name="verify_email_title">تحقق من بريدك الإلكتروني</string>
+
+    <string name="verify_email_message">
+        لقد أرسلنا رابط التحقق إلى بريدك الإلكتروني. يرجى فتح صندوق الوارد والنقر على الرابط لتفعيل حسابك.
+    </string>
+
+    <string name="resend_email">إعادة إرسال البريد الإلكتروني</string>
+
+    <string name="go_to_login">الانتقال إلى تسجيل الدخول</string>
+
+    <string name="wishlist">المفضلة</string>
+    <string name="wishlist_empty">قائمة المفضلة فارغة.</string>
+    <string name="remove_from_favorites">إزالة من المفضلة</string>
+    <string name="add_to_favorites">إضافة إلى المفضلة</string>
+    <string name="empty_wishlist">المفضلة فارغة</string>
+    <string name="explore_products">استكشف منتجاتنا وأضف منتجاتك المفضلة هنا!</string>
+
+    <string name="search">بحث</string>
+    <string name="search_products_placeholder">ابحث عن المنتجات...</string>
+    <string name="search_icon_desc">أيقونة البحث</string>
+
+    <string name="no_results">لا توجد نتائج</string>
+    <string name="no_results_desc">لم نتمكن من العثور على أي منتجات تطابق بحثك.</string>
+
+    <string name="reviews_count">· %1$d مراجعة</string>
+    <string name="in_stock">متوفر</string>
+
+    <string name="size_label">المقاس</string>
+    <string name="description_label">الوصف</string>
+
+    <string name="add_to_cart_format">أضف إلى السلة · %1$s</string>
+
+    <string name="back">رجوع</string>
+    <string name="share">مشاركة</string>
+
+    <string name="shopping_bag">سلة التسوق</string>
+
+    <string name="home">الرئيسية</string>
+
+    <string name="good_morning">صباح الخير</string>
+    <string name="good_afternoon">مساء الخير</string>
+    <string name="good_evening">مساء الخير</string>
+
+    <string name="home_headline">مختارة بعناية<br/>لتناسب ذوقك الراقي.</string>
+
+    <string name="remove_item">إزالة المنتج</string>
+    <string name="confirm_remove_item">هل أنت متأكد من إزالة هذا المنتج من السلة؟</string>
+
+    <string name="remove_promo_code">إزالة رمز الخصم</string>
+    <string name="confirm_remove_promo_code">هل أنت متأكد من إزالة رمز الخصم؟</string>
+
+    <string name="categories">التصنيفات</string>
+    <string name="view_all">عرض الكل</string>
+    <string name="best_sellers">الأكثر مبيعًا</string>
+    <string name="see_all">عرض الكل</string>
+
+    <string name="shop_by_brand">تسوّق حسب العلامة التجارية</string>
+    <string name="shop_edit">مختارات صفوة</string>
+
+    <string name="new_label">جديد</string>
+
+    <string name="profile">الحساب</string>
+
+    <string name="edit_label">المختارات · %1$d</string>
+
+    <string name="editorial_headline">فخامة هادئة،<br/>محفوظة في زجاج.</string>
+
+    <string name="promo_code_label">رمز الخصم</string>
+
+    <string name="copy">نسخ</string>
+    <string name="code_copied">تم نسخ الرمز!</string>
+
+    <string name="search_icon_content_desc">بحث</string>
+    <string name="cart_icon_content_desc">السلة</string>
+
+    <string name="something_went_wrong">حدث خطأ ما</string>
+
+    <string name="out_of_stock">غير متوفر</string>
+
+    <string name="error_no_internet">لا يوجد اتصال بالإنترنت</string>
+    <string name="error_no_internet_desc">تحقق من اتصالك ثم حاول مرة أخرى.</string>
+
+    <string name="error_network">فشل الاتصال</string>
+    <string name="error_network_desc">تعذر الوصول إلى الخادم. يرجى المحاولة مرة أخرى.</string>
+
+    <string name="error_not_found">المنتج غير موجود</string>
+    <string name="error_not_found_desc">قد لا يكون هذا المنتج متاحًا بعد الآن.</string>
+
+    <string name="error_generic_desc">حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.</string>
+
+    <string name="retry">إعادة المحاولة</string>
+
+    <string name="elite">النخبة</string>
+
+    <string name="orderscapital">الطلبات</string>
+    <string name="wishlistcapital">المفضلة</string>
+    <string name="pointscapital">النقاط</string>
+    <string name="accountcapital">الحساب</string>
+
+    <string name="orderhistory">سجل الطلبات</string>
+    <string name="orders">الطلبات</string>
+
+    <string name="savedaddresses">العناوين المحفوظة</string>
+    <string name="addresses">العناوين</string>
+
+    <string name="langandcurrency">اللغة والعملة</string>
+
+    <string name="darkmode">الوضع الداكن</string>
+
+    <string name="logout">تسجيل الخروج</string>
+
+    <string name="appearance">المظهر</string>
+
+    <string name="singlespace">" "</string>
+
+    <string name="save_preferences">حفظ التفضيلات</string>
+
+    <string name="app_language">لغة التطبيق</string>
+
+    <string name="currency">العملة</string>
+
+    <string name="address_add_title">إضافة عنوان جديد</string>
+    <string name="address_edit_title">تعديل العنوان</string>
+
+    <string name="address_label">اسم العنوان (مثل المنزل أو العمل)</string>
+
+    <string name="address_recipient_name">اسم المستلم *</string>
+
+    <string name="address_mobile_number">رقم الهاتف *</string>
+
+    <string name="address_street">عنوان الشارع</string>
+
+    <string name="address_city_zip">المدينة، الرمز البريدي، الدولة</string>
+
+    <string name="address_default_label">العنوان</string>
+
+    <string name="cancel">إلغاء</string>
+    <string name="save">حفظ</string>
+
+    <string name="delete_address">حذف العنوان؟</string>
+
+    <string name="confirm_delete_address">هل أنت متأكد من حذف هذا العنوان؟ لا يمكن التراجع عن هذا الإجراء.</string>
+
+    <string name="delete">حذف</string>
+
+    <string name="filter_all">الكل</string>
+    <string name="filter_in_transit">قيد الشحن</string>
+    <string name="filter_delivered">تم التسليم</string>
+    <string name="filter_cancelled">ملغي</string>
+
+    <string name="no_orders_found">لا توجد طلبات.</string>
+
+    <string name="adjust_filters_or_search">جرّب تعديل عوامل التصفية أو البحث.</string>
+
+    <string name="order">طلب</string>
+    <string name="item">منتج</string>
+
+    <string name="view_details">عرض التفاصيل</string>
+
+    <string name="items">منتجات</string>
+
+    <string name="order_history">سجل الطلبات</string>
+
+    <string name="search_orders">البحث في الطلبات</string>
+
+    <string name="your_bag">سلتك</string>
+
+    <string name="your_bag_count">سلتك · %1$d</string>
+
+    <string name="promo_code">رمز الخصم</string>
+
+    <string name="discount_code_or_gift_card">رمز خصم أو بطاقة هدية</string>
+
+    <string name="shipping">الشحن</string>
+
+    <string name="free">مجانًا</string>
+
+    <string name="total_savings">إجمالي التوفير %1$s</string>
+
+    <string name="invalid_discount_code">أدخل رمز خصم أو بطاقة هدية صالحة</string>
+
+    <string name="apply">تطبيق</string>
+
+    <string name="subtotal">المجموع الفرعي</string>
+
+    <string name="vat_label">ضريبة القيمة المضافة (15%)</string>
+
+    <string name="promo_discount_label">الخصم · %1$s</string>
+
+    <string name="total">الإجمالي</string>
+
+    <string name="proceed_to_checkout">إتمام الشراء</string>
+
+    <string name="empty_cart">سلتك فارغة</string>
+
+    <string name="empty_cart_desc">يبدو أنك لم تضف أي منتجات بعد. ابدأ بالتسوق!</string>
+
+    <string name="decrease_quantity">تقليل الكمية</string>
+
+    <string name="increase_quantity">زيادة الكمية</string>
+
+    <string name="err_empty_name">لا يمكن ترك اسم المستلم فارغًا</string>
+
+    <string name="err_invalid_mobile">يرجى إدخال رقم هاتف صحيح</string>
+
+    <string name="err_no_internet">لا يوجد اتصال بالإنترنت — اتصل بالإنترنت ثم حاول مرة أخرى</string>
+
+    <string name="err_empty_street">عنوان الشارع مطلوب</string>
+
+    <string name="guest_profile_title">أنت تتصفح كضيف</string>
+
+    <string name="guest_profile_desc">سجّل الدخول لإدارة طلباتك وعناوينك وتفضيلاتك — ستظل المفضلة والسلة محفوظتين.</string>
+
+    <string name="guest_checkout_login_required">يرجى تسجيل الدخول لإتمام عملية الشراء.</string>
+
+    <string name="payment_methods">طرق الدفع</string>
+    <string name="select_payment_method">اختر طريقة الدفع</string>
+    <string name="cash_on_delivery">الدفع عند الاستلام</string>
+    <string name="by_visa">بطاقة فيزا</string>
+    <string name="add_new_card">إضافة بطاقة جديدة</string>
+    <string name="card_number">رقم البطاقة</string>
+    <string name="month_mm">الشهر (MM)</string>
+    <string name="year_yyyy">السنة (YYYY)</string>
+    <string name="cvv">CVV</string>
+    <string name="save_card">حفظ البطاقة</string>
+    <string name="default_caps">الافتراضي</string>
+    <string name="cardholder">اسم حامل البطاقة</string>
+    <string name="expires">تاريخ الانتهاء</string>
+
+    <string name="payment_successful">تم الدفع بنجاح!</string>
+
+    <string name="paypal">باي بال</string>
+    <string name="pay_with_paypal">الدفع باستخدام باي بال</string>
+    <string name="paypal_processing">جارٍ فتح باي بال…</string>
+    <string name="paypal_success">اكتملت عملية الدفع عبر باي بال بنجاح!</string>
+    <string name="paypal_failed">فشلت عملية الدفع عبر باي بال. يرجى المحاولة مرة أخرى.</string>
+
+    <string name="add_new_card_clicked">تم الضغط على إضافة بطاقة جديدة</string>
+
+    <string name="go_to_category">الانتقال إلى التصنيف</string>
+    <string name="no_products_found">لا توجد منتجات في هذا التصنيف.</string>
+
+    <string name="checkout_title">إتمام الشراء</string>
+
+    <string name="checkout_delivery_step">1</string>
+    <string name="checkout_delivery_title">التوصيل</string>
+    <string name="checkout_change_action">تغيير</string>
+
+    <string name="checkout_payment_step">2</string>
+    <string name="checkout_payment_title">الدفع</string>
+
+    <string name="checkout_summary_step">3</string>
+    <string name="checkout_summary_title">الملخص</string>
+
+    <string name="checkout_subtotal">المجموع الفرعي</string>
+    <string name="checkout_shipping">الشحن</string>
+    <string name="checkout_shipping_free">مجانًا</string>
+    <string name="checkout_vat">ضريبة القيمة المضافة (15%)</string>
+    <string name="checkout_total">الإجمالي</string>
+
+    <string name="checkout_place_order_format">تأكيد الطلب • %s</string>
+
+    <string name="checkout_discount">الخصم</string>
+    <string name="checkout_discount_with_code">الخصم (%s)</string>
+
+    <string name="checkout_calculated_later">سيتم احتسابه عند تأكيد الطلب</string>
+
+    <string name="checkout_item_meta">%1$s × %2$d</string>
+
+    <string name="checkout_select_address">اختر عنوان التوصيل</string>
+    <string name="checkout_manage_addresses">إدارة العناوين</string>
+    <string name="checkout_add_address">إضافة عنوان</string>
+
+    <string name="checkout_no_address">لا يوجد عنوان توصيل حتى الآن. أضف عنوانًا للمتابعة.</string>
+
+    <string name="checkout_step_creating_order">جارٍ إنشاء طلبك…</string>
+    <string name="checkout_step_processing_payment">جارٍ معالجة عملية الدفع…</string>
+    <string name="checkout_step_confirming_payment">جارٍ تأكيد عملية الدفع…</string>
+
+    <string name="checkout_error_title">حدثت مشكلة أثناء إتمام الشراء</string>
+    <string name="checkout_error_generic">حدث خطأ ما. يرجى المحاولة مرة أخرى.</string>
+    <string name="checkout_error_empty_cart">سلة التسوق فارغة.</string>
+    <string name="checkout_error_missing_address">يرجى اختيار عنوان للتوصيل.</string>
+    <string name="checkout_error_missing_payment">يرجى اختيار طريقة دفع.</string>
+
+    <string name="checkout_error_payment_failed">فشلت عملية الدفع. لم يتم خصم المبلغ مرتين، ويمكنك إعادة المحاولة بأمان.</string>
+
+    <string name="checkout_retry">إعادة المحاولة</string>
+    <string name="checkout_dismiss">إغلاق</string>
+
+    <string name="required">مطلوب</string>
+
+    <string name="all_brands">جميع العلامات التجارية</string>
+    <string name="view_brand">عرض العلامة التجارية</string>
+    <string name="brands_title">العلامات التجارية</string>
+
+    <string name="unknown_error">حدث خطأ أثناء تحميل العلامات التجارية.</string>
+    <string name="no_brands_found">لا توجد علامات تجارية.</string>
+    <string name="no_brand_products_found">لا توجد منتجات لهذه العلامة التجارية.</string>
+
+    <string name="order_details">تفاصيل الطلب</string>
+    <string name="total_amount">إجمالي المبلغ</string>
+    <string name="date_label">التاريخ</string>
+
+    <string name="no_images_available">لا توجد صور</string>
+
+    <string name="order_cancel_button">إلغاء الطلب</string>
+
+    <string name="order_cancel_confirm_title">هل تريد إلغاء هذا الطلب؟</string>
+    <string name="order_cancel_confirm_message">لا يمكن التراجع عن هذا الإجراء.</string>
+    <string name="order_cancel_confirm_action">إلغاء الطلب</string>
+
+    <string name="ok">موافق</string>
+
+    <string name="paymock">PayMock</string>
+
+    <string name="err_address_not_selected">يرجى اختيار عنوان</string>
+
+    <string name="search_for_your_address">ابحث عن عنوانك</string>
+
+    <string name="select_a_country_first">اختر الدولة أولًا</string>
+
+    <string name="country">الدولة</string>
+
+    <string name="address_search_hint">ابحث عن عنوانك</string>
+
+    <string name="address_search_disabled_hint">اختر الدولة أولًا</string>
+
+    <string name="country_label">الدولة</string>
+
+    <string name="msg_select_address_from_suggestions">يرجى اختيار عنوان من قائمة الاقتراحات قبل الحفظ.</string>
+
+    <string name="msg_offline_search_address">أنت غير متصل بالإنترنت — اتصل ثم ابحث عن عنوانك مرة أخرى.</string>
+
+    <string name="msg_could_not_remove_address">تعذر حذف العنوان من الخادم.</string>
+
+    <string name="msg_unknown_error">حدث خطأ غير معروف.</string>
+
+    <string name="hint_no_street_level_results">لم يتم العثور على شارع — جرّب كتابة اسم شارع أو مبنى.</string>
+
+    <string name="logout_confirm_title">تسجيل الخروج؟</string>
+
+    <string name="logout_confirm_message">ستحتاج إلى تسجيل الدخول مرة أخرى للوصول إلى حسابك.</string>
+
+    <string name="address_first_name">الاسم الأول</string>
+    <string name="address_last_name">اسم العائلة</string>
+
+    <string name="address_apartment">الشقة / الطابق (اختياري)</string>
+
+    <string name="address_set_as_default">تعيين كعنوان افتراضي</string>
+
+    <string name="badge_default">افتراضي</string>
+
+    <string name="err_first_name_empty">الاسم الأول مطلوب</string>
+
+    <string name="err_sign_in_required">يرجى تسجيل الدخول لإدارة عناوينك</string>
+
+    <string name="err_load_addresses_failed">تعذر تحميل العناوين</string>
+
+    <string name="err_offline_no_cache">أنت غير متصل بالإنترنت ولا توجد عناوين محفوظة. اتصل بالإنترنت مرة واحدة لتحميلها.</string>
+
+    <string name="msg_offline_showing_cached">أنت غير متصل بالإنترنت — يتم عرض آخر العناوين المحفوظة. يتطلب تعديلها اتصالًا بالإنترنت.</string>
+
+    <string name="reviews">المراجعات</string>
+
+    <string name="update_your_review">تعديل مراجعتك</string>
+
+    <string name="write_a_review">اكتب مراجعة</string>
+
+    <string name="share_your_thoughts_about_this_product">شارك رأيك حول هذا المنتج</string>
+
+    <string name="update_review">تحديث المراجعة</string>
+
+    <string name="submit_review">إرسال المراجعة</string>
+
+    <string name="no_reviews_yet">لا توجد مراجعات بعد، كن أول من يشارك رأيه.</string>
+
+    <string name="ai_chat_title">صفوة AI</string>
+    <string name="ai_chat_subtitle">المتسوق الشخصي • متصل الآن</string>
+    <string name="ai_chat_input_placeholder">اسأل صفوة AI…</string>
+    <string name="ai_chat_send">إرسال</string>
+    <string name="ai_chat_close">إغلاق المحادثة</string>
+    <string name="ai_chat_fab_desc">فتح محادثة صفوة AI</string>
+
+    <string name="sort_and_filter">الفرز والتصفية</string>
+
+    <string name="sort_by">الفرز حسب</string>
+
+    <string name="sort_none">بدون فرز</string>
+
+    <string name="sort_price_low_high">السعر: من الأقل إلى الأعلى</string>
+
+    <string name="sort_price_high_low">السعر: من الأعلى إلى الأقل</string>
+
+    <string name="sort_best_seller">الأكثر مبيعًا</string>
+
+    <string name="brands">العلامات التجارية</string>
+
+    <string name="sub_categories">التصنيفات الفرعية</string>
+
+    <string name="group_by_sub_category">تجميع حسب التصنيف الفرعي</string>
+
+    <string name="clear_all">مسح الكل</string>
+
+    <string name="price_range">نطاق السعر</string>
+
+    <string name="price_format">السعر: %1$d %3$s - %2$d %3$s</string>
+    <string name="promo_black_friday_tag">الجمعة البيضاء</string>
+    <string name="promo_black_friday_headline">تخفيضات هائلة!\nاحصل على خصم 80%\nعلى كل شيء.</string>
+    <string name="promo_free_shipping_tag">شحن مجاني</string>
+    <string name="promo_free_shipping_headline">اشتري 3 قطع\nأو أكثر واحصل على\nشحن مجاني.</string>
+    <string name="promo_half_price_tag">نصف السعر</string>
+    <string name="promo_half_price_headline">جدد مجموعتك\nالآن\nبنصف السعر.</string>
+    <string name="promo_summer_bogo_tag">عروض الصيف</string>
+    <string name="promo_summer_bogo_headline">اشتري قطعة واحصل\nعلى الثانية مجاناً\nمن تشكيلة الصيف.</string>
+    <string name="ai_recommendations">توصيات الذكاء الاصطناعي ✨</string>
+    <string name="ai_generated_label">مُولد بواسطة الذكاء الاصطناعي</string>
+    <string name="add_new_address">اضافة عنوان جديد</string>
+
+
+    <string name="please_login_again_to_view_orders">يرجى تسجيل الدخول مرة أخرى لعرض الطلبات</string>
+    <string name="user_not_found">المستخدم غير موجود</string>
+    <string name="an_unexpected_error_occurred">حدث خطأ غير متوقع</string>
+    <string name="no_orders_yet">لا توجد طلبات بعد</string>
+    <string name="start_shopping_to_see_orders">ابدأ التسوق لرؤية سجل طلباتك هنا.</string>
+    <string name="please_sign_in_to_leave_a_review">يرجى تسجيل الدخول لترك مراجعة</string>
+    <string name="anonymous">مجهول</string>
+    <string name="review_submitted">تم إرسال المراجعة</string>
+    <string name="could_not_submit_review">تعذر إرسال المراجعة</string>
+    <string name="please_select_a_star_rating">يرجى اختيار التقييم بالنجوم.</string>
+    <string name="please_write_a_comment">يرجى كتابة تعليق.</string>
+    <string name="rating_format">%1$.1f (%2$d)</string>
+
+</resources>

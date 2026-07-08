@@ -8,6 +8,7 @@ data class OrderHistoryState(
     val orders: List<OrderHistoryItem> = emptyList(),
     val filteredOrders: List<OrderHistoryItem> = emptyList(),
     val error: String? = null,
+    val errorResId: Int? = null,
     val selectedFilter: OrderStatus = OrderStatus.ALL,
     val searchQuery: String = ""
 )

@@ -9,15 +9,18 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
+import com.tasneem.safwa.core.domain.repository.SessionPreferencesRepository
+
 @Module
 @InstallIn(SingletonComponent::class)
 object CategoryModule {
     @Provides
     @Singleton
     fun provideCategoryRepository(
-        remoteDataSource: ProductRemoteDataSource
+        remoteDataSource: ProductRemoteDataSource,
+        sessionPreferencesRepository: SessionPreferencesRepository
     ): CategoryRepository {
-        return CategoryRepositoryImpl(remoteDataSource)
+        return CategoryRepositoryImpl(remoteDataSource, sessionPreferencesRepository)
     }
 }
 

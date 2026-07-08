@@ -9,14 +9,17 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
+import com.tasneem.safwa.core.domain.repository.SessionPreferencesRepository
+
 @Module
 @InstallIn(SingletonComponent::class)
 object BrandModule {
     @Provides
     @Singleton
     fun provideBrandRepository(
-        remoteDataSource: BrandRemoteDataSource
+        remoteDataSource: BrandRemoteDataSource,
+        sessionPreferencesRepository: SessionPreferencesRepository
     ): BrandRepository {
-        return BrandRepositoryImpl(remoteDataSource)
+        return BrandRepositoryImpl(remoteDataSource, sessionPreferencesRepository)
     }
 }

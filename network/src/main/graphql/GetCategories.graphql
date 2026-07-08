@@ -1,4 +1,4 @@
-query GetCategories($first: Int!) {
+query GetCategories($first: Int!, $language: LanguageCode) @inContext(language: $language) {
   collections(first: $first) {
     edges {
       node {

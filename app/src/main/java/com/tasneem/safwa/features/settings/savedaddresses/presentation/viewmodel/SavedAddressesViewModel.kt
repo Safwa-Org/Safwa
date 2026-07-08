@@ -32,10 +32,11 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.io.IOException
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.milliseconds
 
 @HiltViewModel
 class SavedAddressesViewModel @Inject constructor(
-    private val preferencesUseCases: PreferencesUseCases, // still used only for reading the session/token
+    private val preferencesUseCases: PreferencesUseCases,
     private val getAddressesUseCase: GetAddressesUseCase,
     private val saveAddressUseCase: SaveAddressUseCase,
     private val deleteAddressUseCase: DeleteAddressUseCase,
@@ -64,7 +65,7 @@ class SavedAddressesViewModel @Inject constructor(
 
         viewModelScope.launch {
             addressQueryFlow
-                .debounce(350)
+                .debounce(350.milliseconds)
                 .distinctUntilChanged()
                 .filter { it.length >= 3 && _state.value.selectedCountry != null }
                 .flatMapLatest { query ->
@@ -113,8 +114,6 @@ class SavedAddressesViewModel @Inject constructor(
                     _state.update { it.copy(isLoading = false) }
                     _effect.send(
                         SavedAddressesEffect.ShowError(
-                            // Distinguishes "offline + nothing cached yet" from "online but the request
-                            // genuinely failed" — same generic message for both was masking exactly this case.
                             messageResId = if (isOffline) R.string.err_offline_no_cache else R.string.err_load_addresses_failed
                         )
                     )

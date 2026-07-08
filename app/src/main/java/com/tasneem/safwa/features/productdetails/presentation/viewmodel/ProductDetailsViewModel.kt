@@ -216,7 +216,7 @@ class ProductDetailsViewModel @Inject constructor(
         viewModelScope.launch {
             val user = preferencesUseCases.getUserSession().first()
             if (user == null || user.isGuest) {
-                _effect.send(ProductDetailsEffect.ShowSnackBar("Please sign in to leave a review"))
+                _effect.send(ProductDetailsEffect.ShowSnackBarRes(R.string.please_sign_in_to_leave_a_review))
                 return@launch
             }
 
@@ -225,7 +225,7 @@ class ProductDetailsViewModel @Inject constructor(
             val review = Review(
                 productId = product.id,
                 userId = user.id,
-                userName = "${user.firstName} ${user.lastName}".trim().ifBlank { "Anonymous" },
+                userName = "${user.firstName} ${user.lastName}".trim(), // Handled in UI if blank
                 rating = _state.value.newReviewRating,
                 comment = _state.value.newReviewComment.trim()
             )
@@ -237,9 +237,9 @@ class ProductDetailsViewModel @Inject constructor(
                 _state.update {
                     it.copy(newReviewRating = 0, newReviewComment = "", isReviewFormVisible = false)
                 }
-                _effect.send(ProductDetailsEffect.ShowSnackBar("Review submitted"))
+                _effect.send(ProductDetailsEffect.ShowSnackBarRes(R.string.review_submitted))
             }.onFailure { error ->
-                _effect.send(ProductDetailsEffect.ShowSnackBar(error.message ?: "Could not submit review"))
+                _effect.send(ProductDetailsEffect.ShowSnackBarRes(R.string.could_not_submit_review))
             }
         }
     }    private fun onAddToCart() {

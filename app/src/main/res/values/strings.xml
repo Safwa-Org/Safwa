@@ -291,6 +291,14 @@
     <string name="update_review">Update Review</string>
     <string name="submit_review">Submit Review</string>
     <string name="no_reviews_yet">No reviews yet — be the first to share your thoughts.</string>
+    <string name="please_sign_in_to_leave_a_review">Please sign in to leave a review</string>
+    <string name="anonymous">Anonymous</string>
+    <string name="review_submitted">Review submitted</string>
+    <string name="could_not_submit_review">Could not submit review</string>
+    <string name="please_select_a_star_rating">Please select a star rating.</string>
+    <string name="please_write_a_comment">Please write a comment.</string>
+    <string name="rating_format">%1$.1f (%2$d)</string>
+
     <string name="ai_chat_title">Safwa AI</string>
     <string name="ai_chat_subtitle">PERSONAL SHOPPER · ONLINE</string>
     <string name="ai_chat_input_placeholder">Ask Safwa AI…</string>
@@ -311,7 +319,22 @@
     <string name="price_range">Price Range</string>
     <string name="price_format">Price: %1$d %3$s - %2$d %3$s</string>
 
-    <string name="ai_generated_label">✦ AI-generated</string>
-    <string name="ai_recommendations">AI Recommendation</string>
+    <string name="promo_black_friday_tag">BLACK FRIDAY</string>
+    <string name="promo_black_friday_headline">Massive savings!\nGet 80% off\neverything.</string>
+    <string name="promo_free_shipping_tag">FREE SHIPPING</string>
+    <string name="promo_free_shipping_headline">Buy 3 items\nor more and get\nfree shipping.</string>
+    <string name="promo_half_price_tag">HALF PRICE</string>
+    <string name="promo_half_price_headline">Upgrade your\ncollection at\nhalf the price.</string>
+    <string name="promo_summer_bogo_tag">SUMMER BOGO</string>
+    <string name="promo_summer_bogo_headline">Buy one get\none free on\nsummer items.</string>
+    <string name="ai_recommendations">AI Recommendations ✨</string>
+    <string name="ai_generated_label">AI Generated</string>
+    <string name="add_new_address">Add new address</string>
+
+    <string name="please_login_again_to_view_orders">Please login again to view orders</string>
+    <string name="user_not_found">User not found</string>
+    <string name="an_unexpected_error_occurred">An unexpected error occurred</string>
+    <string name="no_orders_yet">No orders yet</string>
+    <string name="start_shopping_to_see_orders">Start shopping to see your order history here.</string>
 </resources>
 

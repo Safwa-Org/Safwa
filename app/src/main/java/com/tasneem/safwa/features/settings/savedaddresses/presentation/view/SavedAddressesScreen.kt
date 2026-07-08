@@ -1,6 +1,5 @@
 package com.tasneem.safwa.features.settings.savedaddresses.presentation.view
 
-import android.content.Context
 import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -150,7 +149,7 @@ fun SavedAddressesContent(
                         modifier = Modifier.padding(end = 8.dp)
                     )
                     Text(
-                        text = "Add new address",
+                        text = stringResource(R.string.add_new_address),
                         style = MaterialTheme.typography.titleMedium
                     )
                 }

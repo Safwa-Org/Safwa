@@ -1,4 +1,4 @@
-query SearchProducts($query: String!, $first: Int!) {
+query SearchProducts($query: String!, $first: Int!, $language: LanguageCode) @inContext(language: $language) {
   products(first: $first, query: $query) {
     edges {
       node {

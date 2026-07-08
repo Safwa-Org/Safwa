@@ -1,4 +1,4 @@
-query GetProductByHandle($handle: String!) {
+query GetProductByHandle($handle: String!, $language: LanguageCode) @inContext(language: $language) {
     product(handle: $handle) {
         id
         title

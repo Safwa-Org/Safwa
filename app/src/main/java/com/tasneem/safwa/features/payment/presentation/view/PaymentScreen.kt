@@ -57,6 +57,15 @@ import com.tasneem.safwa.features.payment.presentation.viewmodel.PaymentViewMode
 import kotlinx.coroutines.launch
 
 
+import android.content.Context
+import android.content.ContextWrapper
+
+fun Context.findActivity(): ComponentActivity? = when (this) {
+    is ComponentActivity -> this
+    is ContextWrapper -> baseContext.findActivity()
+    else -> null
+}
+
 @SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 fun PaymentScreen(
@@ -87,11 +96,12 @@ fun PaymentScreen(
                 }
                 is PaymentEffect.LaunchShopifyCheckout -> {
                     try {
+                        val activity = context.findActivity() ?: return@collect
                         ShopifyCheckoutSheetKit.present(
                             effect.url,
-                            context as ComponentActivity,
+                            activity,
                             CheckoutEventProcessorImpl(
-                                activity = context as ComponentActivity,
+                                activity = activity,
                                 onCheckoutCompletedAction = { orderId, totalAmount ->
                                     viewModel.onEvent(PaymentEvent.ShopifyPaymentCompleted(true, orderId, totalAmount))
                                 },
@@ -112,7 +122,8 @@ fun PaymentScreen(
 
     LaunchedEffect(uiState.checkoutUrl) {
         uiState.checkoutUrl?.let { url ->
-            ShopifyCheckoutSheetKit.preload(url, context as ComponentActivity)
+            val activity = context.findActivity() ?: return@let
+            ShopifyCheckoutSheetKit.preload(url, activity)
         }
     }
 

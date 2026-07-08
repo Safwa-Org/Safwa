@@ -132,7 +132,7 @@ private fun PromoBannerCard(
                     color = banner.contentColor.copy(alpha = 0.15f)
                 ) {
                     Text(
-                        text = banner.tagLabel,
+                        text = stringResource(id = banner.tagLabel),
                         modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.Bold,
@@ -141,7 +141,7 @@ private fun PromoBannerCard(
                 }
 
                 Text(
-                    text = banner.headline,
+                    text = stringResource(id = banner.headline),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     fontFamily = FontFamily.Serif,
@@ -209,8 +209,8 @@ private fun PromoBannerPagerPreview() {
             banners = listOf(
                 PromoBanner(
                     id = "1",
-                    tagLabel = "MEMBERS ONLY",
-                    headline = "Timepieces,\nrefined for\nthe season.",
+                    tagLabel = R.string.promo_black_friday_tag,
+                    headline = R.string.promo_black_friday_headline,
                     promoCode = "NOIR200",
                     imageUrl = "https://images.unsplash.com/photo-1524592094714-0f0654e20314",
                     backgroundColor = Color(0xFF1A1A1A),
@@ -218,8 +218,8 @@ private fun PromoBannerPagerPreview() {
                 ),
                 PromoBanner(
                     id = "2",
-                    tagLabel = "NEW ARRIVAL",
-                    headline = "Sun-warmed\nsilhouettes, made\nto travel.",
+                    tagLabel = R.string.promo_free_shipping_tag,
+                    headline = R.string.promo_free_shipping_headline,
                     promoCode = "LUMIERE15",
                     imageUrl = "https://images.unsplash.com/photo-1511499767150-a48a237f0083",
                     backgroundColor = Color(0xFFE8C874),
@@ -227,8 +227,8 @@ private fun PromoBannerPagerPreview() {
                 ),
                 PromoBanner(
                     id = "3",
-                    tagLabel = "EXCLUSIVE",
-                    headline = "Quiet luxury,\nsealed in glass.",
+                    tagLabel = R.string.promo_half_price_tag,
+                    headline = R.string.promo_half_price_headline,
                     promoCode = "ELITE10",
                     imageUrl = "https://images.unsplash.com/photo-1541643600914-78b084683601",
                     backgroundColor = Color(0xFF005D39),

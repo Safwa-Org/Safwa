@@ -20,6 +20,7 @@ import com.tasneem.safwa.features.search.domain.usecase.SearchProductsUseCase
 import com.tasneem.safwa.features.core.domain.usecase.GetCategoriesUseCase
 import com.tasneem.safwa.features.category.domain.model.Category
 import com.tasneem.safwa.features.settings.languageandcurrency.data.CurrencyRateManager
+import com.tasneem.safwa.features.settings.languageandcurrency.data.LanguageManager
 import kotlinx.coroutines.flow.drop
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
@@ -30,7 +31,8 @@ class SearchViewModel @Inject constructor(
     private val getWishlistUseCase: GetWishlistUseCase,
     private val searchProductsUseCase: SearchProductsUseCase,
     private val getCategoriesUseCase: GetCategoriesUseCase,
-    private val currencyRateManager: CurrencyRateManager
+    private val currencyRateManager: CurrencyRateManager,
+    private val languageManager: LanguageManager
 ) : ViewModel() {
     private val _state = MutableStateFlow(SearchState())
     val state: StateFlow<SearchState> = _state.asStateFlow()
@@ -56,6 +58,15 @@ class SearchViewModel @Inject constructor(
                 .drop(1)
                 .collect { newCurrency ->
                     _state.update { it.copy(currentCurrency = newCurrency) }
+                    executeSearch(_state.value.searchQuery)
+                }
+        }
+
+        viewModelScope.launch {
+            languageManager.displayLanguage
+                .drop(1)
+                .collect {
+                    loadCategories()
                     executeSearch(_state.value.searchQuery)
                 }
         }

@@ -1,7 +1,9 @@
 package com.tasneem.safwa.features.home.presentation.viewmodel
 
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.tasneem.safwa.R
 import com.tasneem.safwa.core.domain.model.AuthState
 import com.tasneem.safwa.core.presentation.mapper.toUiError
 import com.tasneem.safwa.core.util.NetworkStatusProvider
@@ -21,6 +23,7 @@ import com.tasneem.safwa.features.home.presentation.state.HomeEffect
 import com.tasneem.safwa.features.home.presentation.state.HomeEvent
 import com.tasneem.safwa.features.home.presentation.state.HomeState
 import com.tasneem.safwa.features.settings.languageandcurrency.data.CurrencyRateManager
+import com.tasneem.safwa.features.settings.languageandcurrency.data.LanguageManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -45,6 +48,7 @@ class HomeViewModel @Inject constructor(
     private val getBrandsUseCase: GetBrandsUseCase,
     private val getAiRecommendationsUseCase: GetAiRecommendationsUseCase,
     private val currencyRateManager: CurrencyRateManager,
+    private val languageManager: LanguageManager,
     private val networkStatusProvider: NetworkStatusProvider
 ) : ViewModel() {
 
@@ -81,6 +85,17 @@ class HomeViewModel @Inject constructor(
                 .drop(1)
                 .collect { 
                     loadProducts()
+                    loadAiRecommendations()
+                }
+        }
+
+        viewModelScope.launch {
+            languageManager.displayLanguage
+                .drop(1)
+                .collect { 
+                    loadProducts() 
+                    loadCategories()
+                    loadBrands()
                     loadAiRecommendations()
                 }
         }
@@ -308,39 +323,39 @@ class HomeViewModel @Inject constructor(
         return listOf(
             PromoBanner(
                 id = "1",
-                tagLabel = "BLACK FRIDAY",
-                headline = "Massive savings!\nGet 80% off\neverything.",
+                tagLabel = R.string.promo_black_friday_tag,
+                headline = R.string.promo_black_friday_headline,
                 promoCode = "CODE_DISCOUNT_BLACKFRIDAY",
                 imageUrl = "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?q=80&w=2070",
-                backgroundColor = androidx.compose.ui.graphics.Color(0xFF1A1A1A),
-                contentColor = androidx.compose.ui.graphics.Color.White
+                backgroundColor = Color(0xFF1A1A1A),
+                contentColor = Color.White
             ),
             PromoBanner(
                 id = "2",
-                tagLabel = "FREE SHIPPING",
-                headline = "Buy 3 items\nor more and get\nfree shipping.",
+                tagLabel = R.string.promo_free_shipping_tag,
+                headline = R.string.promo_free_shipping_headline,
                 promoCode = "FREESHIPPING2026",
                 imageUrl = "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=80&w=2070",
-                backgroundColor = androidx.compose.ui.graphics.Color(0xFFE8C874),
-                contentColor = androidx.compose.ui.graphics.Color(0xFF1A1A1A)
+                backgroundColor = Color(0xFFE8C874),
+                contentColor = Color(0xFF1A1A1A)
             ),
             PromoBanner(
                 id = "3",
-                tagLabel = "HALF PRICE",
-                headline = "Upgrade your\ncollection at\nhalf the price.",
+                tagLabel = R.string.promo_half_price_tag,
+                headline = R.string.promo_half_price_headline,
                 promoCode = "BUY1GET50",
                 imageUrl = "https://images.unsplash.com/photo-1492707892479-7bc8d5a4ee93?q=80&w=2000",
-                backgroundColor = androidx.compose.ui.graphics.Color(0xFF005D39),
-                contentColor = androidx.compose.ui.graphics.Color.White
+                backgroundColor = Color(0xFF005D39),
+                contentColor = Color.White
             ),
             PromoBanner(
                 id = "4",
-                tagLabel = "SUMMER BOGO",
-                headline = "Buy one get\none free on\nsummer items.",
+                tagLabel = R.string.promo_summer_bogo_tag,
+                headline = R.string.promo_summer_bogo_headline,
                 promoCode = "CODE_BXGY_DISCOUNT_SUMMERBOGO",
                 imageUrl = "https://images.unsplash.com/photo-1523362628745-0c100150b504?q=80&w=2036",
-                backgroundColor = androidx.compose.ui.graphics.Color(0xFF5D98B0),
-                contentColor = androidx.compose.ui.graphics.Color.White
+                backgroundColor = Color(0xFF5D98B0),
+                contentColor = Color.White
             )
         )
     }

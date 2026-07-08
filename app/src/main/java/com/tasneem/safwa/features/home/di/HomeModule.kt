@@ -14,15 +14,18 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
+import com.tasneem.safwa.core.domain.repository.SessionPreferencesRepository
+
 @Module
 @InstallIn(SingletonComponent::class)
 object HomeModule {
     @Provides
     @Singleton
     fun provideHomeRepository(
-        remoteDataSource: ProductRemoteDataSource
+        remoteDataSource: ProductRemoteDataSource,
+        sessionPreferencesRepository: SessionPreferencesRepository
     ): HomeRepository {
-        return HomeRepositoryImpl(remoteDataSource)
+        return HomeRepositoryImpl(remoteDataSource, sessionPreferencesRepository)
     }
 
     @Provides

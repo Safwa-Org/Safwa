@@ -72,7 +72,7 @@ fun ReviewsSection(
                     modifier = Modifier.size(16.dp)
                 )
                 Text(
-                    text = "%.1f".format(averageRating) + " (${reviews.size})",
+                    text = stringResource(R.string.rating_format, averageRating, reviews.size),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.secondary
                 )
@@ -175,7 +175,7 @@ private fun ReviewItem(review: Review) {
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
-                text = review.userName,
+                text = review.userName.ifBlank { stringResource(R.string.anonymous) },
                 style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
                 color = MaterialTheme.colorScheme.onBackground
             )
