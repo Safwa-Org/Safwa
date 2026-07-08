@@ -22,7 +22,7 @@ class BrandRepositoryImpl @Inject constructor(
                 .filter { it.isNotBlank() }
                 .distinct()
                 .sortedBy { it.lowercase() }
-                .map { vendor -> Brand(name = vendor, imageUrl = null) }
+                .map { vendor -> Brand(name = vendor) }
             brands
         } ?: emptyList()
     }

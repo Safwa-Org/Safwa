@@ -187,7 +187,7 @@ fun HomeContent(
                             }
                             item(span = { GridItemSpan(2) }) {
                                 SectionHeader(
-                                    title = "AI Recommendations \u2728"
+                                    title = stringResource(id = R.string.ai_recommendations)
                                 )
                             }
                             item(span = { GridItemSpan(2) }) {

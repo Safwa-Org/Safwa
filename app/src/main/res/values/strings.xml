@@ -311,5 +311,14 @@
     <string name="price_range">Price Range</string>
     <string name="price_format">Price: %1$d %3$s - %2$d %3$s</string>
 
-</resources>
+    <string name="promo_black_friday_tag">BLACK FRIDAY</string>
+    <string name="promo_black_friday_headline">Massive savings!\nGet 80% off\neverything.</string>
+    <string name="promo_free_shipping_tag">FREE SHIPPING</string>
+    <string name="promo_free_shipping_headline">Buy 3 items\nor more and get\nfree shipping.</string>
+    <string name="promo_half_price_tag">HALF PRICE</string>
+    <string name="promo_half_price_headline">Upgrade your\ncollection at\nhalf the price.</string>
+    <string name="promo_summer_bogo_tag">SUMMER BOGO</string>
+    <string name="promo_summer_bogo_headline">Buy one get\none free on\nsummer items.</string>
+    <string name="ai_recommendations">AI Recommendations ✨</string>
 
+</resources>

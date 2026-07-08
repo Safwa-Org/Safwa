@@ -505,4 +505,14 @@
     <string name="price_range">نطاق السعر</string>
 
     <string name="price_format">السعر: %1$d %3$s - %2$d %3$s</string>
+    <string name="promo_black_friday_tag">الجمعة البيضاء</string>
+    <string name="promo_black_friday_headline">تخفيضات هائلة!\nاحصل على خصم 80%\nعلى كل شيء.</string>
+    <string name="promo_free_shipping_tag">شحن مجاني</string>
+    <string name="promo_free_shipping_headline">اشتري 3 قطع\nأو أكثر واحصل على\nشحن مجاني.</string>
+    <string name="promo_half_price_tag">نصف السعر</string>
+    <string name="promo_half_price_headline">جدد مجموعتك\nالآن\nبنصف السعر.</string>
+    <string name="promo_summer_bogo_tag">عروض الصيف</string>
+    <string name="promo_summer_bogo_headline">اشتري قطعة واحصل\nعلى الثانية مجاناً\nمن تشكيلة الصيف.</string>
+    <string name="ai_recommendations">توصيات الذكاء الاصطناعي ✨</string>
+
 </resources>
