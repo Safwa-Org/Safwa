@@ -17,6 +17,7 @@ import com.tasneem.safwa.features.core.domain.usecase.ToggleFavoriteUseCase
 import com.tasneem.safwa.features.productdetails.domain.mapper.toProduct
 import com.tasneem.safwa.features.productdetails.domain.model.ProductDetails
 import com.tasneem.safwa.features.productdetails.domain.model.ProductVariant
+import com.tasneem.safwa.features.productdetails.domain.usecase.GenerateProductDescriptionUseCase
 import com.tasneem.safwa.features.productdetails.domain.usecase.GetProductDetailsUseCase
 import com.tasneem.safwa.features.productdetails.presentation.state.ProductDetailsEffect
 import com.tasneem.safwa.features.productdetails.presentation.state.ProductDetailsEvent
@@ -45,6 +46,8 @@ class ProductDetailsViewModel @Inject constructor(
     private val getProductReviewsUseCase: GetProductReviewsUseCase,
     private val submitReviewUseCase: SubmitReviewUseCase,
     private val preferencesUseCases: PreferencesUseCases,
+    private val generateProductDescriptionUseCase: GenerateProductDescriptionUseCase,
+
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
@@ -98,7 +101,50 @@ class ProductDetailsViewModel @Inject constructor(
         }
         observeWishlistStatus(product.id)
         observeReviews(product.id)
+        generateAiDescriptionIfNeeded(product)
     }
+    private fun generateAiDescriptionIfNeeded(product: ProductDetails) {
+        if (product.description.isNotBlank()) return
+
+
+        viewModelScope.launch {
+            _state.update { it.copy(isGeneratingAiDescription = true) }
+
+            val languageCode = runCatching {
+                preferencesUseCases.getAppPreferences().first().languageCode
+            }.onFailure {
+            }.getOrDefault("en")
+
+            val minPrice = product.priceRange.min
+            val generated = generateProductDescriptionUseCase(
+                title = product.title,
+                vendor = product.vendor,
+                productType = product.productType,
+                price = minPrice.amount,
+                currency = minPrice.currency,
+                languageCode = languageCode,
+            )
+
+            if (loadedProduct?.id != product.id) {
+                return@launch
+            }
+
+            if (!generated.isNullOrBlank()) {
+                val updatedProduct = product.copy(description = generated)
+                loadedProduct = updatedProduct
+                _state.update {
+                    it.copy(
+                        product = updatedProduct.toUiModel(),
+                        isGeneratingAiDescription = false,
+                        isDescriptionAiGenerated = true,
+                    )
+                }
+            } else {
+                _state.update { it.copy(isGeneratingAiDescription = false) }
+            }
+        }
+    }
+
     private fun observeReviews(productId: String) {
         viewModelScope.launch {
             getProductReviewsUseCase(productId).collect { reviews ->

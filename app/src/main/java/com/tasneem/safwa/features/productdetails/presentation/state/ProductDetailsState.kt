@@ -13,6 +13,8 @@ data class ProductDetailsState(
     val isWishlisted: Boolean = false,
     val isAddingToCart: Boolean = false,
     val error: UiError? = null,
+    val isGeneratingAiDescription: Boolean = false,
+    val isDescriptionAiGenerated: Boolean = false,
 
     // Reviews
     val reviews: List<Review> = emptyList(),
