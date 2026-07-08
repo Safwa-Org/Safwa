@@ -13,8 +13,6 @@ data class ProductDetailsUiModel(
     val priceRangeFormatted: String?,
     val imageUrls: List<String>,
     val imageLabels: List<String>,
-    val rating: Float,
-    val reviewCount: Int,
     val variantOptions: List<VariantOptionGroup>,
     val variants: List<ProductVariant>,
 )
@@ -42,8 +40,6 @@ fun ProductDetails.toUiModel() = ProductDetailsUiModel(
     else null,
     imageUrls = images.map { it.url },
     imageLabels = images.map { it.altText },
-    rating = 4.9f,
-    reviewCount = 286,
     variantOptions = buildVariantOptions(variants),
     variants = variants,
 )

@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -36,14 +35,18 @@ import androidx.compose.ui.unit.dp
 import com.tasneem.safwa.R
 import com.tasneem.safwa.core.theme.SafwaTheme
 import com.tasneem.safwa.features.productdetails.presentation.state.mapper.VariantOptionGroup
-import com.tasneem.safwa.features.productdetails.presentation.state.mapper.toDisplayColor
 import com.tasneem.safwa.features.productdetails.presentation.state.mapper.VariantOptionValue
+import com.tasneem.safwa.features.productdetails.presentation.state.mapper.toDisplayColor
+import com.tasneem.safwa.features.reviews.domain.model.RatingSummary
+import java.util.Locale
 
 @Composable
 fun ProductInfoSection(
     vendor: String,
     productType: String,
     title: String,
+    ratingSummary: RatingSummary,
+    isInStock: Boolean,
     priceFormatted: String,
     priceRangeFormatted: String?,
     variantOptions: List<VariantOptionGroup>,
@@ -88,6 +91,47 @@ fun ProductInfoSection(
             color = MaterialTheme.colorScheme.onBackground
         )
 
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Star,
+                    contentDescription = null,
+                    tint = if (ratingSummary.hasRatings)
+                        MaterialTheme.colorScheme.tertiary
+                    else
+                        MaterialTheme.colorScheme.secondary,
+                    modifier = Modifier.size(16.dp)
+                )
+                if (ratingSummary.hasRatings) {
+                    Text(
+                        text = String.format(Locale.getDefault(), "%.1f", ratingSummary.average),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                    Text(
+                        text = stringResource(R.string.reviews_count, ratingSummary.count),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                } else {
+                    Text(
+                        text = stringResource(R.string.no_ratings_yet),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                }
+            }
+
+            StockBadge(isInStock = isInStock)
+        }
+
         Text(
             text = priceRangeFormatted ?: priceFormatted,
             style = MaterialTheme.typography.titleLarge,
@@ -103,6 +147,34 @@ fun ProductInfoSection(
                 onValueSelected = { value -> onOptionSelected(group.name, value) }
             )
         }
+    }
+}
+
+@Composable
+private fun StockBadge(isInStock: Boolean) {
+    val backgroundColor = if (isInStock)
+        MaterialTheme.colorScheme.primaryContainer
+    else
+        MaterialTheme.colorScheme.errorContainer
+    val contentColor = if (isInStock)
+        MaterialTheme.colorScheme.onPrimaryContainer
+    else
+        MaterialTheme.colorScheme.onErrorContainer
+
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(36.dp))
+            .background(backgroundColor)
+            .padding(horizontal = 10.dp, vertical = 4.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = stringResource(
+                if (isInStock) R.string.in_stock else R.string.out_of_stock
+            ),
+            style = MaterialTheme.typography.labelMedium,
+            color = contentColor
+        )
     }
 }
 
@@ -227,6 +299,8 @@ private fun ProductInfoSectionPreview() {
             vendor = "Nike",
             productType = "Running Shoes",
             title = "Nike Air Max 270",
+            ratingSummary = RatingSummary(average = 4.9f, count = 286),
+            isInStock = true,
             priceFormatted = "USD 149.99",
             priceRangeFormatted = "USD 149.99 – 189.99",
             variantOptions = listOf(

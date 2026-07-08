@@ -76,6 +76,7 @@
     <string name="no_results">No results found</string>
     <string name="no_results_desc">We couldn\'t find any products matching your search criteria.</string>
     <string name="reviews_count">· %1$d reviews</string>
+    <string name="no_ratings_yet">No ratings yet</string>
     <string name="in_stock">In stock</string>
     <string name="size_label">SIZE</string>
     <string name="description_label">DESCRIPTION</string>
