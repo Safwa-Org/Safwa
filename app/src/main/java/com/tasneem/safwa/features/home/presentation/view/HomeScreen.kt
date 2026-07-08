@@ -180,8 +180,8 @@ fun HomeContent(
                             )
                         }
 
-                        // Always show AI section for debugging
-                        if (true) {
+                        // Only show AI section if there are recommendations, or it's loading/error
+                        if (state.aiRecommendations.isNotEmpty() || state.isAiLoading || state.aiErrorMessage != null) {
                             item(span = { GridItemSpan(2) }) {
                                 Spacer(modifier = Modifier.height(24.dp))
                             }
@@ -207,13 +207,6 @@ fun HomeContent(
                                         contentAlignment = Alignment.Center
                                     ) {
                                         Text(text = "Error: ${state.aiErrorMessage}", color = androidx.compose.ui.graphics.Color.Red)
-                                    }
-                                } else if (state.aiRecommendations.isEmpty()) {
-                                    Box(
-                                        modifier = Modifier.fillMaxWidth().height(100.dp),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Text(text = "No recommendations found")
                                     }
                                 } else {
                                     androidx.compose.foundation.lazy.LazyRow(

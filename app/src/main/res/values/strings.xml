@@ -328,5 +328,7 @@
     <string name="an_unexpected_error_occurred">An unexpected error occurred</string>
     <string name="no_orders_yet">No orders yet</string>
     <string name="start_shopping_to_see_orders">Start shopping to see your order history here.</string>
+    <string name="ai_generated_label">✦ AI-generated</string>
+</resources>
 
 </resources>

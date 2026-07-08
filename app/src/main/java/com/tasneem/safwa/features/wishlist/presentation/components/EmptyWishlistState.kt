@@ -19,6 +19,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDirection
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.tasneem.safwa.R
 
@@ -42,17 +44,28 @@ fun EmptyWishlistState(modifier: Modifier = Modifier) {
             Spacer(modifier = Modifier.height(24.dp))
             Text(
                 text = stringResource(id = R.string.wishlist_empty),
-                style = MaterialTheme.typography.titleLarge,
+                style = MaterialTheme.typography.titleLarge.copy(
+                    textDirection = TextDirection.Content
+                ),
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground
+                color = MaterialTheme.colorScheme.onBackground,
+                textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = stringResource(id = R.string.explore_products),
-                style = MaterialTheme.typography.bodyMedium,
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    textDirection = TextDirection.Content
+                ),
                 color = MaterialTheme.colorScheme.secondary,
                 textAlign = TextAlign.Center
             )
         }
     }
+}
+@Preview
+@Composable
+
+fun EmptyWishListStatePreview() {
+    EmptyWishlistState()
 }
