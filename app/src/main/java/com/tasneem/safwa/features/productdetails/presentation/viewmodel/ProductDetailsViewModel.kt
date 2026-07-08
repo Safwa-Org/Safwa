@@ -106,7 +106,6 @@ class ProductDetailsViewModel @Inject constructor(
     private fun generateAiDescriptionIfNeeded(product: ProductDetails) {
         if (product.description.isNotBlank()) return
 
-        android.util.Log.d("ProductDetailsVM", "Description missing for '${product.title}', requesting AI description")
 
         viewModelScope.launch {
             _state.update { it.copy(isGeneratingAiDescription = true) }
@@ -114,7 +113,6 @@ class ProductDetailsViewModel @Inject constructor(
             val languageCode = runCatching {
                 preferencesUseCases.getAppPreferences().first().languageCode
             }.onFailure {
-                android.util.Log.e("ProductDetailsVM", "Failed to read language preference", it)
             }.getOrDefault("en")
 
             val minPrice = product.priceRange.min
@@ -128,23 +126,20 @@ class ProductDetailsViewModel @Inject constructor(
             )
 
             if (loadedProduct?.id != product.id) {
-                android.util.Log.d("ProductDetailsVM", "Discarding stale AI description for '${product.title}'")
                 return@launch
             }
 
             if (!generated.isNullOrBlank()) {
-                android.util.Log.d("ProductDetailsVM", "Applying AI description for '${product.title}'")
                 val updatedProduct = product.copy(description = generated)
                 loadedProduct = updatedProduct
                 _state.update {
                     it.copy(
                         product = updatedProduct.toUiModel(),
                         isGeneratingAiDescription = false,
-                        isDescriptionAiGenerated = true, // NEW
+                        isDescriptionAiGenerated = true,
                     )
                 }
             } else {
-                android.util.Log.w("ProductDetailsVM", "No AI description available for '${product.title}'")
                 _state.update { it.copy(isGeneratingAiDescription = false) }
             }
         }

@@ -58,14 +58,11 @@ class ProductDescriptionAiRemoteDataSourceImpl @Inject constructor(
             ).trim()
 
             if (result.isBlank()) {
-                Log.w(TAG, "AI returned a blank response for '$title'")
                 null
             } else {
-                Log.d(TAG, "AI description generated for '$title': $result")
                 result
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to generate AI description for '$title'", e)
             null
         }
     }
