@@ -11,6 +11,7 @@ enum class GreetingType {
 
 data class HomeState(
     val isLoading: Boolean = false,
+    val isRefreshing: Boolean = false,
     val userName: String = "",
     val greeting: GreetingType = GreetingType.MORNING,
     val promoBanners: List<PromoBanner> = emptyList(),

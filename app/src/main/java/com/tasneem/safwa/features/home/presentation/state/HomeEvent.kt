@@ -5,6 +5,7 @@ import com.tasneem.safwa.features.category.domain.model.Category
 
 sealed interface HomeEvent {
     data object LoadHome : HomeEvent
+    data object Refresh : HomeEvent
     data class CategorySelected(val category: Category) : HomeEvent
     data class ToggleFavorite(val product: Product) : HomeEvent
     data class ProductClicked(val product: Product) : HomeEvent

@@ -6,16 +6,16 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Text
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -32,6 +32,7 @@ import com.tasneem.safwa.features.home.presentation.state.GreetingType
 import com.tasneem.safwa.features.home.presentation.state.HomeEffect
 import com.tasneem.safwa.features.home.presentation.state.HomeEvent
 import com.tasneem.safwa.features.home.presentation.state.HomeState
+import com.tasneem.safwa.features.home.presentation.view.component.AiRecommendationsSection
 import com.tasneem.safwa.features.home.presentation.view.component.BrandsRow
 import com.tasneem.safwa.features.home.presentation.view.component.PromoBannerPager
 import com.tasneem.safwa.features.home.presentation.view.component.GreetingSection
@@ -77,6 +78,7 @@ fun HomeScreen(
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeContent(
     state: HomeState,
@@ -105,11 +107,18 @@ fun HomeContent(
                 }
 
                 else -> {
-                    LazyVerticalGrid(
-                        columns = GridCells.Fixed(2),
-                        contentPadding = PaddingValues(bottom = 16.dp),
+                    val pullRefreshState = rememberPullToRefreshState()
+                    PullToRefreshBox(
+                        isRefreshing = state.isRefreshing,
+                        onRefresh = { onEvent(HomeEvent.Refresh) },
+                        state = pullRefreshState,
                         modifier = Modifier.fillMaxSize()
                     ) {
+                        LazyVerticalGrid(
+                            columns = GridCells.Fixed(2),
+                            contentPadding = PaddingValues(bottom = 16.dp),
+                            modifier = Modifier.fillMaxSize()
+                        ) {
                         item(span = { GridItemSpan(2) }) {
                             HomeTopBar(
                                 onCartClick = { onEvent(HomeEvent.CartClicked) },
@@ -196,38 +205,14 @@ fun HomeContent(
                                 Spacer(modifier = Modifier.height(12.dp))
                             }
                             item(span = { GridItemSpan(2) }) {
-                                if (state.isAiLoading) {
-                                    Box(
-                                        modifier = Modifier.fillMaxWidth().height(200.dp),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        CircularProgressIndicator()
-                                    }
-                                } else if (state.aiErrorMessage != null) {
-                                    Box(
-                                        modifier = Modifier.fillMaxWidth().height(100.dp).padding(16.dp),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Text(text = "Error: ${state.aiErrorMessage}", color = androidx.compose.ui.graphics.Color.Red)
-                                    }
-                                } else {
-                                    androidx.compose.foundation.lazy.LazyRow(
-                                        horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(16.dp),
-                                        contentPadding = PaddingValues(horizontal = 16.dp)
-                                    ) {
-                                        items(count = state.aiRecommendations.size, key = { state.aiRecommendations[it].id }) { index ->
-                                            val product = state.aiRecommendations[index]
-                                            Box(modifier = Modifier.width(160.dp)) {
-                                                ProductCard(
-                                                    product = product,
-                                                    isFavorite = state.favoriteProductIds.contains(product.id),
-                                                    onToggleFavorite = { onEvent(HomeEvent.ToggleFavorite(product)) },
-                                                    onClick = { onEvent(HomeEvent.ProductClicked(product)) }
-                                                )
-                                            }
-                                        }
-                                    }
-                                }
+                                AiRecommendationsSection(
+                                    recommendations = state.aiRecommendations,
+                                    isAiLoading = state.isAiLoading,
+                                    aiErrorMessage = state.aiErrorMessage,
+                                    favoriteProductIds = state.favoriteProductIds,
+                                    onToggleFavorite = { onEvent(HomeEvent.ToggleFavorite(it)) },
+                                    onProductClick = { onEvent(HomeEvent.ProductClicked(it)) }
+                                )
                             }
                         }
 
@@ -287,6 +272,7 @@ fun HomeContent(
 
                         item(span = { GridItemSpan(2) }) {
                             Spacer(modifier = Modifier.height(16.dp))
+                        }
                         }
                     }
                 }
