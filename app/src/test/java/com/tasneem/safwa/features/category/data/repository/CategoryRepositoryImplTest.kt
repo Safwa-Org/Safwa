@@ -8,7 +8,6 @@ import com.tasneem.network.exception.GraphQlException
 import com.tasneem.network.exception.NoInternetException
 import com.tasneem.safwa.core.exception.DomainException
 import io.mockk.coEvery
-import io.mockk.coVerify
 import io.mockk.mockk
 import io.mockk.slot
 import kotlinx.coroutines.test.runTest
@@ -45,7 +44,10 @@ class CategoryRepositoryImplTest {
 
     @Test
     fun `getCategories maps dto to domain`() = runTest {
-        coEvery { remoteDataSource.getCategories(50) } returns listOf(categoryDto("1"), categoryDto("2"))
+        coEvery { remoteDataSource.getCategories(50) } returns listOf(
+            categoryDto("1"),
+            categoryDto("2")
+        )
 
         val result = repository.getCategories(50)
 
@@ -68,7 +70,7 @@ class CategoryRepositoryImplTest {
     fun `getProductsByCategory normalizes handle and maps products`() = runTest {
         val handleSlot = slot<String>()
         coEvery { remoteDataSource.getCollectionProducts(capture(handleSlot), 20) } returns
-            listOf(productDto("1"))
+                listOf(productDto("1"))
 
         val result = repository.getProductsByCategory("Men Shoes", 20)
 
@@ -79,7 +81,12 @@ class CategoryRepositoryImplTest {
     @Test
     fun `getProductsByCategory leaves already-normalized handle unchanged`() = runTest {
         val handleSlot = slot<String>()
-        coEvery { remoteDataSource.getCollectionProducts(capture(handleSlot), any()) } returns emptyList()
+        coEvery {
+            remoteDataSource.getCollectionProducts(
+                capture(handleSlot),
+                any()
+            )
+        } returns emptyList()
 
         repository.getProductsByCategory("shoes", 20)
 
@@ -87,21 +94,33 @@ class CategoryRepositoryImplTest {
     }
 
     @Test
-    fun `getProductsByCategory wraps GraphQlException as DomainException ServerError with reason`() = runTest {
-        coEvery { remoteDataSource.getCollectionProducts(any(), any()) } throws GraphQlException("bad handle")
+    fun `getProductsByCategory wraps GraphQlException as DomainException ServerError with reason`() =
+        runTest {
+            coEvery {
+                remoteDataSource.getCollectionProducts(
+                    any(),
+                    any()
+                )
+            } throws GraphQlException("bad handle")
 
-        val thrown = runCatching { repository.getProductsByCategory("x", 20) }.exceptionOrNull()
+            val thrown = runCatching { repository.getProductsByCategory("x", 20) }.exceptionOrNull()
 
-        assertTrue(thrown is DomainException.ServerError)
-        assertEquals("bad handle", (thrown as DomainException.ServerError).reason)
-    }
+            assertTrue(thrown is DomainException.ServerError)
+            assertEquals("bad handle", (thrown as DomainException.ServerError).reason)
+        }
 
     @Test
-    fun `getProductsByCategory wraps EmptyResponseException as DomainException NotFound`() = runTest {
-        coEvery { remoteDataSource.getCollectionProducts(any(), any()) } throws EmptyResponseException()
+    fun `getProductsByCategory wraps EmptyResponseException as DomainException NotFound`() =
+        runTest {
+            coEvery {
+                remoteDataSource.getCollectionProducts(
+                    any(),
+                    any()
+                )
+            } throws EmptyResponseException()
 
-        val thrown = runCatching { repository.getProductsByCategory("x", 20) }.exceptionOrNull()
+            val thrown = runCatching { repository.getProductsByCategory("x", 20) }.exceptionOrNull()
 
-        assertTrue(thrown is DomainException.NotFound)
-    }
+            assertTrue(thrown is DomainException.NotFound)
+        }
 }

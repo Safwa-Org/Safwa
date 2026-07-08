@@ -83,6 +83,7 @@ junit-platform-launcher = { group = "org.junit.platform", name = "junit-platform
 mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
 kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutines" }
 turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine" }
+apollo-testing-support = { module = "com.apollographql.apollo:apollo-testing-support", version.ref = "apolloRuntime" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
