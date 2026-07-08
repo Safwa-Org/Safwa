@@ -79,7 +79,10 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             currencyRateManager.displayCurrency
                 .drop(1)
-                .collect { loadProducts() }
+                .collect { 
+                    loadProducts()
+                    loadAiRecommendations()
+                }
         }
     }
 
