@@ -2,6 +2,7 @@ package com.tasneem.safwa.features.productdetails.presentation.state
 
 import com.tasneem.safwa.core.presentation.model.UiError
 import com.tasneem.safwa.features.productdetails.presentation.state.mapper.ProductDetailsUiModel
+import com.tasneem.safwa.features.reviews.domain.model.RatingSummary
 import com.tasneem.safwa.features.reviews.domain.model.Review
 
 data class ProductDetailsState(
@@ -23,4 +24,6 @@ data class ProductDetailsState(
     val newReviewComment: String = "",
     val isSubmittingReview: Boolean = false,
     val isReviewFormVisible: Boolean = false,
-)
+) {
+    val ratingSummary: RatingSummary get() = RatingSummary.from(reviews)
+}

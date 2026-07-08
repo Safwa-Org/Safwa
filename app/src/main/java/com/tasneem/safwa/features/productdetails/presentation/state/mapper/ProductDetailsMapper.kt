@@ -13,8 +13,6 @@ data class ProductDetailsUiModel(
     val priceRangeFormatted: String?,
     val imageUrls: List<String>,
     val imageLabels: List<String>,
-    val rating: Float,
-    val reviewCount: Int,
     val variantOptions: List<VariantOptionGroup>,
     val variants: List<ProductVariant>,
 )
@@ -27,6 +25,7 @@ data class VariantOptionValue(
 data class VariantOptionGroup(
     val name: String,
     val values: List<VariantOptionValue>,
+    val isColorGroup: Boolean = false,
 )
 
 fun ProductDetails.toUiModel() = ProductDetailsUiModel(
@@ -41,8 +40,6 @@ fun ProductDetails.toUiModel() = ProductDetailsUiModel(
     else null,
     imageUrls = images.map { it.url },
     imageLabels = images.map { it.altText },
-    rating = 4.9f,
-    reviewCount = 286,
     variantOptions = buildVariantOptions(variants),
     variants = variants,
 )
@@ -65,6 +62,12 @@ private fun buildVariantOptions(variants: List<ProductVariant>): List<VariantOpt
                     isAvailable = matchingVariants.any { it.availableForSale },
                 )
             }
-        VariantOptionGroup(name = name, values = values)
+        VariantOptionGroup(
+            name = name,
+            values = values,
+            isColorGroup = name.trim().lowercase() in colorGroupNames,
+        )
     }
 }
+
+private val colorGroupNames = setOf("color", "colour", "colors", "colours")

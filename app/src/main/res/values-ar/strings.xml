@@ -123,9 +123,11 @@
     <string name="no_results_desc">لم نتمكن من العثور على أي منتجات تطابق بحثك.</string>
 
     <string name="reviews_count">· %1$d مراجعة</string>
+    <string name="no_ratings_yet">لا توجد تقييمات بعد</string>
     <string name="in_stock">متوفر</string>
 
     <string name="size_label">المقاس</string>
+    <string name="color_label">اللون</string>
     <string name="description_label">الوصف</string>
 
     <string name="add_to_cart_format">أضف إلى السلة · %1$s</string>

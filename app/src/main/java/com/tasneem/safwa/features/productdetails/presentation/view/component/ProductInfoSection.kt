@@ -14,7 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
@@ -25,7 +25,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -33,12 +36,17 @@ import com.tasneem.safwa.R
 import com.tasneem.safwa.core.theme.SafwaTheme
 import com.tasneem.safwa.features.productdetails.presentation.state.mapper.VariantOptionGroup
 import com.tasneem.safwa.features.productdetails.presentation.state.mapper.VariantOptionValue
+import com.tasneem.safwa.features.productdetails.presentation.state.mapper.toDisplayColor
+import com.tasneem.safwa.features.reviews.domain.model.RatingSummary
+import java.util.Locale
 
 @Composable
 fun ProductInfoSection(
     vendor: String,
     productType: String,
     title: String,
+    ratingSummary: RatingSummary,
+    isInStock: Boolean,
     priceFormatted: String,
     priceRangeFormatted: String?,
     variantOptions: List<VariantOptionGroup>,
@@ -83,6 +91,47 @@ fun ProductInfoSection(
             color = MaterialTheme.colorScheme.onBackground
         )
 
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Star,
+                    contentDescription = null,
+                    tint = if (ratingSummary.hasRatings)
+                        MaterialTheme.colorScheme.tertiary
+                    else
+                        MaterialTheme.colorScheme.secondary,
+                    modifier = Modifier.size(16.dp)
+                )
+                if (ratingSummary.hasRatings) {
+                    Text(
+                        text = String.format(Locale.getDefault(), "%.1f", ratingSummary.average),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                    Text(
+                        text = stringResource(R.string.reviews_count, ratingSummary.count),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                } else {
+                    Text(
+                        text = stringResource(R.string.no_ratings_yet),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                }
+            }
+
+            StockBadge(isInStock = isInStock)
+        }
+
         Text(
             text = priceRangeFormatted ?: priceFormatted,
             style = MaterialTheme.typography.titleLarge,
@@ -102,6 +151,42 @@ fun ProductInfoSection(
 }
 
 @Composable
+private fun StockBadge(isInStock: Boolean) {
+    val backgroundColor = if (isInStock)
+        MaterialTheme.colorScheme.primaryContainer
+    else
+        MaterialTheme.colorScheme.errorContainer
+    val contentColor = if (isInStock)
+        MaterialTheme.colorScheme.onPrimaryContainer
+    else
+        MaterialTheme.colorScheme.onErrorContainer
+
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(36.dp))
+            .background(backgroundColor)
+            .padding(horizontal = 10.dp, vertical = 4.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = stringResource(
+                if (isInStock) R.string.in_stock else R.string.out_of_stock
+            ),
+            style = MaterialTheme.typography.labelMedium,
+            color = contentColor
+        )
+    }
+}
+
+@Composable
+private fun localizedOptionLabel(name: String): String =
+    when (name.trim().lowercase()) {
+        "color", "colour", "colors", "colours" -> stringResource(R.string.color_label)
+        "size", "sizes" -> stringResource(R.string.size_label)
+        else -> name
+    }
+
+@Composable
 private fun VariantOptionGroupSection(
     group: VariantOptionGroup,
     selectedValue: String,
@@ -109,20 +194,63 @@ private fun VariantOptionGroupSection(
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(
-            text = group.name,
+            text = localizedOptionLabel(group.name),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onBackground
         )
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             group.values.forEach { option ->
-                VariantChip(
-                    option = option,
-                    isSelected = option.value == selectedValue,
-                    onClick = { onValueSelected(option.value) }
-                )
+                val swatchColor = if (group.isColorGroup) option.value.toDisplayColor() else null
+                if (swatchColor != null) {
+                    ColorSwatch(
+                        color = swatchColor,
+                        contentDescription = option.value,
+                        isSelected = option.value == selectedValue,
+                        isAvailable = option.isAvailable,
+                        onClick = { onValueSelected(option.value) }
+                    )
+                } else {
+                    VariantChip(
+                        option = option,
+                        isSelected = option.value == selectedValue,
+                        onClick = { onValueSelected(option.value) }
+                    )
+                }
             }
         }
     }
+}
+
+@Composable
+private fun ColorSwatch(
+    color: Color,
+    contentDescription: String,
+    isSelected: Boolean,
+    isAvailable: Boolean,
+    onClick: () -> Unit,
+) {
+    val unavailableAlpha = 0.35f
+    val swatchAlpha = if (isAvailable) 1f else unavailableAlpha
+    Box(
+        modifier = Modifier
+            .size(40.dp)
+            .clip(CircleShape)
+            .border(
+                border = BorderStroke(
+                    if (isSelected) 2.dp else 1.dp,
+                    if (isSelected)
+                        MaterialTheme.colorScheme.primary
+                    else
+                        MaterialTheme.colorScheme.outline.copy(alpha = swatchAlpha)
+                ),
+                shape = CircleShape
+            )
+            .padding(4.dp)
+            .clip(CircleShape)
+            .background(color.copy(alpha = swatchAlpha))
+            .clickable(enabled = isAvailable) { onClick() }
+            .semantics { this.contentDescription = contentDescription },
+    )
 }
 
 @Composable
@@ -179,6 +307,8 @@ private fun ProductInfoSectionPreview() {
             vendor = "Nike",
             productType = "Running Shoes",
             title = "Nike Air Max 270",
+            ratingSummary = RatingSummary(average = 4.9f, count = 286),
+            isInStock = true,
             priceFormatted = "USD 149.99",
             priceRangeFormatted = "USD 149.99 – 189.99",
             variantOptions = listOf(
@@ -197,7 +327,8 @@ private fun ProductInfoSectionPreview() {
                         VariantOptionValue("Black", true),
                         VariantOptionValue("White", false),
                         VariantOptionValue("Red", true),
-                    )
+                    ),
+                    isColorGroup = true,
                 )
             ),
             selectedOptions = mapOf("Size" to "M", "Color" to "Black"),

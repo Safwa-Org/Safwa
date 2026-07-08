@@ -39,6 +39,7 @@ import com.tasneem.safwa.features.productdetails.presentation.view.component.Pro
 import com.tasneem.safwa.features.productdetails.presentation.view.component.ProductInfoSection
 import com.tasneem.safwa.features.productdetails.presentation.view.component.StickyBottomActionBar
 import com.tasneem.safwa.features.productdetails.presentation.viewmodel.ProductDetailsViewModel
+import com.tasneem.safwa.features.reviews.domain.model.Review
 import com.tasneem.safwa.features.reviews.presentation.ReviewsSection
 import kotlinx.coroutines.launch
 
@@ -152,6 +153,8 @@ fun ProductDetailsContent(
                             vendor = product.vendor,
                             productType = product.productType,
                             title = product.title,
+                            ratingSummary = state.ratingSummary,
+                            isInStock = state.isSelectedVariantAvailable,
                             priceFormatted = product.priceFormatted,
                             priceRangeFormatted = product.priceRangeFormatted,
                             variantOptions = product.variantOptions,
@@ -216,8 +219,6 @@ private fun ProductDetailsContentPreview() {
                         "https://picsum.photos/600/600?2",
                     ),
                     imageLabels = listOf("Front view", "Side view"),
-                    rating = 4.8f,
-                    reviewCount = 236,
                     variantOptions = listOf(
                         VariantOptionGroup(
                             "Size", listOf(
@@ -235,7 +236,12 @@ private fun ProductDetailsContentPreview() {
                         )
                     ),
                     variants = emptyList(),
-                )
+                ),
+                reviews = listOf(
+                    Review(id = "1", rating = 5, comment = "Love it!"),
+                    Review(id = "2", rating = 5, comment = "Great quality."),
+                    Review(id = "3", rating = 4, comment = "Comfortable."),
+                ),
             ),
             onEvent = {}
         )
