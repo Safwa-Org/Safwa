@@ -19,6 +19,7 @@ import com.tasneem.safwa.features.core.domain.usecase.GetCategoriesUseCase
 import com.tasneem.safwa.features.core.domain.usecase.GetWishlistUseCase
 import com.tasneem.safwa.features.core.domain.usecase.ToggleFavoriteUseCase
 import com.tasneem.safwa.features.settings.languageandcurrency.data.CurrencyRateManager
+import com.tasneem.safwa.features.settings.languageandcurrency.data.LanguageManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -42,7 +43,8 @@ class HomeViewModel @Inject constructor(
     private val getCurrentUserUseCase: GetCurrentUserUseCase,
     private val getBrandsUseCase: GetBrandsUseCase,
     private val getAiRecommendationsUseCase: GetAiRecommendationsUseCase,
-    private val currencyRateManager: CurrencyRateManager
+    private val currencyRateManager: CurrencyRateManager,
+    private val languageManager: LanguageManager
 ) : ViewModel() {
 
     companion object {
@@ -76,6 +78,17 @@ class HomeViewModel @Inject constructor(
             currencyRateManager.displayCurrency
                 .drop(1)
                 .collect { loadProducts() }
+        }
+
+        viewModelScope.launch {
+            languageManager.displayLanguage
+                .drop(1)
+                .collect { 
+                    loadProducts() 
+                    loadCategories()
+                    loadBrands()
+                    loadAiRecommendations()
+                }
         }
     }
 

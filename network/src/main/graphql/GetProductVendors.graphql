@@ -1,4 +1,4 @@
-query GetProductVendors($first: Int!, $after: String) {
+query GetProductVendors($first: Int!, $after: String, $language: LanguageCode) @inContext(language: $language) {
   products(first: $first, after: $after) {
     pageInfo {
       hasNextPage

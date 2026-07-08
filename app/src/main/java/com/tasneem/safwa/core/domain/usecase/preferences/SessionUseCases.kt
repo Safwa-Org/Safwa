@@ -24,7 +24,10 @@ class UpdateAppPreferencesUseCase @Inject constructor(
     private val apolloClient: ApolloClient
 ) {
     suspend fun updateTheme(isDark: Boolean) = repo.updateTheme(isDark)
-    suspend fun updateLanguage(lang: String) = repo.updateLanguage(lang)
+    suspend fun updateLanguage(lang: String) {
+        repo.updateLanguage(lang)
+        apolloClient.apolloStore.clearAll()
+    }
 
     suspend fun updateCurrency(currency: String) {
         repo.updateCurrency(currency)

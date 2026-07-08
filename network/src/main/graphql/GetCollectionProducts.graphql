@@ -1,4 +1,4 @@
-query GetCollectionProducts($handle: String!, $first: Int!, $sortKey: ProductCollectionSortKeys, $reverse: Boolean) {
+query GetCollectionProducts($handle: String!, $first: Int!, $sortKey: ProductCollectionSortKeys, $reverse: Boolean, $language: LanguageCode) @inContext(language: $language) {
   collectionByHandle(handle: $handle) {
     id
     title

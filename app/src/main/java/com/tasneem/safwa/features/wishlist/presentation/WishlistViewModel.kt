@@ -7,11 +7,13 @@ import com.tasneem.safwa.features.core.domain.usecase.GetWishlistUseCase
 import com.tasneem.safwa.features.core.domain.usecase.ToggleFavoriteUseCase
 import com.tasneem.safwa.features.core.domain.usecase.GetCategoriesUseCase
 import com.tasneem.safwa.features.category.domain.model.Category
+import com.tasneem.safwa.features.settings.languageandcurrency.data.LanguageManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -21,7 +23,8 @@ import javax.inject.Inject
 class WishlistViewModel @Inject constructor(
     private val getWishlistUseCase: GetWishlistUseCase,
     private val toggleFavoriteUseCase: ToggleFavoriteUseCase,
-    private val getCategoriesUseCase: GetCategoriesUseCase
+    private val getCategoriesUseCase: GetCategoriesUseCase,
+    private val languageManager: LanguageManager
 ) : ViewModel() {
     private val _state = MutableStateFlow(WishlistState())
     val state: StateFlow<WishlistState> = _state.asStateFlow()
@@ -33,6 +36,14 @@ class WishlistViewModel @Inject constructor(
         onIntent(WishlistIntent.LoadWishlist)
         observeWishlist()
         loadCategories()
+
+        viewModelScope.launch {
+            languageManager.displayLanguage
+                .drop(1)
+                .collect {
+                    loadCategories()
+                }
+        }
     }
 
     private fun loadCategories() {

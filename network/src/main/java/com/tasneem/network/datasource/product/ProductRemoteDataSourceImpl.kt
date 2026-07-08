@@ -19,6 +19,7 @@ import com.apollographql.apollo.api.Optional
 import javax.inject.Inject
 
 import com.tasneem.safwa.network.type.ProductSortKeys
+import com.tasneem.safwa.network.type.LanguageCode
 
 class ProductRemoteDataSourceImpl @Inject constructor(
     private val apolloClient: ApolloClient,
@@ -27,7 +28,7 @@ class ProductRemoteDataSourceImpl @Inject constructor(
     private val productDetailsDtoMapper: ProductDetailsDtoMapper
 ) : ProductRemoteDataSource {
 
-    override suspend fun getProducts(first: Int, after: String?, sortKey: String?): List<ProductDto> {
+    override suspend fun getProducts(first: Int, after: String?, sortKey: String?, languageCode: String): List<ProductDto> {
         return safeApiCall(
             apiCall = {
                 apolloClient.query(
@@ -38,7 +39,8 @@ class ProductRemoteDataSourceImpl @Inject constructor(
                             sortKey?.let {
                                 try { ProductSortKeys.valueOf(it) } catch (_: Exception) { null }
                             }
-                        )
+                        ),
+                        language = Optional.presentIfNotNull(LanguageCode.safeValueOf(languageCode.uppercase()))
                     )
                 ).execute()
             },
@@ -50,11 +52,15 @@ class ProductRemoteDataSourceImpl @Inject constructor(
         )
     }
 
-    override suspend fun searchProducts(query: String, first: Int): List<ProductDto> {
+    override suspend fun searchProducts(query: String, first: Int, languageCode: String): List<ProductDto> {
         return safeApiCall(
             apiCall = {
                 apolloClient.query(
-                    SearchProductsQuery(query = query, first = first)
+                    SearchProductsQuery(
+                        query = query,
+                        first = first,
+                        language = Optional.presentIfNotNull(LanguageCode.safeValueOf(languageCode.uppercase()))
+                    )
                 ).execute()
             },
             mapper = { data ->
@@ -65,10 +71,15 @@ class ProductRemoteDataSourceImpl @Inject constructor(
         )
     }
 
-    override suspend fun getProductDetailsByHandle(handle: String): ProductDetailsDto {
+    override suspend fun getProductDetailsByHandle(handle: String, languageCode: String): ProductDetailsDto {
         return safeApiCall(
             apiCall = {
-                apolloClient.query(GetProductByHandleQuery(handle = handle)).execute()
+                apolloClient.query(
+                    GetProductByHandleQuery(
+                        handle = handle,
+                        language = Optional.presentIfNotNull(LanguageCode.safeValueOf(languageCode.uppercase()))
+                    )
+                ).execute()
             },
             mapper = { data ->
                 productDetailsDtoMapper.map(data)
@@ -76,10 +87,15 @@ class ProductRemoteDataSourceImpl @Inject constructor(
         )
     }
 
-    override suspend fun getCategories(first: Int): List<CategoryDto> {
+    override suspend fun getCategories(first: Int, languageCode: String): List<CategoryDto> {
         return safeApiCall(
             apiCall = {
-                apolloClient.query(GetCategoriesQuery(first = first)).execute()
+                apolloClient.query(
+                    GetCategoriesQuery(
+                        first = first,
+                        language = Optional.presentIfNotNull(LanguageCode.safeValueOf(languageCode.uppercase()))
+                    )
+                ).execute()
             },
             mapper = { data ->
                 data.collections.edges.map { edge ->
@@ -97,7 +113,7 @@ class ProductRemoteDataSourceImpl @Inject constructor(
         )
     }
 
-    override suspend fun getCollectionProducts(handle: String, first: Int): List<ProductDto> {
+    override suspend fun getCollectionProducts(handle: String, first: Int, languageCode: String): List<ProductDto> {
         return safeApiCall(
             apiCall = {
                 apolloClient.query(
@@ -105,7 +121,8 @@ class ProductRemoteDataSourceImpl @Inject constructor(
                         handle = handle,
                         first = first,
                         sortKey = Optional.present(ProductCollectionSortKeys.PRICE),
-                        reverse = Optional.present(false)
+                        reverse = Optional.present(false),
+                        language = Optional.presentIfNotNull(LanguageCode.safeValueOf(languageCode.uppercase()))
                     )
                 ).execute()
             },

@@ -19,6 +19,10 @@ import com.tasneem.safwa.core.theme.SafwaTheme
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.LayoutDirection
+
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() { // Keep AppCompatActivity for language switching
 
@@ -52,8 +56,12 @@ class MainActivity : AppCompatActivity() { // Keep AppCompatActivity for languag
                 AppCompatDelegate.setApplicationLocales(appLocale)
             }
 
-            SafwaTheme(darkTheme = isDarkMode) {
-                SafwaNavHost(mainViewModel = mainViewModel)
+            val layoutDirection = if (languageCode == "ar") LayoutDirection.Rtl else LayoutDirection.Ltr
+
+            CompositionLocalProvider(LocalLayoutDirection provides layoutDirection) {
+                SafwaTheme(darkTheme = isDarkMode) {
+                    SafwaNavHost(mainViewModel = mainViewModel)
+                }
             }
         }
     }

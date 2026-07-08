@@ -8,6 +8,7 @@ import com.tasneem.network.mapper.VendorProductMapper
 import com.tasneem.network.mapper.mapList
 import com.tasneem.safwa.network.GetProductVendorsQuery
 import com.tasneem.safwa.network.GetProductsForVendorQuery
+import com.tasneem.safwa.network.type.LanguageCode
 import javax.inject.Inject
 
 class BrandRemoteDataSourceImpl @Inject constructor(
@@ -15,14 +16,15 @@ class BrandRemoteDataSourceImpl @Inject constructor(
     private val vendorProductMapper: VendorProductMapper
 ) : BrandRemoteDataSource {
 
-    override suspend fun getProductVendors(pageSize: Int): List<String> {
+    override suspend fun getProductVendors(pageSize: Int, languageCode: String): List<String> {
         return fetchAllPages { after ->
             safeApiCall(
                 apiCall = {
                     apolloClient.query(
                         GetProductVendorsQuery(
                             first = pageSize,
-                            after = Optional.presentIfNotNull(after)
+                            after = Optional.presentIfNotNull(after),
+                            language = Optional.presentIfNotNull(LanguageCode.safeValueOf(languageCode.uppercase()))
                         )
                     ).execute()
                 },
@@ -37,7 +39,7 @@ class BrandRemoteDataSourceImpl @Inject constructor(
         }
     }
 
-    override suspend fun getProductsForVendor(vendor: String, pageSize: Int): List<ProductDto> {
+    override suspend fun getProductsForVendor(vendor: String, pageSize: Int, languageCode: String): List<ProductDto> {
         return fetchAllPages { after ->
             safeApiCall(
                 apiCall = {
@@ -45,7 +47,8 @@ class BrandRemoteDataSourceImpl @Inject constructor(
                         GetProductsForVendorQuery(
                             first = pageSize,
                             after = Optional.presentIfNotNull(after),
-                            query = Optional.present(buildVendorQuery(vendor))
+                            query = Optional.present(buildVendorQuery(vendor)),
+                            language = Optional.presentIfNotNull(LanguageCode.safeValueOf(languageCode.uppercase()))
                         )
                     ).execute()
                 },
