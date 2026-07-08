@@ -142,12 +142,14 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    private fun loadProducts() {
+    private fun loadProducts(isRefresh: Boolean = false) {
         viewModelScope.launch {
             getProductsUseCase().collect { result ->
                 when (result) {
                     is Resource.Loading -> {
-                        _state.update { it.copy(isLoading = true, error = null) }
+                        if (!isRefresh) {
+                            _state.update { it.copy(isLoading = true, error = null) }
+                        }
                     }
 
                     is Resource.Success -> {
@@ -155,6 +157,7 @@ class HomeViewModel @Inject constructor(
                         _state.update {
                             it.copy(
                                 isLoading = false,
+                                isRefreshing = false,
                                 products = products,
                                 filteredProducts = products,
                                 error = null
@@ -166,6 +169,7 @@ class HomeViewModel @Inject constructor(
                         _state.update {
                             it.copy(
                                 isLoading = false,
+                                isRefreshing = false,
                                 error = result.throwable.toUiError()
                             )
                         }
@@ -258,6 +262,13 @@ class HomeViewModel @Inject constructor(
         when (event) {
             is HomeEvent.LoadHome -> {
                 retryFailedLoads()
+            }
+            is HomeEvent.Refresh -> {
+                _state.update { it.copy(isRefreshing = true, error = null, aiErrorMessage = null) }
+                loadProducts(isRefresh = true)
+                loadBrands()
+                loadCategories()
+                loadAiRecommendations()
             }
 
             is HomeEvent.CategorySelected -> {
