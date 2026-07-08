@@ -3,6 +3,7 @@ package com.tasneem.safwa.features.category.presentation.category_products.viewm
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.tasneem.safwa.core.presentation.mapper.toUiError
 import com.tasneem.safwa.core.util.Resource
 import com.tasneem.safwa.features.category.domain.usecase.GetProductsByCategoryUseCase
 import com.tasneem.safwa.features.category.presentation.category_products.state.CategoryProductsState
@@ -34,6 +35,8 @@ class CategoryProductsViewModel @Inject constructor(
         observeWishlist()
     }
 
+    fun retry() = loadProducts()
+
     private fun observeWishlist() {
         viewModelScope.launch {
             getWishlistUseCase().collect { result ->
@@ -50,13 +53,13 @@ class CategoryProductsViewModel @Inject constructor(
             getProductsByCategoryUseCase(categoryName).collect { result ->
                 when (result) {
                     is Resource.Success -> {
-                        _state.update { it.copy(isLoading = false, products = result.data) }
+                        _state.update { it.copy(isLoading = false, products = result.data, error = null) }
                     }
                     is Resource.Error -> {
-                        _state.update { it.copy(isLoading = false, error = result.message) }
+                        _state.update { it.copy(isLoading = false, error = result.throwable.toUiError()) }
                     }
                     is Resource.Loading -> {
-                        _state.update { it.copy(isLoading = true) }
+                        _state.update { it.copy(isLoading = true, error = null) }
                     }
                 }
             }

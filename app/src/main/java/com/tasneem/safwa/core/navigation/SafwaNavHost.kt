@@ -152,7 +152,8 @@ fun SafwaNavHost(
 
         composable<ScreenRoute.ProductDetails> {
             ProductDetailsScreen(
-                onNavigateBack = { navController.popBackStack() }
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToCart = { navController.navigate(ScreenRoute.Cart) }
             )
         }
 

@@ -4,6 +4,7 @@ sealed interface ProductDetailsEvent {
     data class OptionSelected(val optionName: String, val value: String) : ProductDetailsEvent
     object ToggleWishlist : ProductDetailsEvent
     object AddToCartClicked : ProductDetailsEvent
+    object CartClicked : ProductDetailsEvent
     object BackClicked : ProductDetailsEvent
     object ShareClicked : ProductDetailsEvent
     object RetryClicked : ProductDetailsEvent

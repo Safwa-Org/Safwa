@@ -46,6 +46,7 @@ import kotlinx.coroutines.launch
 fun ProductDetailsScreen(
     viewModel: ProductDetailsViewModel = hiltViewModel(),
     onNavigateBack: () -> Unit,
+    onNavigateToCart: () -> Unit = {},
 ) {
     val uiState by viewModel.state.collectAsStateWithLifecycle()
     val snackBarHostState = remember { SnackbarHostState() }
@@ -55,6 +56,7 @@ fun ProductDetailsScreen(
         viewModel.effect.collect { effect ->
             when (effect) {
                 ProductDetailsEffect.NavigateBack -> onNavigateBack()
+                ProductDetailsEffect.NavigateToCart -> onNavigateToCart()
                 is ProductDetailsEffect.ShowSnackBar -> {
                     launch {
                         snackBarHostState.showSnackbar(effect.message)
@@ -97,6 +99,7 @@ fun ProductDetailsContent(
                     isAvailable = state.isSelectedVariantAvailable,
                     isAddingToCart = state.isAddingToCart,
                     onAddToCart = { onEvent(ProductDetailsEvent.AddToCartClicked) },
+                    onCartClick = { onEvent(ProductDetailsEvent.CartClicked) },
                 )
             }
         },
