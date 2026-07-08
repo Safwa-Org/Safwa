@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import com.tasneem.safwa.features.auth.domain.usecase.GetCurrentUserUseCase
 import javax.inject.Inject
+import com.tasneem.safwa.R
 
 @HiltViewModel
 class OrderHistoryViewModel @Inject constructor(
@@ -45,10 +46,10 @@ class OrderHistoryViewModel @Inject constructor(
                 if (!token.isNullOrEmpty()) {
                     loadOrders(token)
                 } else {
-                    _state.update { it.copy(isLoading = false, error = "Please login again to view orders") }
+                    _state.update { it.copy(isLoading = false, errorResId = R.string.please_login_again_to_view_orders) }
                 }
             } else {
-                _state.update { it.copy(isLoading = false, error = "User not found") }
+                _state.update { it.copy(isLoading = false, errorResId = R.string.user_not_found) }
             }
         }
     }
@@ -58,7 +59,7 @@ class OrderHistoryViewModel @Inject constructor(
             getOrdersUseCase(customerAccessToken).collect { result ->
                 when (result) {
                     is Resource.Loading -> {
-                        _state.update { it.copy(isLoading = true, error = null) }
+                        _state.update { it.copy(isLoading = true, error = null, errorResId = null) }
                     }
                     is Resource.Success -> {
                         _state.update {
@@ -73,7 +74,8 @@ class OrderHistoryViewModel @Inject constructor(
                         _state.update {
                             it.copy(
                                 isLoading = false,
-                                error = result.message ?: "An unexpected error occurred"
+                                error = result.message,
+                                errorResId = if (result.message == null) R.string.an_unexpected_error_occurred else null
                             )
                         }
                     }

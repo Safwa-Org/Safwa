@@ -24,6 +24,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material.icons.rounded.ShoppingCart
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -114,35 +119,58 @@ fun OrderHistoryScreen(
         Spacer(modifier = Modifier.height(24.dp))
 
         Box(modifier = Modifier.fillMaxSize()) {
-            if (state.error != null) {
+            val errorMessage = state.error ?: state.errorResId?.let { stringResource(it) }
+
+            if (errorMessage != null) {
                 Column(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = state.error!!,
+                        text = errorMessage,
                         style = MaterialTheme.typography.titleLarge,
                         color = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.padding(16.dp)
+                        modifier = Modifier.padding(16.dp),
+                        textAlign = TextAlign.Center
                     )
                 }
             } else if (!state.isLoading && state.filteredOrders.isEmpty()) {
+                val isSearchOrFilterActive = state.searchQuery.isNotBlank() || state.selectedFilter != com.tasneem.safwa.features.settings.orderhistory.domain.model.OrderStatus.ALL
                 Column(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(32.dp),
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+                    Box(
+                        modifier = Modifier
+                            .size(120.dp)
+                            .background(MaterialTheme.colorScheme.primaryContainer, shape = CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = if (isSearchOrFilterActive) Icons.Rounded.Search else Icons.Rounded.ShoppingCart,
+                            contentDescription = null,
+                            modifier = Modifier.size(64.dp),
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(24.dp))
                     Text(
-                        text = stringResource(R.string.no_orders_found),
-                        style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.onBackground
+                        text = stringResource(if (isSearchOrFilterActive) R.string.no_orders_found else R.string.no_orders_yet),
+                        style = MaterialTheme.typography.headlineSmall,
+                        color = MaterialTheme.colorScheme.onBackground,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = stringResource(R.string.adjust_filters_or_search),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.secondary
+                        text = stringResource(if (isSearchOrFilterActive) R.string.adjust_filters_or_search else R.string.start_shopping_to_see_orders),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.secondary,
+                        textAlign = TextAlign.Center
                     )
                 }
             } else {
