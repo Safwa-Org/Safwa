@@ -1,5 +1,6 @@
 package com.tasneem.safwa.features.home.presentation.state
 
+import com.tasneem.safwa.core.presentation.model.UiError
 import com.tasneem.safwa.features.core.domain.model.Product
 import com.tasneem.safwa.features.category.domain.model.Category
 import com.tasneem.safwa.features.home.domain.model.PromoBanner
@@ -22,6 +23,6 @@ data class HomeState(
     val cartItemCount: Int = 0,
     val aiRecommendations: List<Product> = emptyList(),
     val isAiLoading: Boolean = false,
-    val errorMessage: String? = null,
+    val error: UiError? = null,
     val aiErrorMessage: String? = null
 )

@@ -16,7 +16,7 @@ class GetProductsUseCase @Inject constructor(
             val products = repository.getProducts(first, sortKey = sortKey)
             emit(Resource.Success(products))
         } catch (e: Exception) {
-            emit(Resource.Error(e.localizedMessage ?: "An unexpected error occurred"))
+            emit(Resource.Error(message = e.localizedMessage, throwable = e))
         }
     }
 }

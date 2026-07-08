@@ -39,6 +39,7 @@ import com.tasneem.safwa.features.home.presentation.view.component.HomeTopBar
 import com.tasneem.safwa.features.home.presentation.view.component.SectionHeader
 import com.tasneem.safwa.features.home.presentation.viewmodel.HomeViewModel
 import com.tasneem.safwa.features.core.domain.model.Product
+import com.tasneem.safwa.features.core.presentation.component.ErrorContentWithRetry
 import com.tasneem.safwa.features.wishlist.presentation.components.CategoriesRow
 import com.tasneem.safwa.features.wishlist.presentation.components.ProductCard
 
@@ -93,13 +94,12 @@ fun HomeContent(
                     }
                 }
 
-                state.errorMessage != null -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(state.errorMessage)
-                    }
+                state.error != null -> {
+                    ErrorContentWithRetry(
+                        title = stringResource(state.error.titleRes),
+                        description = stringResource(state.error.descriptionRes),
+                        onRetry = { onEvent(HomeEvent.LoadHome) },
+                    )
                 }
 
                 else -> {
