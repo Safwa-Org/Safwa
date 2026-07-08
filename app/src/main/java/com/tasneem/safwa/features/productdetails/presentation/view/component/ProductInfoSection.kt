@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
@@ -25,13 +26,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.tasneem.safwa.R
 import com.tasneem.safwa.core.theme.SafwaTheme
 import com.tasneem.safwa.features.productdetails.presentation.state.mapper.VariantOptionGroup
+import com.tasneem.safwa.features.productdetails.presentation.state.mapper.toDisplayColor
 import com.tasneem.safwa.features.productdetails.presentation.state.mapper.VariantOptionValue
 
 @Composable
@@ -115,14 +120,57 @@ private fun VariantOptionGroupSection(
         )
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             group.values.forEach { option ->
-                VariantChip(
-                    option = option,
-                    isSelected = option.value == selectedValue,
-                    onClick = { onValueSelected(option.value) }
-                )
+                val swatchColor = if (group.isColorGroup) option.value.toDisplayColor() else null
+                if (swatchColor != null) {
+                    ColorSwatch(
+                        color = swatchColor,
+                        contentDescription = option.value,
+                        isSelected = option.value == selectedValue,
+                        isAvailable = option.isAvailable,
+                        onClick = { onValueSelected(option.value) }
+                    )
+                } else {
+                    VariantChip(
+                        option = option,
+                        isSelected = option.value == selectedValue,
+                        onClick = { onValueSelected(option.value) }
+                    )
+                }
             }
         }
     }
+}
+
+@Composable
+private fun ColorSwatch(
+    color: Color,
+    contentDescription: String,
+    isSelected: Boolean,
+    isAvailable: Boolean,
+    onClick: () -> Unit,
+) {
+    val unavailableAlpha = 0.35f
+    val swatchAlpha = if (isAvailable) 1f else unavailableAlpha
+    Box(
+        modifier = Modifier
+            .size(40.dp)
+            .clip(CircleShape)
+            .border(
+                border = BorderStroke(
+                    if (isSelected) 2.dp else 1.dp,
+                    if (isSelected)
+                        MaterialTheme.colorScheme.primary
+                    else
+                        MaterialTheme.colorScheme.outline.copy(alpha = swatchAlpha)
+                ),
+                shape = CircleShape
+            )
+            .padding(4.dp)
+            .clip(CircleShape)
+            .background(color.copy(alpha = swatchAlpha))
+            .clickable(enabled = isAvailable) { onClick() }
+            .semantics { this.contentDescription = contentDescription },
+    )
 }
 
 @Composable
@@ -197,7 +245,8 @@ private fun ProductInfoSectionPreview() {
                         VariantOptionValue("Black", true),
                         VariantOptionValue("White", false),
                         VariantOptionValue("Red", true),
-                    )
+                    ),
+                    isColorGroup = true,
                 )
             ),
             selectedOptions = mapOf("Size" to "M", "Color" to "Black"),

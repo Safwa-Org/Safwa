@@ -27,6 +27,7 @@ data class VariantOptionValue(
 data class VariantOptionGroup(
     val name: String,
     val values: List<VariantOptionValue>,
+    val isColorGroup: Boolean = false,
 )
 
 fun ProductDetails.toUiModel() = ProductDetailsUiModel(
@@ -65,6 +66,12 @@ private fun buildVariantOptions(variants: List<ProductVariant>): List<VariantOpt
                     isAvailable = matchingVariants.any { it.availableForSale },
                 )
             }
-        VariantOptionGroup(name = name, values = values)
+        VariantOptionGroup(
+            name = name,
+            values = values,
+            isColorGroup = name.trim().lowercase() in colorGroupNames,
+        )
     }
 }
+
+private val colorGroupNames = setOf("color", "colour", "colors", "colours")
