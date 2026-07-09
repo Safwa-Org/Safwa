@@ -23,7 +23,6 @@ import javax.inject.Inject
 class WishlistViewModel @Inject constructor(
     private val getWishlistUseCase: GetWishlistUseCase,
     private val toggleFavoriteUseCase: ToggleFavoriteUseCase,
-    private val getCategoriesUseCase: GetCategoriesUseCase,
     private val languageManager: LanguageManager
 ) : ViewModel() {
     private val _state = MutableStateFlow(WishlistState())
@@ -35,29 +34,18 @@ class WishlistViewModel @Inject constructor(
     init {
         onIntent(WishlistIntent.LoadWishlist)
         observeWishlist()
-        loadCategories()
 
         viewModelScope.launch {
             languageManager.displayLanguage
                 .drop(1)
                 .collect {
-                    loadCategories()
+                    onIntent(WishlistIntent.LoadWishlist)
+                    observeWishlist()
                 }
         }
     }
 
-    private fun loadCategories() {
-        viewModelScope.launch {
-            getCategoriesUseCase().collect { result ->
-                if (result is Resource.Success) {
-                    val categoriesFromApi = result.data
-                    val allCategory = Category(id = "all", title = "All", handle = "all", imageUrl = null)
-                    val categories = listOf(allCategory) + categoriesFromApi
-                    _state.update { it.copy(categories = categories, selectedCategory = allCategory) }
-                }
-            }
-        }
-    }
+
 
     private fun observeWishlist() {
         viewModelScope.launch {
@@ -65,9 +53,16 @@ class WishlistViewModel @Inject constructor(
                 when (result) {
                     is Resource.Success -> {
                         val products = result.data
+                        
+                        val dynamicCategories = products.map { it.productType }.filter { it.isNotBlank() }.distinct().map {
+                            Category(id = it, title = it, handle = it, imageUrl = null)
+                        }
+                        val allCategory = Category(id = "all", title = "All", handle = "all", imageUrl = null)
+                        val newCategories = listOf(allCategory) + dynamicCategories
+                        
                         _state.update { currentState ->
-                            val categories = currentState.categories
-                            val selectedCategory = currentState.selectedCategory ?: Category(id = "all", title = "All", handle = "all", imageUrl = null)
+                            val selectedCategory = newCategories.find { it.handle == currentState.selectedCategory?.handle } ?: allCategory
+                            
                             val filteredProducts = if (selectedCategory.handle == "all") {
                                 products
                             } else {
@@ -77,7 +72,7 @@ class WishlistViewModel @Inject constructor(
                             currentState.copy(
                                 products = products,
                                 filteredProducts = filteredProducts,
-                                categories = categories,
+                                categories = newCategories,
                                 selectedCategory = selectedCategory,
                                 isLoading = false
                             )

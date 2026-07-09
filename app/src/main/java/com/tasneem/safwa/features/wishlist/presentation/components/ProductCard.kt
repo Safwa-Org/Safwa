@@ -26,6 +26,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.tasneem.safwa.features.core.domain.model.Product
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import com.tasneem.safwa.core.shared_component.SafwaConfirmDialog
 
 @Composable
 fun ProductCard(
@@ -36,6 +41,21 @@ fun ProductCard(
     onToggleFavorite: () -> Unit = {},
     onClick: () -> Unit = {}
 ) {
+    var showRemoveDialog by remember { mutableStateOf(false) }
+
+    if (showRemoveDialog) {
+        SafwaConfirmDialog(
+            title = "Remove from Wishlist",
+            message = "Remove \"${product.title}\" from your wishlist?",
+            confirmText = "Remove",
+            onConfirm = {
+                showRemoveDialog = false
+                onToggleFavorite()
+            },
+            onDismiss = { showRemoveDialog = false }
+        )
+    }
+
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -59,7 +79,13 @@ fun ProductCard(
                 if (showFavoriteIcon) {
                     HeartIcon(
                         isFavorite = isFavorite,
-                        onToggleFavorite = onToggleFavorite,
+                        onToggleFavorite = {
+                            if (isFavorite) {
+                                showRemoveDialog = true
+                            } else {
+                                onToggleFavorite()
+                            }
+                        },
                         modifier = Modifier.padding(8.dp)
                             .align(Alignment.TopEnd)
                             .padding(8.dp)
