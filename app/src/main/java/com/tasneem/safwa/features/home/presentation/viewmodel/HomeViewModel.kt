@@ -36,9 +36,12 @@ import kotlinx.coroutines.launch
 import java.util.Calendar
 import javax.inject.Inject
 
+import com.tasneem.safwa.features.home.domain.usecase.GetLatestProductsUseCase
+
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val getProductsUseCase: GetProductsUseCase,
+    private val getLatestProductsUseCase: GetLatestProductsUseCase,
     private val toggleFavoriteUseCase: ToggleFavoriteUseCase,
     private val getWishlistUseCase: GetWishlistUseCase,
     private val getCategoriesUseCase: GetCategoriesUseCase,
@@ -72,6 +75,7 @@ class HomeViewModel @Inject constructor(
             )
         }
         loadProducts()
+        loadLatestProducts()
         loadBrands()
         observeWishlist()
         loadCategories()
@@ -85,6 +89,7 @@ class HomeViewModel @Inject constructor(
                 .drop(1)
                 .collect { 
                     loadProducts()
+                    loadLatestProducts()
                     loadAiRecommendations()
                 }
         }
@@ -93,7 +98,8 @@ class HomeViewModel @Inject constructor(
             languageManager.displayLanguage
                 .drop(1)
                 .collect { 
-                    loadProducts() 
+                    loadProducts()
+                    loadLatestProducts()
                     loadCategories()
                     loadBrands()
                     loadAiRecommendations()
@@ -135,10 +141,23 @@ class HomeViewModel @Inject constructor(
     private fun retryFailedLoads() {
         val current = _state.value
         if (current.error != null || current.products.isEmpty()) loadProducts()
+        if (current.error != null || current.latestProducts.isEmpty()) loadLatestProducts()
         if (current.brands.isEmpty()) loadBrands()
         if (current.categories.isEmpty()) loadCategories()
         if (current.aiErrorMessage != null || current.aiRecommendations.isEmpty()) {
             loadAiRecommendations()
+        }
+    }
+
+    private fun loadLatestProducts() {
+        viewModelScope.launch {
+            getLatestProductsUseCase().collect { result ->
+                if (result is Resource.Success) {
+                    _state.update {
+                        it.copy(latestProducts = result.data)
+                    }
+                }
+            }
         }
     }
 
@@ -317,6 +336,12 @@ class HomeViewModel @Inject constructor(
             }
 
             is HomeEvent.ShopEditClicked -> {
+            }
+
+            is HomeEvent.ViewAllLatestProducts -> {
+                viewModelScope.launch {
+                    _effect.send(HomeEffect.NavigateToLatestProducts)
+                }
             }
         }
     }

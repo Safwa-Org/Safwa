@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -52,7 +53,8 @@ fun HomeScreen(
     onNavigateToCategories: () -> Unit = {},
     onNavigateToCategoryProducts: (String) -> Unit = {},
     onNavigateToBrands: () -> Unit = {},
-    onNavigateToBrandProducts: (String) -> Unit = {}
+    onNavigateToBrandProducts: (String) -> Unit = {},
+    onNavigateToLatestProducts: () -> Unit = {}
 ) {
     val uiState by viewModel.state.collectAsStateWithLifecycle()
 
@@ -66,6 +68,7 @@ fun HomeScreen(
                 is HomeEffect.NavigateToProductDetails -> onNavigateToProductDetails(effect.handle)
                 is HomeEffect.NavigateToBrand -> onNavigateToBrandProducts(effect.brand)
                 HomeEffect.NavigateToBrands -> onNavigateToBrands()
+                HomeEffect.NavigateToLatestProducts -> onNavigateToLatestProducts()
             }
         }
     }
@@ -211,6 +214,40 @@ fun HomeContent(
                                     onToggleFavorite = { onEvent(HomeEvent.ToggleFavorite(it)) },
                                     onProductClick = { onEvent(HomeEvent.ProductClicked(it)) }
                                 )
+                            }
+                        }
+
+                        if (state.latestProducts.isNotEmpty()) {
+                            item(span = { GridItemSpan(2) }) {
+                                Spacer(modifier = Modifier.height(24.dp))
+                            }
+                            item(span = { GridItemSpan(2) }) {
+                                SectionHeader(
+                                    title = stringResource(id = R.string.latest_added),
+                                    actionText = stringResource(id = R.string.view_all),
+                                    onActionClick = { onEvent(HomeEvent.ViewAllLatestProducts) }
+                                )
+                            }
+                            item(span = { GridItemSpan(2) }) {
+                                Spacer(modifier = Modifier.height(12.dp))
+                            }
+                            item(span = { GridItemSpan(2) }) {
+                                androidx.compose.foundation.lazy.LazyRow(
+                                    horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(16.dp),
+                                    contentPadding = PaddingValues(horizontal = 16.dp)
+                                ) {
+                                    items(count = state.latestProducts.size, key = { state.latestProducts[it].id + "_latest" }) { index ->
+                                        val product = state.latestProducts[index]
+                                        Box(modifier = Modifier.width(160.dp)) {
+                                            ProductCard(
+                                                product = product,
+                                                isFavorite = state.favoriteProductIds.contains(product.id),
+                                                onToggleFavorite = { onEvent(HomeEvent.ToggleFavorite(product)) },
+                                                onClick = { onEvent(HomeEvent.ProductClicked(product)) }
+                                            )
+                                        }
+                                    }
+                                }
                             }
                         }
 

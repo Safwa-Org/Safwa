@@ -1,7 +1,9 @@
 package com.tasneem.safwa.features.home.domain.repository
 
 import com.tasneem.safwa.features.core.domain.model.Product
+import com.tasneem.safwa.features.core.domain.model.PaginatedData
 
 interface HomeRepository {
-    suspend fun getProducts(first: Int, after: String? = null, sortKey: String? = null): List<Product>
+    suspend fun getProducts(first: Int, after: String? = null, sortKey: String? = null, reverse: Boolean? = null): List<Product>
+    suspend fun getPaginatedProducts(first: Int, after: String? = null, sortKey: String? = null, reverse: Boolean? = null): PaginatedData<Product>
 }

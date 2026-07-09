@@ -81,4 +81,7 @@ sealed class ScreenRoute {
 
     @Serializable
     data class OrderDetails(val orderId: String) : ScreenRoute()
+
+    @Serializable
+    object LatestProducts : ScreenRoute()
 }

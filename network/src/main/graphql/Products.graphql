@@ -1,22 +1,52 @@
-query Products($first: Int!, $after: String, $sortKey: ProductSortKeys, $language: LanguageCode) @inContext(language: $language) {
-    products(first: $first, after: $after, sortKey: $sortKey) {
-        pageInfo { hasNextPage endCursor }
-        edges {
-            node {
-                id
-                handle
-                title
-                description
-                vendor
-                productType
-                priceRange {
-                    minVariantPrice { amount currencyCode }
-                    maxVariantPrice { amount currencyCode }
-                }
-                images(first: 5) {
-                    edges { node { url altText } }
-                }
-            }
-        }
+query Products(
+  $first: Int!
+  $after: String
+  $sortKey: ProductSortKeys
+  $reverse: Boolean
+  $language: LanguageCode
+) @inContext(language: $language) {
+
+  products(
+    first: $first
+    after: $after
+    sortKey: $sortKey
+    reverse: $reverse
+  ) {
+
+    pageInfo {
+      hasNextPage
+      endCursor
     }
+
+    edges {
+      node {
+        id
+        handle
+        title
+        description
+        vendor
+        productType
+
+        priceRange {
+          minVariantPrice {
+            amount
+            currencyCode
+          }
+          maxVariantPrice {
+            amount
+            currencyCode
+          }
+        }
+
+        images(first: 5) {
+          edges {
+            node {
+              url
+              altText
+            }
+          }
+        }
+      }
+    }
+  }
 }

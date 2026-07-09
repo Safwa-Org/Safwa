@@ -18,6 +18,7 @@ import com.tasneem.safwa.features.cart.presentation.view.CartScreen
 import com.tasneem.safwa.features.category.presentation.categories.CategoriesScreen
 import com.tasneem.safwa.features.category.presentation.category_products.CategoryProductsScreen
 import com.tasneem.safwa.features.checkout.presentation.view.CheckoutScreen
+import com.tasneem.safwa.features.latest_products.LatestProductsScreen
 import com.tasneem.safwa.features.onboarding.OnboardingScreen
 import com.tasneem.safwa.features.payment.presentation.view.PaymentScreen
 import com.tasneem.safwa.features.productdetails.presentation.view.ProductDetailsScreen
@@ -135,6 +136,9 @@ fun SafwaNavHost(
                 onNavigateToBrandProducts = { brandName ->
                     navController.navigate(ScreenRoute.BrandProducts(brandName))
                 },
+                onNavigateToLatestProducts = {
+                    navController.navigate(ScreenRoute.LatestProducts)
+                }
             )
         }
 
@@ -297,6 +301,15 @@ fun SafwaNavHost(
 
         composable<ScreenRoute.BrandProducts> {
             BrandProductsScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToProductDetails = { handle ->
+                    navController.navigate(ScreenRoute.ProductDetails(handle))
+                }
+            )
+        }
+
+        composable<ScreenRoute.LatestProducts> {
+            LatestProductsScreen(
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToProductDetails = { handle ->
                     navController.navigate(ScreenRoute.ProductDetails(handle))
