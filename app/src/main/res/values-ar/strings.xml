@@ -533,5 +533,6 @@
     <string name="please_write_a_comment">يرجى كتابة تعليق.</string>
     <string name="rating_format">%1$.1f (%2$d)</string>
     <string name="added_to_cart_successfully">تمت الإضافة إلى الحقيبة بنجاح</string>
+    <string name="failed_to_add_to_cart">فشل الإضافة إلى الحقيبة</string>
 
 </resources>

@@ -253,10 +253,13 @@ class ProductDetailsViewModel @Inject constructor(
             
             when (result) {
                 is Resource.Success -> {
-                    _effect.send(ProductDetailsEffect.ShowSnackBar(context.getString(R.string.added_to_cart_successfully)))
-                }
+                    _effect.send(ProductDetailsEffect.ShowSnackBarRes(R.string.added_to_cart_successfully))                }
                 is Resource.Error -> {
-                    _effect.send(ProductDetailsEffect.ShowSnackBar(result.message ?: "Failed to add to cart"))
+                    if (!result.message.isNullOrBlank()) {
+                        _effect.send(ProductDetailsEffect.ShowSnackBar(result.message))
+                    } else {
+                        _effect.send(ProductDetailsEffect.ShowSnackBarRes(R.string.failed_to_add_to_cart))
+                    }
                 }
                 else -> Unit
             }

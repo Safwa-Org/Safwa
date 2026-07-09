@@ -1,5 +1,6 @@
 package com.tasneem.network.datasource.cart
 
+import android.content.Context
 import com.apollographql.apollo.ApolloClient
 import com.apollographql.apollo.api.Optional
 import com.apollographql.cache.normalized.FetchPolicy
@@ -12,11 +13,13 @@ import com.tasneem.safwa.network.AddToCartMutation
 import com.tasneem.safwa.network.ApplyDiscountCodeMutation
 import com.tasneem.safwa.network.CreateCartMutation
 import com.tasneem.safwa.network.GetCartQuery
+import com.tasneem.safwa.network.R
 import com.tasneem.safwa.network.RemoveFromCartMutation
 import com.tasneem.safwa.network.UpdateCartLineMutation
 import com.tasneem.safwa.network.type.CartInput
 import com.tasneem.safwa.network.type.CartLineInput
 import com.tasneem.safwa.network.type.CartLineUpdateInput
+import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
 class CartRemoteDataSourceImpl @Inject constructor(
@@ -46,8 +49,7 @@ class CartRemoteDataSourceImpl @Inject constructor(
                     throw Exception(userErrors.first().message)
                 }
 
-                cart?.id ?: throw Exception("Failed to create cart, ID is null")
-            }
+                cart?.id ?: throw Exception("Failed to create cart, ID is null")            }
         )
     }
 
