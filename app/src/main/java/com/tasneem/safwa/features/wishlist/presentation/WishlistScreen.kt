@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -21,7 +22,6 @@ import com.tasneem.safwa.features.wishlist.presentation.components.ProductCard
 import com.tasneem.safwa.core.shared_component.SafwaTopAppBar
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
 
 @Composable
@@ -90,6 +90,7 @@ fun WishlistContent(
             }
         }
     }
+
 
 @Preview(showBackground = true)
 @Composable

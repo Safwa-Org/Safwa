@@ -73,24 +73,16 @@ fun SearchContent(
         SafwaTopAppBar(
             title = stringResource(id = R.string.search),
         )
-            SearchInput(
-                query = state.searchQuery,
-                onQueryChanged = { onIntent(SearchIntent.QueryChanged(it)) },
-                onExecuteSearch = { onIntent(SearchIntent.ExecuteSearch) },
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-            )
-
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth().padding(end = 8.dp)
             ) {
-                CategoriesRow(
-                    categories = state.categories,
-                    selectedCategory = state.selectedCategory,
-                    onCategorySelected = { onIntent(SearchIntent.FilterSelected(it)) },
-                    modifier = Modifier.weight(1f)
+                SearchInput(
+                    query = state.searchQuery,
+                    onQueryChanged = { onIntent(SearchIntent.QueryChanged(it)) },
+                    onExecuteSearch = { onIntent(SearchIntent.ExecuteSearch) },
+                    modifier = Modifier.weight(1f).padding(start = 16.dp, bottom = 8.dp, top = 8.dp)
                 )
-                
                 IconButton(onClick = { onIntent(SearchIntent.ToggleFilterSheet(true)) }) {
                     Icon(
                         imageVector = Icons.Default.FilterList,
@@ -98,7 +90,11 @@ fun SearchContent(
                     )
                 }
             }
-            
+        CategoriesRow(
+            categories = state.categories,
+            selectedCategory = state.selectedCategory,
+            onCategorySelected = { onIntent(SearchIntent.FilterSelected(it)) }
+        )
             if (state.showFilterSheet) {
                 FilterSortBottomSheet(
                     state = state,

@@ -22,6 +22,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import com.tasneem.safwa.core.shared_component.SafwaConfirmDialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.res.stringResource
 import com.tasneem.safwa.R
@@ -97,6 +100,21 @@ fun ProductDetailsContent(
     snackBarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
     val product = state.product
+    var showRemoveDialog by remember { mutableStateOf(false) }
+
+    if (showRemoveDialog) {
+        SafwaConfirmDialog(
+            title = "Remove from Wishlist",
+            message = "Remove \"${product?.title}\" from your wishlist?",
+            confirmText = "Remove",
+            onConfirm = {
+                showRemoveDialog = false
+                onEvent(ProductDetailsEvent.ToggleWishlist)
+            },
+            onDismiss = { showRemoveDialog = false }
+        )
+    }
+
     Scaffold(
         snackbarHost = {SnackbarHost(snackBarHostState) },
         bottomBar = {
@@ -145,7 +163,13 @@ fun ProductDetailsContent(
                             title = product.title,
                             isWishlisted = state.isWishlisted,
                             onBack = { onEvent(ProductDetailsEvent.BackClicked) },
-                            onWishlistToggle = { onEvent(ProductDetailsEvent.ToggleWishlist) },
+                            onWishlistToggle = { 
+                                if (state.isWishlisted) {
+                                    showRemoveDialog = true
+                                } else {
+                                    onEvent(ProductDetailsEvent.ToggleWishlist)
+                                }
+                            },
                             onShare = { onEvent(ProductDetailsEvent.ShareClicked) },
                         )
 

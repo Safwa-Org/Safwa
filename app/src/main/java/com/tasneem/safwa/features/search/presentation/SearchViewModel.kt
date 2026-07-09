@@ -25,12 +25,13 @@ import kotlinx.coroutines.flow.drop
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
 
+import kotlin.time.Duration.Companion.milliseconds
+
 @HiltViewModel
 class SearchViewModel @Inject constructor(
     private val toggleFavoriteUseCase: ToggleFavoriteUseCase,
     private val getWishlistUseCase: GetWishlistUseCase,
     private val searchProductsUseCase: SearchProductsUseCase,
-    private val getCategoriesUseCase: GetCategoriesUseCase,
     private val currencyRateManager: CurrencyRateManager,
     private val languageManager: LanguageManager
 ) : ViewModel() {
@@ -50,7 +51,6 @@ class SearchViewModel @Inject constructor(
         ) }
 
         observeWishlist()
-        loadCategories()
         executeSearch("")
 
         viewModelScope.launch {
@@ -66,24 +66,12 @@ class SearchViewModel @Inject constructor(
             languageManager.displayLanguage
                 .drop(1)
                 .collect {
-                    loadCategories()
                     executeSearch(_state.value.searchQuery)
                 }
         }
     }
 
-    private fun loadCategories() {
-        viewModelScope.launch {
-            getCategoriesUseCase().collect { result ->
-                if (result is Resource.Success) {
-                    val categoriesFromApi = result.data
-                    val allCategory = Category(id = "all", title = "All", handle = "all", imageUrl = null)
-                    val categories = listOf(allCategory) + categoriesFromApi
-                    _state.update { it.copy(categories = categories, selectedCategory = allCategory) }
-                }
-            }
-        }
-    }
+
 
     private fun observeWishlist() {
         viewModelScope.launch {
@@ -190,13 +178,21 @@ class SearchViewModel @Inject constructor(
                         val availableSubCategories = result.data.flatMap { it.tags }.distinct().filter { it.isNotBlank() }
                         val productsMaxPrice = result.data.maxOfOrNull { it.price.toFloatOrNull() ?: 0f } ?: 1000f
 
+                        val dynamicCategories = result.data.map { it.productType }.filter { it.isNotBlank() }.distinct().map {
+                            Category(id = it, title = it, handle = it, imageUrl = null)
+                        }
+                        val allCategory = Category(id = "all", title = "All", handle = "all", imageUrl = null)
+                        val newCategories = listOf(allCategory) + dynamicCategories
+
                         _state.update { currentState ->
                             val effectiveMax = maxOf(productsMaxPrice, currentState.selectedPriceRange.endInclusive)
+                            val newSelectedCategory = newCategories.find { it.handle == currentState.selectedCategory?.handle } ?: allCategory
 
                             currentState.copy(
                                 isLoading = false,
                                 products = result.data,
-                                categories = currentState.categories,
+                                categories = newCategories,
+                                selectedCategory = newSelectedCategory,
                                 availableBrands = availableBrands,
                                 availableSubCategories = availableSubCategories,
                                 maxPrice = effectiveMax
@@ -221,7 +217,9 @@ class SearchViewModel @Inject constructor(
             val selectedSubCategories = currentState.selectedSubCategories
             
             var filtered = currentState.products.filter { product ->
-                val matchesCategory = if (category?.handle == "all" || category == null) true else product.productType == category.handle
+                val matchesCategory = if (category?.handle == "all" || category == null) true
+                else product.productType.trim().lowercase() == category.handle.trim().lowercase() ||
+                     product.productType.trim().lowercase() == category.title.trim().lowercase()
                 val matchesBrand = if (selectedBrands.isEmpty()) true else selectedBrands.contains(product.vendor)
                 val matchesSubCategory = if (selectedSubCategories.isEmpty()) true else product.tags.any { selectedSubCategories.contains(it) }
                 
@@ -234,7 +232,7 @@ class SearchViewModel @Inject constructor(
             filtered = when (currentState.selectedSortOption) {
                 SortOption.PRICE_LOW_TO_HIGH -> filtered.sortedBy { it.price.toDoubleOrNull() ?: 0.0 }
                 SortOption.PRICE_HIGH_TO_LOW -> filtered.sortedByDescending { it.price.toDoubleOrNull() ?: 0.0 }
-                SortOption.BEST_SELLER -> filtered.shuffled() // Placeholder for Best Seller
+                SortOption.BEST_SELLER -> filtered.shuffled()
                 SortOption.NONE -> filtered
             }
             
