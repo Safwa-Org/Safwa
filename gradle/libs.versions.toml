@@ -26,6 +26,9 @@ okhttp = "4.12.0"
 foundationLayout = "1.11.3"
 appcompatVersion = "1.7.1"
 material3 = "1.4.0"
+junit5 = "5.10.2"
+mockk = "1.13.13"
+turbine = "1.1.0"
 paging = "3.3.0"
 
 [libraries]
@@ -74,6 +77,16 @@ androidx-material3 = { group = "androidx.compose.material3", name = "material3",
 shopify-checkout-sheet-kit = { module = "com.shopify:checkout-sheet-kit", version = "3.0.0" }
 androidx-paging-runtime = { group = "androidx.paging", name = "paging-runtime", version.ref = "paging" }
 androidx-paging-compose = { group = "androidx.paging", name = "paging-compose", version.ref = "paging" }
+# Unit testing
+junit-jupiter-api = { group = "org.junit.jupiter", name = "junit-jupiter-api", version.ref = "junit5" }
+junit-jupiter-params = { group = "org.junit.jupiter", name = "junit-jupiter-params", version.ref = "junit5" }
+junit-jupiter-engine = { group = "org.junit.jupiter", name = "junit-jupiter-engine", version.ref = "junit5" }
+junit-vintage-engine = { group = "org.junit.vintage", name = "junit-vintage-engine", version.ref = "junit5" }
+junit-platform-launcher = { group = "org.junit.platform", name = "junit-platform-launcher" }
+mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
+kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutines" }
+turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine" }
+apollo-testing-support = { module = "com.apollographql.apollo:apollo-testing-support", version.ref = "apolloRuntime" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
